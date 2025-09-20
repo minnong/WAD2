@@ -1,6 +1,7 @@
 import './App.css'
 import { Button } from './components/ui/button'
 import { ThemeToggle } from './components/ui/theme-toggle'
+import LiquidEther from './components/LiquidEther'
 import { 
   Hammer, 
   Users, 
@@ -67,9 +68,12 @@ export default function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative">
+      {/* Liquid Ether Background */}
+      <LiquidEther />
+      
       {/* Navigation */}
-      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="border-b border-white/10 bg-black/20 backdrop-blur-md supports-[backdrop-filter]:bg-black/10 relative z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
@@ -104,7 +108,7 @@ export default function App() {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-white/10 bg-black/20 backdrop-blur-md">
               <a href="#features" className="block px-3 py-2 text-muted-foreground hover:text-foreground">Features</a>
               <a href="#how-it-works" className="block px-3 py-2 text-muted-foreground hover:text-foreground">How it Works</a>
               <a href="#community" className="block px-3 py-2 text-muted-foreground hover:text-foreground">Community</a>
@@ -118,7 +122,7 @@ export default function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-20 lg:py-32">
+      <section className="py-20 lg:py-32 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
@@ -143,7 +147,7 @@ export default function App() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-muted/50">
+      <section id="features" className="py-20 bg-black/30 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -156,7 +160,7 @@ export default function App() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="bg-card p-6 rounded-lg border hover:shadow-lg transition-shadow">
+              <div key={index} className="bg-white/10 backdrop-blur-md p-6 rounded-lg border border-white/20 hover:shadow-lg hover:bg-white/15 transition-all duration-300">
                 <feature.icon className="h-12 w-12 text-primary mb-4" />
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
@@ -167,7 +171,7 @@ export default function App() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20">
+      <section id="how-it-works" className="py-20 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -193,7 +197,7 @@ export default function App() {
       </section>
 
       {/* Community Trust Section */}
-      <section id="community" className="py-20 bg-muted/50">
+      <section id="community" className="py-20 bg-black/30 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -224,7 +228,7 @@ export default function App() {
               </div>
             </div>
             
-            <div className="bg-card p-8 rounded-lg border">
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-lg border border-white/20">
               <div className="flex items-center space-x-4 mb-6">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
                   <Users className="h-6 w-6 text-primary-foreground" />
@@ -253,7 +257,7 @@ export default function App() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section className="py-20 relative z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to Start Sharing?
@@ -274,7 +278,7 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-muted/50">
+      <footer className="border-t border-white/10 bg-black/30 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid md:grid-cols-4 gap-8">
             <div>

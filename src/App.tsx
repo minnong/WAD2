@@ -1,165 +1,170 @@
 import './App.css'
-import { Button } from './components/ui/button'
-import { ThemeToggle } from './components/ui/theme-toggle'
-import { 
-  Hammer, 
-  Users, 
-  Shield, 
-  Calendar,
-  Star,
-  Search,
-  MapPin,
-  Clock,
-  CheckCircle,
-  ArrowRight,
-  Menu,
-  X
-} from 'lucide-react'
-import { useState } from 'react'
+import LiquidEther from './components/LiquidEther'
+import LiquidGlassNav from './components/LiquidGlassNav'
+import TextType from './components/TextType'
+import shareLahLogo from './components/sharelah.png'
+import { ArrowRight, Shield, MapPin, Clock, Star, Users, CreditCard, MessageCircle, CheckCircle, Zap, Heart } from 'lucide-react'
 
 export default function App() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-
   const features = [
-    {
-      icon: Search,
-      title: "Find Tools Nearby",
-      description: "Search for tools in your neighborhood with real-time availability and distance filtering."
-    },
-    {
-      icon: Calendar,
-      title: "Smart Scheduling",
-      description: "Integrated booking system with flexible pickup times and automatic reminders."
-    },
     {
       icon: Shield,
       title: "Trust & Safety",
-      description: "Community ratings, verified profiles, and damage protection for peace of mind."
+      description: "Secure deposits, verified profiles, and comprehensive insurance protection for every rental."
     },
     {
-      icon: Users,
-      title: "Community Building",
-      description: "Connect with neighbors, build relationships, and strengthen your local community."
+      icon: MapPin,
+      title: "Location-Based Discovery",
+      description: "Find items near you with our interactive map and smart proximity filters."
+    },
+    {
+      icon: Clock,
+      title: "Smart Scheduling",
+      description: "Integrated calendar booking with automated reminders and flexible pickup times."
+    },
+    {
+      icon: Star,
+      title: "Community Ratings",
+      description: "Build trust through transparent reviews and community-driven reputation scores."
+    },
+    {
+      icon: CreditCard,
+      title: "Secure Payments",
+      description: "Automated deposit handling with instant refunds and transparent pricing."
+    },
+    {
+      icon: MessageCircle,
+      title: "AI Support",
+      description: "24/7 chatbot assistance for bookings, disputes, and platform guidance."
     }
+  ]
+
+  const stats = [
+    { number: "10,000+", label: "Active Users" },
+    { number: "50,000+", label: "Items Listed" },
+    { number: "98%", label: "Satisfaction Rate" },
+    { number: "$2M+", label: "Community Savings" }
   ]
 
   const steps = [
     {
       step: "01",
-      title: "Browse & Search",
-      description: "Find the tools you need from neighbors in your area"
+      title: "Browse & Discover",
+      description: "Search through thousands of items in your neighborhood using our smart filters and interactive map."
     },
     {
-      step: "02", 
-      title: "Book & Arrange",
-      description: "Schedule pickup times that work for both parties"
+      step: "02",
+      title: "Book & Secure",
+      description: "Select your dates, pay securely with automatic deposit protection, and get instant confirmation."
     },
     {
       step: "03",
-      title: "Use & Return",
-      description: "Complete your project and return tools in good condition"
+      title: "Use & Enjoy",
+      description: "Pick up your item, complete your project, and return it in the same condition."
     },
     {
       step: "04",
       title: "Rate & Review",
-      description: "Build community trust through honest feedback"
+      description: "Share your experience to help build a stronger, more trustworthy community."
     }
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <Hammer className="h-8 w-8 text-primary" />
-              <span className="font-bold text-xl">ToolShare</span>
-            </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
-              <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How it Works</a>
-              <a href="#community" className="text-muted-foreground hover:text-foreground transition-colors">Community</a>
-              <ThemeToggle />
-              <Button variant="outline" size="sm">Sign In</Button>
-              <Button size="sm">Get Started</Button>
-            </div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Liquid Ether Background */}
+      <div style={{ width: '100%', height: '100vh', position: 'fixed', top: 0, left: 0, zIndex: -1 }}>
+        <LiquidEther
+          colors={['#5227FF', '#FF9FFC', '#B19EEF']}
+          mouseForce={20}
+          cursorSize={100}
+          isViscous={false}
+          viscous={30}
+          iterationsViscous={32}
+          iterationsPoisson={32}
+          resolution={0.5}
+          isBounce={false}
+          autoDemo={true}
+          autoSpeed={0.5}
+          autoIntensity={2.2}
+          takeoverDuration={0.25}
+          autoResumeDelay={3000}
+          autoRampDuration={0.6}
+        />
+      </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden flex items-center space-x-2">
-              <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
-              <a href="#features" className="block px-3 py-2 text-muted-foreground hover:text-foreground">Features</a>
-              <a href="#how-it-works" className="block px-3 py-2 text-muted-foreground hover:text-foreground">How it Works</a>
-              <a href="#community" className="block px-3 py-2 text-muted-foreground hover:text-foreground">Community</a>
-              <div className="px-3 py-2 space-y-2">
-                <Button variant="outline" size="sm" className="w-full">Sign In</Button>
-                <Button size="sm" className="w-full">Get Started</Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </nav>
+      {/* Liquid Glass Navigation */}
+      <LiquidGlassNav />
 
       {/* Hero Section */}
-      <section className="py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-              Borrow Tools,
-              <span className="text-primary block">Build Community</span>
+      <section className="min-h-screen flex items-center justify-center px-4 pt-20">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="animate-fadeInUp">
+            <h1 className="text-hero font-sf-pro-display text-white mb-6">
+              <TextType 
+                text="Rent Lah. Save Lah."
+                speed={300}
+                delay={200}
+                className="block"
+              />
+              <span className="block mt-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                Share Lah.
+              </span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-10">
-              Access the tools you need without the cost of ownership. Connect with neighbors, 
-              complete your projects, and build stronger communities through sharing.
+            <p className="text-body-large font-sf-pro-text text-white/80 max-w-3xl mx-auto mb-10 animate-fadeInUp delay-1000">
+              Access thousands of tools, appliances, and equipment in Singapore without the cost of ownership. 
+              Connect with neighbors, save money, and reduce waste through our trusted sharing platform.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8 py-4">
-                Start Borrowing
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-4">
-                List Your Tools
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp delay-1500">
+              <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition-apple shadow-2xl hover:shadow-blue-500/25 font-medium text-lg flex items-center justify-center group">
+                Start Browsing
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button className="px-8 py-4 glass-effect text-white rounded-xl transition-apple hover:bg-white/20 font-medium text-lg">
+                List Your Items
+              </button>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center animate-fadeInUp" style={{animationDelay: `${index * 200}ms`}}>
+                <div className="text-4xl md:text-5xl font-bold font-sf-pro-display text-white mb-2">
+                  {stat.number}
+                </div>
+                <div className="text-white/60 font-sf-pro-text font-medium">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="py-20 bg-muted/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything You Need to Share Tools Safely
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 animate-fadeInUp">
+            <h2 className="text-large font-sf-pro-display text-white mb-4">
+              Everything You Need for Safe Sharing
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Our platform makes tool sharing simple, secure, and community-focused
+            <p className="text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto">
+              Our platform combines cutting-edge technology with community trust to create the ultimate sharing experience.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="bg-card p-6 rounded-lg border hover:shadow-lg transition-shadow">
-                <feature.icon className="h-12 w-12 text-primary mb-4" />
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+              <div key={index} className="glass-effect p-8 rounded-2xl hover:bg-white/15 transition-apple group animate-fadeInUp" style={{animationDelay: `${index * 100}ms`}}>
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <feature.icon className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold font-sf-pro-display text-white mb-3">{feature.title}</h3>
+                <p className="text-white/70 font-sf-pro-text leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -167,25 +172,25 @@ export default function App() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              How ToolShare Works
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 animate-fadeInUp">
+            <h2 className="text-large font-sf-pro-display text-white mb-4">
+              How ShareLah Works
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Get started in minutes and join thousands of neighbors sharing tools
+            <p className="text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto">
+              Get started in minutes and join thousands of Singaporeans already saving money through sharing.
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
-              <div key={index} className="text-center">
-                <div className="bg-primary text-primary-foreground w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <div key={index} className="text-center animate-fadeInUp" style={{animationDelay: `${index * 200}ms`}}>
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl flex items-center justify-center text-2xl font-bold font-sf-pro-display mx-auto mb-6 shadow-lg">
                   {step.step}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
+                <h3 className="text-xl font-semibold font-sf-pro-display text-white mb-3">{step.title}</h3>
+                <p className="text-white/70 font-sf-pro-text leading-relaxed">{step.description}</p>
               </div>
             ))}
           </div>
@@ -193,44 +198,40 @@ export default function App() {
       </section>
 
       {/* Community Trust Section */}
-      <section id="community" className="py-20 bg-muted/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <div className="animate-fadeInUp">
+              <h2 className="text-large font-sf-pro-display text-white mb-6">
                 Built on Community Trust
               </h2>
-              <p className="text-xl text-muted-foreground mb-8">
-                Our rating system and community guidelines ensure safe, reliable tool sharing experiences for everyone.
+              <p className="text-body-large font-sf-pro-text text-white/70 mb-8">
+                Our comprehensive safety features and community guidelines ensure every rental is secure, reliable, and worry-free.
               </p>
               
               <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                  <span>Verified user profiles and reviews</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                  <span>Damage protection and insurance options</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                  <span>24/7 community support</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                  <span>Secure messaging and scheduling</span>
-                </div>
+                {[
+                  "Verified user profiles and identity checks",
+                  "Comprehensive damage protection and insurance",
+                  "24/7 AI-powered customer support",
+                  "Secure payments with instant deposit refunds",
+                  "Community-driven ratings and reviews"
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <CheckCircle className="h-6 w-6 text-green-400 flex-shrink-0" />
+                    <span className="text-white/80 font-sf-pro-text">{feature}</span>
+                  </div>
+                ))}
               </div>
             </div>
             
-            <div className="bg-card p-8 rounded-lg border">
+            <div className="glass-effect p-8 rounded-2xl animate-fadeInUp delay-300">
               <div className="flex items-center space-x-4 mb-6">
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                  <Users className="h-6 w-6 text-primary-foreground" />
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Sarah M.</h3>
+                  <h3 className="font-semibold font-sf-pro-display text-white">Sarah L.</h3>
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -238,89 +239,125 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <p className="text-muted-foreground mb-4">
-                "ToolShare has been amazing for our home renovation projects. I've borrowed everything from power drills to tile saws, and the community is so helpful and trustworthy."
-              </p>
-              <div className="flex items-center text-sm text-muted-foreground">
+                                            <p className="text-white/70 font-sf-pro-text mb-4 leading-relaxed">
+                  "ShareLah has been incredible for our home renovation. I've rented everything from power tools to a pressure washer. The community is so helpful and trustworthy!"
+               </p>
+              <div className="flex items-center text-sm text-white/50 font-sf-pro-text">
                 <MapPin className="h-4 w-4 mr-1" />
-                Downtown District
+                Tanjong Pagar
                 <Clock className="h-4 w-4 ml-4 mr-1" />
-                2 weeks ago
+                2 days ago
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Technology Stack Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="animate-fadeInUp">
+            <h2 className="text-large font-sf-pro-display text-white mb-4">
+              Powered by Modern Technology
+            </h2>
+            <p className="text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto mb-12">
+              Built with cutting-edge web technologies for a fast, secure, and reliable experience.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            {[
+              { name: "React", color: "from-blue-400 to-blue-600" },
+              { name: "Firebase", color: "from-yellow-400 to-orange-600" },
+              { name: "Tailwind", color: "from-cyan-400 to-blue-600" },
+              { name: "TypeScript", color: "from-blue-500 to-blue-700" },
+              { name: "Stripe", color: "from-purple-400 to-purple-600" },
+              { name: "Maps API", color: "from-green-400 to-green-600" }
+            ].map((tech, index) => (
+              <div key={index} className="glass-effect p-6 rounded-xl hover:bg-white/15 transition-apple animate-fadeInUp" style={{animationDelay: `${index * 100}ms`}}>
+                <div className={`w-12 h-12 bg-gradient-to-r ${tech.color} rounded-lg flex items-center justify-center mx-auto mb-3`}>
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-white font-sf-pro-text font-medium">{tech.name}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Start Sharing?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-10">
-            Join thousands of neighbors who are already saving money and building community through tool sharing.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8 py-4">
-              Create Your Account
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-4">
-              Browse Available Tools
-            </Button>
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="animate-fadeInUp">
+            <h2 className="text-large font-sf-pro-display text-white mb-6">
+              Ready to Start Sharing?
+            </h2>
+            <p className="text-body-large font-sf-pro-text text-white/70 mb-10">
+              Join thousands of Singaporeans who are already saving money and building community through smart sharing.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition-apple shadow-2xl hover:shadow-blue-500/25 font-medium text-lg flex items-center justify-center group">
+                Create Your Account
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button className="px-8 py-4 glass-effect text-white rounded-xl transition-apple hover:bg-white/20 font-medium text-lg">
+                Browse Available Items
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-muted/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <footer className="glass-effect border-t border-white/10 mt-20">
+        <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Hammer className="h-8 w-8 text-primary" />
-                <span className="font-bold text-xl">ToolShare</span>
+                         <div className="animate-fadeInUp">
+               <div className="flex items-center space-x-3 mb-4">
+                 <img src={shareLahLogo} alt="ShareLah Logo" className="w-8 h-8" />
+                 <span className="font-bold text-xl font-sf-pro-display text-white">ShareLah</span>
+               </div>
+               <p className="text-white/60 font-sf-pro-text">
+                 Building stronger communities through smart sharing in Singapore lah!
+               </p>
+             </div>
+            
+            {[
+              {
+                title: "Platform",
+                links: ["How it Works", "Safety", "Insurance", "Pricing"]
+              },
+              {
+                title: "Community", 
+                links: ["Guidelines", "Blog", "Events", "Support"]
+              },
+              {
+                title: "Company",
+                links: ["About Us", "Careers", "Privacy", "Terms"]
+              }
+            ].map((section, index) => (
+              <div key={index} className="animate-fadeInUp" style={{animationDelay: `${(index + 1) * 100}ms`}}>
+                <h3 className="font-semibold font-sf-pro-display text-white mb-4">{section.title}</h3>
+                <ul className="space-y-2">
+                  {section.links.map((link, linkIndex) => (
+                    <li key={linkIndex}>
+                      <a href="#" className="text-white/60 hover:text-white transition-colors font-sf-pro-text">
+                        {link}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p className="text-muted-foreground">
-                Building stronger communities through tool sharing.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Platform</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">How it Works</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Safety</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Insurance</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Community</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Guidelines</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Events</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Forum</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Terms</a></li>
-              </ul>
-            </div>
+            ))}
           </div>
           
-          <div className="border-t mt-12 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 ToolShare. All rights reserved.</p>
-          </div>
+                     <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-white/60 font-sf-pro-text">
+             <p>&copy; 2024 ShareLah. All rights reserved.</p>
+             <div className="flex items-center mt-4 md:mt-0">
+               <Heart className="h-4 w-4 mr-2 text-red-400" />
+               <span>Made with love in Singapore lah!</span>
+             </div>
+           </div>
         </div>
       </footer>
     </div>

@@ -16,19 +16,19 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: "🔧",
-      title: "Wide Tool Selection",
-      description: "Access thousands of professional tools for every project"
+      icon: "👥",
+      title: "Community Marketplace",
+      description: "Connect with neighbors to borrow and lend tools in your area"
     },
     {
-      icon: "🚚",
-      title: "Fast Delivery",
-      description: "Get your tools delivered within 24 hours"
+      icon: "💸",
+      title: "Earn While You Share",
+      description: "List your unused tools and earn money from your community"
     },
     {
-      icon: "💰",
-      title: "Affordable Rates",
-      description: "Save money with our competitive rental prices"
+      icon: "🔍",
+      title: "Find What You Need",
+      description: "Browse local listings and find the perfect tool for your project"
     }
   ];
 
@@ -52,12 +52,11 @@ export default function LandingPage() {
       <main className="container mx-auto px-6">
         <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight">
-            Rent Tools,
-            <span className="text-blue-600 block">Build Dreams</span>
+            Share Tools,
+            <span className="text-blue-600 block">Build Community</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Access professional tools when you need them. No storage hassles, no maintenance costs.
-            Just quality tools delivered to your doorstep.
+            Connect with your neighbors to borrow and lend tools. Turn your unused tools into income while helping your community build, create, and repair.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -65,10 +64,10 @@ export default function LandingPage() {
               onClick={() => navigate('/auth')}
               className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 font-semibold text-lg shadow-lg"
             >
-              Start Renting Today
+              Join the Community
             </button>
             <button className="text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 font-semibold text-lg">
-              Browse Tools
+              List Your Tools
             </button>
           </div>
         </div>
@@ -92,47 +91,47 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
-                Why Choose Lendr?
+                How Lendr Works
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-white text-sm">✓</span>
+                    <span className="text-white text-sm">1</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-800">Quality Guaranteed</h4>
-                    <p className="text-gray-600">All tools are maintained and inspected before rental</p>
+                    <h4 className="font-semibold text-gray-800">List Your Tools</h4>
+                    <p className="text-gray-600">Post photos and details of tools you want to rent out</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-white text-sm">✓</span>
+                    <span className="text-white text-sm">2</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-800">Flexible Rental Periods</h4>
-                    <p className="text-gray-600">From hours to months - rent for as long as you need</p>
+                    <h4 className="font-semibold text-gray-800">Connect Locally</h4>
+                    <p className="text-gray-600">Browse tools from neighbors in your area</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-white text-sm">✓</span>
+                    <span className="text-white text-sm">3</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-800">24/7 Support</h4>
-                    <p className="text-gray-600">Get help whenever you need it</p>
+                    <h4 className="font-semibold text-gray-800">Earn & Save</h4>
+                    <p className="text-gray-600">Make money lending or save by borrowing</p>
                   </div>
                 </div>
               </div>
             </div>
             <div className="relative">
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-4">Ready to get started?</h3>
-                <p className="mb-6">Join thousands of satisfied customers who trust Lendr for their projects.</p>
+                <h3 className="text-2xl font-bold mb-4">Ready to start sharing?</h3>
+                <p className="mb-6">Join thousands of community members sharing tools and saving money together.</p>
                 <button
                   onClick={() => navigate('/auth')}
                   className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors duration-200 font-semibold"
                 >
-                  Sign Up Now
+                  Get Started
                 </button>
               </div>
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-yellow-400 rounded-full opacity-20"></div>
@@ -142,13 +141,13 @@ export default function LandingPage() {
         </div>
 
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8">Popular Categories</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-8">What People Are Sharing</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { name: "Power Tools", icon: "⚡", count: "500+" },
-              { name: "Hand Tools", icon: "🔨", count: "300+" },
-              { name: "Garden Tools", icon: "🌱", count: "200+" },
-              { name: "Construction", icon: "🏗️", count: "150+" }
+              { name: "Power Tools", icon: "⚡", count: "500+ listings" },
+              { name: "Hand Tools", icon: "🔨", count: "300+ listings" },
+              { name: "Garden Tools", icon: "🌱", count: "200+ listings" },
+              { name: "Construction", icon: "🏗️", count: "150+ listings" }
             ].map((category, index) => (
               <div
                 key={index}
@@ -158,7 +157,7 @@ export default function LandingPage() {
                   {category.icon}
                 </div>
                 <h3 className="font-semibold text-gray-800">{category.name}</h3>
-                <p className="text-sm text-gray-500">{category.count} tools</p>
+                <p className="text-sm text-gray-500">{category.count}</p>
               </div>
             ))}
           </div>
@@ -174,7 +173,7 @@ export default function LandingPage() {
                 <span className="text-xl font-bold">Lendr</span>
               </div>
               <p className="text-gray-400">
-                Your trusted partner for tool rentals. Making projects possible, one tool at a time.
+                Connecting communities through tool sharing. Building stronger neighborhoods, one project at a time.
               </p>
             </div>
             <div>

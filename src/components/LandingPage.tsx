@@ -123,11 +123,17 @@ export default function LandingPage() {
               Connect with neighbors, save money, and reduce waste through our trusted sharing platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp delay-1500">
-              <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition-apple shadow-2xl hover:shadow-blue-500/25 font-medium text-lg flex items-center justify-center group">
+              <button 
+                onClick={() => navigate('/auth')}
+                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition-apple shadow-2xl hover:shadow-blue-500/25 font-medium text-lg flex items-center justify-center group"
+              >
                 Start Browsing
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="px-8 py-4 glass-effect text-white rounded-xl transition-apple hover:bg-white/20 font-medium text-lg">
+              <button 
+                onClick={() => navigate('/auth')}
+                className="px-8 py-4 glass-effect text-white rounded-xl transition-apple hover:bg-white/20 font-medium text-lg"
+              >
                 List Your Items
               </button>
             </div>
@@ -194,8 +200,10 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
               <div key={index} className="text-center animate-fadeInUp" style={{animationDelay: `${index * 200}ms`}}>
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl flex items-center justify-center text-2xl font-bold font-sf-pro-display mx-auto mb-6 shadow-lg">
-                  {step.step}
+                <div className="mb-6">
+                  <span className="text-6xl font-bold font-sf-pro-display bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                    {step.step}
+                  </span>
                 </div>
                 <h3 className="text-xl font-semibold font-sf-pro-display text-white mb-3">{step.title}</h3>
                 <p className="text-white/70 font-sf-pro-text leading-relaxed">{step.description}</p>
@@ -314,7 +322,10 @@ export default function LandingPage() {
                 Create Your Account
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button className="px-8 py-4 glass-effect text-white rounded-xl transition-apple hover:bg-white/20 font-medium text-lg">
+              <button 
+                onClick={() => navigate('/auth')}
+                className="px-8 py-4 glass-effect text-white rounded-xl transition-apple hover:bg-white/20 font-medium text-lg"
+              >
                 Browse Available Items
               </button>
             </div>
@@ -366,7 +377,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-white/60 font-sf-pro-text">
-            <p>&copy; 2024 ShareLah. All rights reserved.</p>
+            <p>&copy; 2025 ShareLah. All rights reserved.</p>
             <div className="flex items-center mt-4 md:mt-0">
               <Heart className="h-4 w-4 mr-2 text-red-400" />
               <span>Made with love in Singapore lah!</span>

@@ -63,12 +63,12 @@ export default function AuthPage() {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                {isLogin ? 'Welcome Back!' : 'Join Lendr'}
+                {isLogin ? 'Welcome Back!' : 'Join the Community'}
               </h1>
               <p className="text-gray-600">
                 {isLogin
-                  ? 'Sign in to access your account'
-                  : 'Create an account to start renting tools'
+                  ? 'Sign in to access your listings and rentals'
+                  : 'Start sharing tools with your neighbors'
                 }
               </p>
             </div>
@@ -210,7 +210,7 @@ export default function AuthPage() {
                     Processing...
                   </span>
                 ) : (
-                  isLogin ? 'Sign In' : 'Create Account'
+                  isLogin ? 'Sign In' : 'Join Community'
                 )}
               </button>
             </form>

@@ -2,8 +2,8 @@ import './App.css'
 import LiquidEther from './components/LiquidEther'
 import LiquidGlassNav from './components/LiquidGlassNav'
 import TextType from './components/TextType'
-import ShareLahLogo from './components/LendLahLogo'
-import { ArrowRight, Shield, MapPin, Clock, Star, Users, Smartphone, CreditCard, MessageCircle, CheckCircle, Zap, Heart } from 'lucide-react'
+import shareLahLogo from './components/sharelah.png'
+import { ArrowRight, Shield, MapPin, Clock, Star, Users, CreditCard, MessageCircle, CheckCircle, Zap, Heart } from 'lucide-react'
 
 export default function App() {
   const features = [
@@ -314,7 +314,7 @@ export default function App() {
           <div className="grid md:grid-cols-4 gap-8">
                          <div className="animate-fadeInUp">
                <div className="flex items-center space-x-3 mb-4">
-                 <ShareLahLogo size="md" />
+                 <img src={shareLahLogo} alt="ShareLah Logo" className="w-8 h-8" />
                  <span className="font-bold text-xl font-sf-pro-display text-white">ShareLah</span>
                </div>
                <p className="text-white/60 font-sf-pro-text">

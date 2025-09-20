@@ -1,5 +1,6 @@
 import './App.css'
 import { Button } from './components/ui/button'
+import { ThemeToggle } from './components/ui/theme-toggle'
 import { 
   Hammer, 
   Users, 
@@ -81,12 +82,14 @@ export default function App() {
               <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
               <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How it Works</a>
               <a href="#community" className="text-muted-foreground hover:text-foreground transition-colors">Community</a>
+              <ThemeToggle />
               <Button variant="outline" size="sm">Sign In</Button>
               <Button size="sm">Get Started</Button>
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center space-x-2">
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="icon"

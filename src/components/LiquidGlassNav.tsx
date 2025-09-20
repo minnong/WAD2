@@ -41,7 +41,7 @@ const LiquidGlassNav: React.FC = () => {
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       scrolled
-        ? 'shadow-2xl'
+        ? ''
         : 'bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -62,7 +62,9 @@ const LiquidGlassNav: React.FC = () => {
                   }`
                 : ''
             }`}>
-              <button className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+              <button
+                onClick={() => navigate('/browse')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -70,7 +72,9 @@ const LiquidGlassNav: React.FC = () => {
                 <Search className="w-4 h-4" />
                 <span className="text-sm font-medium">Browse</span>
               </button>
-              <button className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+              <button
+                onClick={() => navigate('/list-item')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -78,7 +82,9 @@ const LiquidGlassNav: React.FC = () => {
                 <Plus className="w-4 h-4" />
                 <span className="text-sm font-medium">List Item</span>
               </button>
-              <button className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+              <button
+                onClick={() => navigate('/my-rentals')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -86,7 +92,9 @@ const LiquidGlassNav: React.FC = () => {
                 <ShoppingBag className="w-4 h-4" />
                 <span className="text-sm font-medium">My Rentals</span>
               </button>
-              <button className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+              <button
+                onClick={() => navigate('/favorites')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'

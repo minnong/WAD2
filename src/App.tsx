@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import LandingPage from './components/LandingPage'
 import AuthPage from './components/AuthPage'
 import HomePage from './components/HomePage'
+import BrowsePage from './components/BrowsePage'
+import ListItemPage from './components/ListItemPage'
+import MyRentalsPage from './components/MyRentalsPage'
+import FavoritesPage from './components/FavoritesPage'
 
 export default function App() {
   return (
@@ -11,6 +15,10 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/browse" element={<BrowsePage />} />
+        <Route path="/list-item" element={<ListItemPage />} />
+        <Route path="/my-rentals" element={<MyRentalsPage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
       </Routes>
     </Router>
   )

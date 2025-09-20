@@ -1,11 +1,13 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 import LiquidGlassNav from './LiquidGlassNav';
 import { Search, Plus, Heart, ShoppingBag } from 'lucide-react';
 
 export default function HomePage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
+  const navigate = useNavigate();
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -34,77 +36,85 @@ export default function HomePage() {
       {/* Main Content - Added padding-top to prevent navbar overlap */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            Welcome back, {currentUser?.displayName?.split(' ')[0] || 'User'}! 👋
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">
+            Hey {currentUser?.displayName?.split(' ')[0] || 'User'}! 👋
           </h1>
-          <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            Ready to find what you need or share what you have?
+          <p className={`text-base ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+            Find tools or share what you have
           </p>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className={`rounded-xl p-6 transition-all cursor-pointer border ${
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div
+            onClick={() => navigate('/browse')}
+            className={`rounded-2xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
             theme === 'dark'
-              ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
-              : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+              ? 'bg-gray-800/60 hover:bg-gray-800/80'
+              : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
           }`}>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Search className="w-6 h-6 text-white" />
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <Search className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">Browse Tools</h3>
-                <p className="text-sm text-gray-400">Find what you need</p>
+                <h3 className="font-semibold text-sm">Browse</h3>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Find tools</p>
               </div>
             </div>
           </div>
 
-          <div className={`rounded-xl p-6 transition-all cursor-pointer border ${
+          <div
+            onClick={() => navigate('/list-item')}
+            className={`rounded-2xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
             theme === 'dark'
-              ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
-              : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+              ? 'bg-gray-800/60 hover:bg-gray-800/80'
+              : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
           }`}>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                <Plus className="w-6 h-6 text-white" />
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                <Plus className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">List an Item</h3>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Share & earn money</p>
+                <h3 className="font-semibold text-sm">List Item</h3>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Earn money</p>
               </div>
             </div>
           </div>
 
-          <div className={`rounded-xl p-6 transition-all cursor-pointer border ${
+          <div
+            onClick={() => navigate('/my-rentals')}
+            className={`rounded-2xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
             theme === 'dark'
-              ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
-              : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+              ? 'bg-gray-800/60 hover:bg-gray-800/80'
+              : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
           }`}>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
-                <ShoppingBag className="w-6 h-6 text-white" />
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                <ShoppingBag className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">My Rentals</h3>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Track your items</p>
+                <h3 className="font-semibold text-sm">My Rentals</h3>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Track items</p>
               </div>
             </div>
           </div>
 
-          <div className={`rounded-xl p-6 transition-all cursor-pointer border ${
+          <div
+            onClick={() => navigate('/favorites')}
+            className={`rounded-2xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
             theme === 'dark'
-              ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
-              : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+              ? 'bg-gray-800/60 hover:bg-gray-800/80'
+              : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
           }`}>
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" />
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+                <Heart className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">Favorites</h3>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Saved items</p>
+                <h3 className="font-semibold text-sm">Favorites</h3>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Saved items</p>
               </div>
             </div>
           </div>
@@ -112,23 +122,23 @@ export default function HomePage() {
 
         {/* Featured Categories */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-6">Popular Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+          <h2 className="text-xl font-bold mb-4">Popular Categories</h2>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
             {[
-              { name: 'Power Tools', icon: '🔧', count: '120+ items' },
-              { name: 'Garden Tools', icon: '🌱', count: '85+ items' },
-              { name: 'Electronics', icon: '📱', count: '60+ items' },
-              { name: 'Kitchen', icon: '🍳', count: '45+ items' },
-              { name: 'Sports', icon: '⚽', count: '70+ items' },
-              { name: 'Home & DIY', icon: '🏠', count: '95+ items' }
+              { name: 'Power Tools', icon: '🔧', count: '120+' },
+              { name: 'Garden', icon: '🌱', count: '85+' },
+              { name: 'Electronics', icon: '📱', count: '60+' },
+              { name: 'Kitchen', icon: '🍳', count: '45+' },
+              { name: 'Sports', icon: '⚽', count: '70+' },
+              { name: 'Home & DIY', icon: '🏠', count: '95+' }
             ].map((category, index) => (
-              <div key={index} className={`rounded-lg p-4 text-center transition-all cursor-pointer border ${
+              <div key={index} className={`rounded-2xl p-3 text-center transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
                 theme === 'dark'
-                  ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
-                  : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+                  ? 'bg-gray-800/60 hover:bg-gray-800/80'
+                  : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
               }`}>
-                <div className="text-3xl mb-2">{category.icon}</div>
-                <h3 className="font-semibold text-sm">{category.name}</h3>
+                <div className="text-2xl mb-2">{category.icon}</div>
+                <h3 className="font-medium text-xs">{category.name}</h3>
                 <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{category.count}</p>
               </div>
             ))}
@@ -137,13 +147,13 @@ export default function HomePage() {
 
         {/* Recent Activity */}
         <div>
-          <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>
-          <div className={`rounded-xl p-6 border ${
+          <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
+          <div className={`rounded-2xl p-6 border-0 shadow-sm ${
             theme === 'dark'
-              ? 'bg-gray-800/50 border-gray-700/50'
-              : 'bg-white/50 border-gray-200/50 backdrop-blur-sm'
+              ? 'bg-gray-800/60'
+              : 'bg-white/80 backdrop-blur-sm'
           }`}>
-            <p className={`text-center py-8 ${
+            <p className={`text-center py-6 text-sm ${
               theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
             }`}>
               No recent activity yet. Start browsing or listing items to see your activity here!

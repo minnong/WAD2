@@ -56,8 +56,16 @@ export default function AuthPage() {
         navigate('/home'); // Redirect to home
       } else {
         await signup(formData.email, formData.password, formData.firstName, formData.lastName);
-        setMessage('Account created successfully! Please check your email for verification.');
-        navigate('/home'); // Redirect to home
+        setMessage('Account created successfully! You can now sign in with your credentials.');
+        setIsLogin(true); // Switch to login mode
+        // Clear the form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        });
       }
     } catch (error: any) {
       console.error('Auth error:', error);

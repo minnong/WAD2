@@ -1,87 +1,153 @@
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import LiquidGlassNav from './LiquidGlassNav';
-import LiquidEther from './LiquidEther';
+import { Search, Plus, Heart, ShoppingBag } from 'lucide-react';
 
 export default function HomePage() {
   const { currentUser } = useAuth();
+  const { theme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Liquid Ether Background */}
-      <div className="absolute inset-0 z-0">
-        <LiquidEther />
+    <div className={`min-h-screen transition-colors duration-300 ${
+      theme === 'dark'
+        ? 'bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white'
+        : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
+    }`}>
+      {/* Fluid Glass Background Effect */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute -inset-10 opacity-30 ${
+          theme === 'dark'
+            ? 'bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10'
+            : 'bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20'
+        } blur-3xl animate-pulse`}></div>
+        <div className={`absolute top-1/4 left-1/4 w-96 h-96 ${
+          theme === 'dark' ? 'bg-blue-500/5' : 'bg-blue-400/10'
+        } rounded-full blur-3xl animate-pulse delay-1000`}></div>
+        <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 ${
+          theme === 'dark' ? 'bg-purple-500/5' : 'bg-purple-400/10'
+        } rounded-full blur-3xl animate-pulse delay-2000`}></div>
       </div>
 
-      {/* Navigation */}
+      {/* Keep your original LiquidGlassNav */}
       <LiquidGlassNav />
 
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 pt-20">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Welcome Message */}
-          <div className="mb-12 animate-fadeInUp">
-            <h1 className="text-hero font-sf-pro-display mb-6 bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 bg-clip-text text-transparent">
-              Welcome to ShareLah!
-            </h1>
-            <p className="text-xl text-white/80 font-sf-pro-text max-w-2xl mx-auto leading-relaxed">
-              {currentUser?.displayName ? (
-                <>
-                  Hello, <span className="text-blue-400 font-semibold">{currentUser.displayName.split(' ')[0]}</span>!
-                  Ready to start sharing and renting tools in your community?
-                </>
-              ) : (
-                'Ready to start sharing and renting tools in your community?'
-              )}
+      {/* Main Content - Added padding-top to prevent navbar overlap */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">
+            Welcome back, {currentUser?.displayName?.split(' ')[0] || 'User'}! 👋
+          </h1>
+          <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+            Ready to find what you need or share what you have?
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className={`rounded-xl p-6 transition-all cursor-pointer border ${
+            theme === 'dark'
+              ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
+              : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+          }`}>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                <Search className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Browse Tools</h3>
+                <p className="text-sm text-gray-400">Find what you need</p>
+              </div>
+            </div>
+          </div>
+
+          <div className={`rounded-xl p-6 transition-all cursor-pointer border ${
+            theme === 'dark'
+              ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
+              : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+          }`}>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                <Plus className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold">List an Item</h3>
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Share & earn money</p>
+              </div>
+            </div>
+          </div>
+
+          <div className={`rounded-xl p-6 transition-all cursor-pointer border ${
+            theme === 'dark'
+              ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
+              : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+          }`}>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                <ShoppingBag className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold">My Rentals</h3>
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Track your items</p>
+              </div>
+            </div>
+          </div>
+
+          <div className={`rounded-xl p-6 transition-all cursor-pointer border ${
+            theme === 'dark'
+              ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
+              : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+          }`}>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-pink-500 rounded-lg flex items-center justify-center">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Favorites</h3>
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Saved items</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Featured Categories */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-6">Popular Categories</h2>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            {[
+              { name: 'Power Tools', icon: '🔧', count: '120+ items' },
+              { name: 'Garden Tools', icon: '🌱', count: '85+ items' },
+              { name: 'Electronics', icon: '📱', count: '60+ items' },
+              { name: 'Kitchen', icon: '🍳', count: '45+ items' },
+              { name: 'Sports', icon: '⚽', count: '70+ items' },
+              { name: 'Home & DIY', icon: '🏠', count: '95+ items' }
+            ].map((category, index) => (
+              <div key={index} className={`rounded-lg p-4 text-center transition-all cursor-pointer border ${
+                theme === 'dark'
+                  ? 'bg-gray-800/50 hover:bg-gray-800/70 border-gray-700/50 hover:border-gray-600/50'
+                  : 'bg-white/50 hover:bg-white/70 border-gray-200/50 hover:border-gray-300/50 backdrop-blur-sm'
+              }`}>
+                <div className="text-3xl mb-2">{category.icon}</div>
+                <h3 className="font-semibold text-sm">{category.name}</h3>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{category.count}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div>
+          <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>
+          <div className={`rounded-xl p-6 border ${
+            theme === 'dark'
+              ? 'bg-gray-800/50 border-gray-700/50'
+              : 'bg-white/50 border-gray-200/50 backdrop-blur-sm'
+          }`}>
+            <p className={`text-center py-8 ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              No recent activity yet. Start browsing or listing items to see your activity here!
             </p>
-          </div>
-
-          {/* Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div className="glass-effect rounded-2xl p-8 hover:bg-white/15 transition-apple">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold font-sf-pro-display mb-4">List Your Tools</h3>
-              <p className="text-white/70 font-sf-pro-text">
-                Share your unused tools with neighbors and earn money while helping others.
-              </p>
-            </div>
-
-            <div className="glass-effect rounded-2xl p-8 hover:bg-white/15 transition-apple">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold font-sf-pro-display mb-4">Find Tools</h3>
-              <p className="text-white/70 font-sf-pro-text">
-                Browse available tools in your area and rent exactly what you need.
-              </p>
-            </div>
-
-            <div className="glass-effect rounded-2xl p-8 hover:bg-white/15 transition-apple">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold font-sf-pro-display mb-4">Build Community</h3>
-              <p className="text-white/70 font-sf-pro-text">
-                Connect with neighbors and build a stronger, more sustainable community.
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-2xl font-semibold font-sf-pro-text transition-apple shadow-lg hover:shadow-xl">
-              Browse Tools
-            </button>
-            <button className="px-8 py-4 bg-white/10 border border-white/20 hover:bg-white/20 text-white rounded-2xl font-semibold font-sf-pro-text transition-apple">
-              List a Tool
-            </button>
           </div>
         </div>
       </div>

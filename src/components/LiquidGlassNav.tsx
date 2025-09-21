@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, LogOut, Settings, ChevronDown, Search, Plus, Heart, ShoppingBag, Bell, Sun, Moon } from 'lucide-react';
+import { User, LogOut, Settings, ChevronDown, Search, Plus, Heart, ShoppingBag, Bell, Sun, Moon, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -102,6 +102,16 @@ const LiquidGlassNav: React.FC = () => {
                 <Heart className="w-4 h-4" />
                 <span className="text-sm font-medium">Favorites</span>
               </button>
+              <button
+                onClick={() => navigate('/chat')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}>
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">Chat</span>
+              </button>
             </div>
           )}
 
@@ -170,7 +180,21 @@ const LiquidGlassNav: React.FC = () => {
                     <button
                       onClick={() => {
                         setShowDropdown(false);
-                        // Navigate to profile or settings page
+                        navigate('/profile');
+                      }}
+                      className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
+                        theme === 'dark'
+                          ? 'text-white/80 hover:text-white hover:bg-white/10'
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+                      }`}
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Profile</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDropdown(false);
+                        // Navigate to settings page
                       }}
                       className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                         theme === 'dark'

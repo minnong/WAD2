@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useListings } from '../contexts/ListingsContext';
+import { useRentals } from '../contexts/RentalsContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import { Package, Clock, CheckCircle, XCircle, Eye, MessageCircle, Calendar } from 'lucide-react';
 
 export default function MyRentalsPage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
+  const { listings } = useListings();
+  const { getUserRentals, getUserListings } = useRentals();
   const [activeTab, setActiveTab] = useState<'rented' | 'listed'>('rented');
+
+  // Get user's actual rental requests and listings
+  const userRentals = currentUser ? getUserRentals(currentUser.email || '') : [];
+  const userOwnListings = currentUser ? listings : [];
 
   const mockRentedItems = [
     {
@@ -167,21 +175,21 @@ export default function MyRentalsPage() {
         {/* Content */}
         {activeTab === 'rented' ? (
           <div className="space-y-4">
-            {mockRentedItems.map((item) => (
+            {userRentals.map((item) => (
               <div key={item.id} className={`rounded-2xl p-6 border-0 shadow-sm ${
                 theme === 'dark'
                   ? 'bg-gray-800/60'
                   : 'bg-white/80 backdrop-blur-sm'
               }`}>
                 <div className="flex items-start space-x-4">
-                  <div className="text-4xl">{item.image}</div>
+                  <div className="text-4xl">{item.toolImage}</div>
 
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="text-lg font-semibold">{item.name}</h3>
+                        <h3 className="text-lg font-semibold">{item.toolName}</h3>
                         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          From {item.owner} • {item.location}
+                          From {item.ownerName} • {item.location}
                         </p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(item.status)}`}>
@@ -193,19 +201,29 @@ export default function MyRentalsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       <div>
                         <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Rental Period</p>
-                        <p className="font-medium">{item.rentedDate} to {item.returnDate}</p>
+                        <p className="font-medium">{item.startDate} to {item.endDate}</p>
                       </div>
                       <div>
                         <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</p>
-                        <p className="font-medium text-blue-500">${item.price * 2}/{item.period}s</p>
+                        <p className="font-medium text-blue-500">${item.totalCost}</p>
                       </div>
                       <div>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Days Remaining</p>
+                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
                         <p className="font-medium">
-                          {item.status === 'active' ? '2 days' : 'Completed'}
+                          {new Date(item.requestDate).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
+
+                    {item.message && (
+                      <div className={`p-3 rounded-xl mb-4 ${
+                        theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
+                      }`}>
+                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                          <strong>Your message:</strong> {item.message}
+                        </p>
+                      </div>
+                    )}
 
                     <div className="flex space-x-3">
                       <button className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all ${
@@ -216,6 +234,12 @@ export default function MyRentalsPage() {
                         <MessageCircle className="w-4 h-4" />
                         <span>Contact Owner</span>
                       </button>
+                      {item.status === 'pending' && (
+                        <button className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors">
+                          <XCircle className="w-4 h-4" />
+                          <span>Cancel Request</span>
+                        </button>
+                      )}
                       {item.status === 'active' && (
                         <button className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors">
                           <Calendar className="w-4 h-4" />
@@ -230,7 +254,7 @@ export default function MyRentalsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {mockListedItems.map((item) => (
+            {userOwnListings.map((item) => (
               <div key={item.id} className={`rounded-2xl p-6 border-0 shadow-sm ${
                 theme === 'dark'
                   ? 'bg-gray-800/60'
@@ -244,12 +268,12 @@ export default function MyRentalsPage() {
                       <div>
                         <h3 className="text-lg font-semibold">{item.name}</h3>
                         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Listed on {item.listedDate}
+                          Listed on {new Date(item.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(item.status)}`}>
-                        {getStatusIcon(item.status)}
-                        <span className="capitalize">{item.status}</span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor('available')}`}>
+                        {getStatusIcon('available')}
+                        <span className="capitalize">Available</span>
                       </span>
                     </div>
 
@@ -259,31 +283,25 @@ export default function MyRentalsPage() {
                         <p className="font-medium text-blue-500">${item.price}/{item.period}</p>
                       </div>
                       <div>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Views</p>
-                        <p className="font-medium flex items-center space-x-1">
-                          <Eye className="w-4 h-4" />
-                          <span>{item.views}</span>
-                        </p>
+                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Category</p>
+                        <p className="font-medium">{item.category}</p>
                       </div>
                       <div>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Inquiries</p>
-                        <p className="font-medium flex items-center space-x-1">
-                          <MessageCircle className="w-4 h-4" />
-                          <span>{item.inquiries}</span>
-                        </p>
+                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Condition</p>
+                        <p className="font-medium capitalize">{item.condition}</p>
                       </div>
                       <div>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Earned</p>
-                        <p className="font-medium text-green-500">${item.totalEarnings}</p>
+                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Location</p>
+                        <p className="font-medium">{item.location}</p>
                       </div>
                     </div>
 
-                    {item.status === 'rented' && (
+                    {item.description && (
                       <div className={`p-3 rounded-xl mb-4 ${
-                        theme === 'dark' ? 'bg-blue-500/10' : 'bg-blue-50'
+                        theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
                       }`}>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-blue-300' : 'text-blue-700'}`}>
-                          Currently rented by {item.currentRenter} • Return date: {item.returnDate}
+                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                          {item.description}
                         </p>
                       </div>
                     )}
@@ -318,8 +336,8 @@ export default function MyRentalsPage() {
         )}
 
         {/* Empty State */}
-        {((activeTab === 'rented' && mockRentedItems.length === 0) ||
-          (activeTab === 'listed' && mockListedItems.length === 0)) && (
+        {((activeTab === 'rented' && userRentals.length === 0) ||
+          (activeTab === 'listed' && userOwnListings.length === 0)) && (
           <div className={`text-center py-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
             <p className="text-lg mb-2">

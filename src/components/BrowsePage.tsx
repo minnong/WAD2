@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
+import { loadGoogleMapsScript } from '../utils/googleMaps';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
 import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye } from 'lucide-react';
@@ -490,7 +491,15 @@ export default function BrowsePage() {
 
   // Initialize Discover Map
   useEffect(() => {
-    if (discoverMapRef.current && userLocation && window.google && window.google.maps && !searchSubmitted && !loading) {
+    const initializeDiscoverMap = async () => {
+      if (discoverMapRef.current && userLocation && !searchSubmitted && !loading) {
+        try {
+          // Load Google Maps script if not already loaded
+          await loadGoogleMapsScript();
+
+          if (!window.google || !window.google.maps) {
+            return;
+          }
       const discoverMap = new window.google.maps.Map(discoverMapRef.current, {
         center: userLocation,
         zoom: 11,
@@ -654,12 +663,26 @@ export default function BrowsePage() {
           userInfoWindow.open(discoverMap, userMarker);
         });
       }
-    }
+        } catch (error) {
+          console.error('Failed to load Google Maps for discover map:', error);
+        }
+      }
+    };
+
+    initializeDiscoverMap();
   }, [userLocation, theme, searchSubmitted, loading, allTools]);
 
   // Initialize Google Map
   useEffect(() => {
-    if (viewMode === 'map' && mapRef.current && userLocation && window.google && window.google.maps) {
+    const initializeMainMap = async () => {
+      if (viewMode === 'map' && mapRef.current && userLocation) {
+        try {
+          // Load Google Maps script if not already loaded
+          await loadGoogleMapsScript();
+
+          if (!window.google || !window.google.maps) {
+            return;
+          }
       const map = new window.google.maps.Map(mapRef.current, {
         center: userLocation,
         zoom: 12,
@@ -823,7 +846,13 @@ export default function BrowsePage() {
           userInfoWindow.open(map, userMarker);
         });
       }
-    }
+        } catch (error) {
+          console.error('Failed to load Google Maps for main map:', error);
+        }
+      }
+    };
+
+    initializeMainMap();
   }, [viewMode, userLocation, filteredTools, theme]);
 
   // Global functions for map info windows

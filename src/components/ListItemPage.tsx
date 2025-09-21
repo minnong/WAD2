@@ -4,6 +4,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useNavigate } from 'react-router-dom';
 import { listingsService, imageUploadService } from '../services/firebase';
+import { loadGoogleMapsScript } from '../utils/googleMaps';
 import LiquidGlassNav from './LiquidGlassNav';
 import SuccessModal from './SuccessModal';
 import { Camera, MapPin, DollarSign, Clock, Tag, FileText, X, Crosshair, Navigation, Upload } from 'lucide-react';
@@ -136,33 +137,39 @@ export default function ListItemPage() {
   ];
 
   // Handle location search and suggestions
-  const handleLocationSearch = (searchTerm: string) => {
+  const handleLocationSearch = async (searchTerm: string) => {
     if (searchTerm.length > 2) {
-      // Use Google Places API if available
-      if (window.google && window.google.maps && window.google.maps.places) {
-        const service = new window.google.maps.places.AutocompleteService();
-        service.getPlacePredictions(
-          {
-            input: searchTerm,
-            componentRestrictions: { country: 'sg' }, // Restrict to Singapore
-            types: ['geocode'] // Only geographical locations
-          },
-          (predictions, status) => {
-            if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-              const suggestions = predictions.slice(0, 5).map(p => p.description);
-              setLocationSuggestions(suggestions);
-              setShowLocationSuggestions(true);
-            } else {
-              // Fallback to local suggestions
-              const filtered = singaporeLocations.filter(location =>
-                location.toLowerCase().includes(searchTerm.toLowerCase())
-              );
-              setLocationSuggestions(filtered.slice(0, 5));
-              setShowLocationSuggestions(true);
+      try {
+        // Load Google Maps script if not already loaded
+        await loadGoogleMapsScript();
+
+        // Use Google Places API
+        if (window.google && window.google.maps && window.google.maps.places) {
+          const service = new window.google.maps.places.AutocompleteService();
+          service.getPlacePredictions(
+            {
+              input: searchTerm,
+              componentRestrictions: { country: 'sg' }, // Restrict to Singapore
+              types: ['geocode'] // Only geographical locations
+            },
+            (predictions, status) => {
+              if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+                const suggestions = predictions.slice(0, 5).map(p => p.description);
+                setLocationSuggestions(suggestions);
+                setShowLocationSuggestions(true);
+              } else {
+                // Fallback to local suggestions
+                const filtered = singaporeLocations.filter(location =>
+                  location.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                setLocationSuggestions(filtered.slice(0, 5));
+                setShowLocationSuggestions(true);
+              }
             }
-          }
-        );
-      } else {
+          );
+        }
+      } catch (error) {
+        console.error('Failed to load Google Maps:', error);
         // Fallback to local suggestions
         const filtered = singaporeLocations.filter(location =>
           location.toLowerCase().includes(searchTerm.toLowerCase())
@@ -214,33 +221,39 @@ export default function ListItemPage() {
   };
 
   // Handle location selection
-  const handleLocationSelect = (location: string) => {
+  const handleLocationSelect = async (location: string) => {
     setFormData(prev => ({ ...prev, location }));
     setShowLocationSuggestions(false);
 
-    // Use Google Maps Geocoding API if available
-    if (window.google && window.google.maps) {
-      const geocoder = new window.google.maps.Geocoder();
-      geocoder.geocode({ address: location }, (results, status) => {
-        if (status === 'OK' && results && results[0]) {
-          const coords = {
-            lat: results[0].geometry.location.lat(),
-            lng: results[0].geometry.location.lng()
-          };
-          setSelectedCoordinates(coords);
-          setTimeout(() => {
-            updateMiniMap(coords);
-          }, 100);
-        } else {
-          // Fallback to predefined coordinates
-          const coords = getCoordinatesFromLocation(location);
-          setSelectedCoordinates(coords);
-          setTimeout(() => {
-            updateMiniMap(coords);
-          }, 100);
-        }
-      });
-    } else {
+    try {
+      // Load Google Maps script if not already loaded
+      await loadGoogleMapsScript();
+
+      // Use Google Maps Geocoding API
+      if (window.google && window.google.maps) {
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ address: location }, (results, status) => {
+          if (status === 'OK' && results && results[0]) {
+            const coords = {
+              lat: results[0].geometry.location.lat(),
+              lng: results[0].geometry.location.lng()
+            };
+            setSelectedCoordinates(coords);
+            setTimeout(() => {
+              updateMiniMap(coords);
+            }, 100);
+          } else {
+            // Fallback to predefined coordinates
+            const coords = getCoordinatesFromLocation(location);
+            setSelectedCoordinates(coords);
+            setTimeout(() => {
+              updateMiniMap(coords);
+            }, 100);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load Google Maps:', error);
       // Fallback to predefined coordinates
       const coords = getCoordinatesFromLocation(location);
       setSelectedCoordinates(coords);
@@ -262,19 +275,25 @@ export default function ListItemPage() {
           };
           setSelectedCoordinates(coords);
 
-          // Use reverse geocoding with Google Maps API if available
-          if (window.google && window.google.maps) {
-            const geocoder = new window.google.maps.Geocoder();
-            geocoder.geocode({ location: coords }, (results, status) => {
-              if (status === 'OK' && results && results[0]) {
-                const address = results[0].formatted_address;
-                setFormData(prev => ({ ...prev, location: address }));
-              } else {
-                // Fallback to a generic current location
-                setFormData(prev => ({ ...prev, location: 'Current Location, Singapore' }));
-              }
-            });
-          } else {
+          try {
+            // Load Google Maps script if not already loaded
+            await loadGoogleMapsScript();
+
+            // Use reverse geocoding with Google Maps API
+            if (window.google && window.google.maps) {
+              const geocoder = new window.google.maps.Geocoder();
+              geocoder.geocode({ location: coords }, (results, status) => {
+                if (status === 'OK' && results && results[0]) {
+                  const address = results[0].formatted_address;
+                  setFormData(prev => ({ ...prev, location: address }));
+                } else {
+                  // Fallback to a generic current location
+                  setFormData(prev => ({ ...prev, location: 'Current Location, Singapore' }));
+                }
+              });
+            }
+          } catch (error) {
+            console.error('Failed to load Google Maps for reverse geocoding:', error);
             // Fallback when Google Maps is not available
             setFormData(prev => ({ ...prev, location: 'Current Location, Singapore' }));
           }
@@ -298,34 +317,42 @@ export default function ListItemPage() {
   };
 
   // Update mini map
-  const updateMiniMap = (coords: {lat: number, lng: number}) => {
-    if (window.google && miniMapRef.current) {
-      const map = new window.google.maps.Map(miniMapRef.current, {
-        zoom: 15,
-        center: coords,
-        disableDefaultUI: true,
-        styles: theme === 'dark' ? [
-          { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-          { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-          { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-        ] : []
-      });
+  const updateMiniMap = async (coords: {lat: number, lng: number}) => {
+    try {
+      // Load Google Maps script if not already loaded
+      await loadGoogleMapsScript();
 
-      new window.google.maps.Marker({
-        position: coords,
-        map: map,
-        icon: {
-          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-            <svg width="32" height="48" viewBox="0 0 32 48" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 0C7.163 0 0 7.163 0 16c0 8.837 16 32 16 32s16-23.163 16-32C32 7.163 24.837 0 16 0z" fill="#3B82F6"/>
-              <circle cx="16" cy="16" r="8" fill="white"/>
-              <circle cx="16" cy="16" r="4" fill="#3B82F6"/>
-            </svg>
-          `)}`,
-          scaledSize: new window.google.maps.Size(32, 48),
-          anchor: new window.google.maps.Point(16, 48),
-        }
-      });
+      if (window.google && miniMapRef.current) {
+        const map = new window.google.maps.Map(miniMapRef.current, {
+          zoom: 15,
+          center: coords,
+          disableDefaultUI: true,
+          styles: theme === 'dark' ? [
+            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+          ] : []
+        });
+
+        new window.google.maps.Marker({
+          position: coords,
+          map: map,
+          icon: {
+            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+              <svg width="32" height="48" viewBox="0 0 32 48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 0C7.163 0 0 7.163 0 16c0 8.837 16 32 16 32s16-23.163 16-32C32 7.163 24.837 0 16 0z" fill="#3B82F6"/>
+                <circle cx="16" cy="16" r="8" fill="white"/>
+                <circle cx="16" cy="16" r="4" fill="#3B82F6"/>
+              </svg>
+            `)}`,
+            scaledSize: new window.google.maps.Size(32, 48),
+            anchor: new window.google.maps.Point(16, 48),
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load Google Maps for mini map:', error);
+      // If Google Maps fails to load, the mini map won't display (graceful degradation)
     }
   };
 

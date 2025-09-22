@@ -136,7 +136,7 @@ export default function ReviewsSection({ listingId, listingName, ownerEmail, onR
         {canAddReview && (
           <button
             onClick={() => setShowAddReview(!showAddReview)}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+                            className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
           >
             <MessageSquare className="w-4 h-4" />
             <span>Add Review</span>
@@ -207,7 +207,7 @@ export default function ReviewsSection({ listingId, listingName, ownerEmail, onR
             <button
               onClick={handleSubmitReview}
               disabled={submitting || !newReview.comment.trim()}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
             >
               {submitting ? 'Submitting...' : 'Submit Review'}
             </button>

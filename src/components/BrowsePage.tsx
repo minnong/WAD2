@@ -963,7 +963,7 @@ export default function BrowsePage() {
 
       // Create rental request and add to context
       const rentalRequestData = {
-        toolId: selectedTool.id,
+        toolId: String(selectedTool.id),
         toolName: selectedTool.name,
         toolImage: selectedTool.image,
         renterName: currentUser.displayName || 'Anonymous',

@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useNavigate } from 'react-router-dom';
-import { listingsService, imageUploadService } from '../services/firebase';
+import { imageUploadService } from '../services/firebase';
 import { loadGoogleMapsScript } from '../utils/googleMaps';
 import LiquidGlassNav from './LiquidGlassNav';
 import SuccessModal from './SuccessModal';
@@ -437,20 +437,13 @@ export default function ListItemPage() {
         coordinates: coordinates
       };
 
-      // @ts-ignore: listingId may be used for logging or future functionality
-      const listingId = await listingsService.createListing(listingData);
-
-      // Also add to local context for immediate UI update
-      const localListingData = {
+      // Create the listing through the context (which handles Firebase automatically)
+      const contextListingData = {
         ...listingData,
-        id: Date.now(), // Temporary ID for local context
         image: imageUrls.length > 0 ? '' : getCategoryEmoji(formData.category), // Use emoji only if no images
-        rating: 0,
-        reviews: 0,
-        createdAt: new Date().toISOString()
       };
 
-      addListing(localListingData);
+      await addListing(contextListingData);
 
       // Show success modal
       setSuccessMessage({

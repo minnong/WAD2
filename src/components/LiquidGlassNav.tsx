@@ -194,7 +194,7 @@ const LiquidGlassNav: React.FC = () => {
                     <button
                       onClick={() => {
                         setShowDropdown(false);
-                        // Navigate to settings page
+                        navigate('/settings');
                       }}
                       className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                         theme === 'dark'

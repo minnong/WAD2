@@ -3,15 +3,17 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
+import { useNavigate } from 'react-router-dom';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
-import { Edit3, Star, Award, Clock, MapPin, Mail, Phone, User, Settings, Shield } from 'lucide-react';
+import { Edit3, Star, Award, Clock, MapPin, Mail, Phone, User, Settings, Shield, ExternalLink } from 'lucide-react';
 
 export default function ProfilePage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
   const { listings } = useListings();
   const { getUserRentals } = useRentals();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [editMode, setEditMode] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -442,8 +444,41 @@ export default function ProfilePage() {
 
           {activeTab === 'settings' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold">Account Settings</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Account Settings</h3>
+                <button
+                  onClick={() => navigate('/settings')}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Open Full Settings</span>
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+              </div>
+              
               <div className="space-y-4">
+                <div className={`p-4 rounded-lg border ${
+                  theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <User className="w-5 h-5 text-blue-500" />
+                      <div>
+                        <h4 className="font-medium">Profile Settings</h4>
+                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Update your personal information and profile picture
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate('/settings')}
+                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                    >
+                      Configure
+                    </button>
+                  </div>
+                </div>
+                
                 <div className={`p-4 rounded-lg border ${
                   theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
                 }`}>
@@ -453,33 +488,19 @@ export default function ProfilePage() {
                       <div>
                         <h4 className="font-medium">Privacy & Security</h4>
                         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Manage your privacy settings and security preferences
+                          Manage your privacy settings, security preferences, and change password
                         </p>
                       </div>
                     </div>
-                    <button className="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                    <button
+                      onClick={() => navigate('/settings')}
+                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                    >
                       Configure
                     </button>
                   </div>
                 </div>
-                <div className={`p-4 rounded-lg border ${
-                  theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <User className="w-5 h-5 text-blue-500" />
-                      <div>
-                        <h4 className="font-medium">Account Verification</h4>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Verify your identity to increase trust with other users
-                        </p>
-                      </div>
-                    </div>
-                    <button className="text-blue-500 hover:text-blue-600 text-sm font-medium">
-                      Verify
-                    </button>
-                  </div>
-                </div>
+
                 <div className={`p-4 rounded-lg border ${
                   theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
                 }`}>
@@ -493,10 +514,44 @@ export default function ProfilePage() {
                         </p>
                       </div>
                     </div>
-                    <button className="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                    <button
+                      onClick={() => navigate('/settings')}
+                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                    >
                       Manage
                     </button>
                   </div>
+                </div>
+
+                <div className={`p-4 rounded-lg border border-orange-200 ${
+                  theme === 'dark' ? 'bg-orange-900/10' : 'bg-orange-50'
+                }`}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <Shield className="w-5 h-5 text-orange-500" />
+                    <h4 className="font-medium text-orange-600">Account Status</h4>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Email Verified:</span>
+                      <span className={currentUser?.emailVerified ? 'text-green-600' : 'text-red-600'}>
+                        {currentUser?.emailVerified ? '✓ Verified' : '✗ Not Verified'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Two-Factor Auth:</span>
+                      <span className="text-gray-500">Not Enabled</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Profile Visibility:</span>
+                      <span className="text-blue-600">Public</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate('/settings')}
+                    className="mt-3 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Manage Account Settings
+                  </button>
                 </div>
               </div>
             </div>

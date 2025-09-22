@@ -10,6 +10,7 @@ import MyRentalsPage from './components/MyRentalsPage'
 import FavoritesPage from './components/FavoritesPage'
 import ChatPage from './components/ChatPage'
 import ProfilePage from './components/ProfilePage'
+import UserSettingsPage from './components/UserSettingsPage'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<UserSettingsPage />} />
       </Routes>
     </Router>
   )

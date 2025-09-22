@@ -266,7 +266,7 @@ export default function UserSettingsPage() {
           <h2 className="text-2xl font-bold mb-4">Please log in to access settings</h2>
           <button
             onClick={() => navigate('/auth')}
-            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+                            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
           >
             Go to Login
           </button>
@@ -476,7 +476,7 @@ export default function UserSettingsPage() {
                     <button
                       onClick={handleProfileUpdate}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                      className="flex items-center space-x-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
                     >
                       <Save className="w-4 h-4" />
                       <span>{loading ? 'Saving...' : 'Save Changes'}</span>
@@ -636,7 +636,7 @@ export default function UserSettingsPage() {
                       <button
                         onClick={handlePasswordChange}
                         disabled={loading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-                        className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                        className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
                       >
                         <Key className="w-4 h-4" />
                         <span>{loading ? 'Updating...' : 'Update Password'}</span>
@@ -684,7 +684,7 @@ export default function UserSettingsPage() {
                     <button
                       onClick={handleProfileUpdate}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                      className="flex items-center space-x-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
                     >
                       <Save className="w-4 h-4" />
                       <span>{loading ? 'Saving...' : 'Save Changes'}</span>
@@ -852,7 +852,7 @@ export default function UserSettingsPage() {
                           </div>
                           <button
                             onClick={handleLogout}
-                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
                           >
                             Sign Out
                           </button>
@@ -874,7 +874,7 @@ export default function UserSettingsPage() {
                           </div>
                           <button
                             onClick={() => setShowDeleteConfirm(true)}
-                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors"
                           >
                             Delete Account
                           </button>
@@ -938,7 +938,7 @@ export default function UserSettingsPage() {
                 <button
                   onClick={handleDeleteAccount}
                   disabled={deleteConfirmText !== 'DELETE' || loading}
-                  className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                                        className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
                 >
                   {loading ? 'Deleting...' : 'Delete Account'}
                 </button>

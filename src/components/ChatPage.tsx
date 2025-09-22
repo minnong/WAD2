@@ -367,14 +367,14 @@ export default function ChatPage() {
                   theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
                 }`}>
                   <div className="flex items-center space-x-2">
-                    <button className={`p-2 rounded-lg transition-colors ${
+                    <button className={`p-2 rounded-xl transition-colors ${
                       theme === 'dark'
                         ? 'hover:bg-gray-800'
                         : 'hover:bg-gray-100'
                     }`}>
                       <Paperclip className="w-5 h-5" />
                     </button>
-                    <button className={`p-2 rounded-lg transition-colors ${
+                    <button className={`p-2 rounded-xl transition-colors ${
                       theme === 'dark'
                         ? 'hover:bg-gray-800'
                         : 'hover:bg-gray-100'
@@ -394,7 +394,7 @@ export default function ChatPage() {
                             : 'bg-gray-100 text-gray-900 placeholder-gray-500'
                         }`}
                       />
-                      <button className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-lg transition-colors ${
+                      <button className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-xl transition-colors ${
                         theme === 'dark'
                           ? 'hover:bg-gray-700'
                           : 'hover:bg-gray-200'

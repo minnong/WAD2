@@ -1049,7 +1049,7 @@ export default function BrowsePage() {
                     setShowSuggestions(e.target.value.length > 0);
                   }}
                   onFocus={() => setShowSuggestions(searchTerm.length > 0)}
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg border-0 shadow-sm transition-all ${
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border-0 shadow-sm transition-all ${
                     theme === 'dark'
                       ? 'bg-gray-800/60 text-white placeholder-gray-400'
                       : 'bg-white/80 text-gray-900 placeholder-gray-500 backdrop-blur-sm'
@@ -1059,7 +1059,7 @@ export default function BrowsePage() {
 
               {/* Search Suggestions */}
               {showSuggestions && searchSuggestions.length > 0 && (
-                <div className={`absolute top-full left-0 right-0 mt-2 rounded-lg border-0 shadow-lg backdrop-blur-sm z-10 ${
+                <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl border-0 shadow-lg backdrop-blur-sm z-10 ${
                   theme === 'dark'
                     ? 'bg-gray-800/90'
                     : 'bg-white/90'
@@ -1088,7 +1088,7 @@ export default function BrowsePage() {
             <div className="flex space-x-2">
               <button
                 onClick={() => setViewMode('list')}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-0 shadow-sm transition-all ${
+                className={`flex items-center space-x-2 px-4 py-3 rounded-xl border-0 shadow-sm transition-all ${
                   viewMode === 'list'
                     ? 'bg-blue-500 text-white'
                     : theme === 'dark'
@@ -1101,7 +1101,7 @@ export default function BrowsePage() {
               </button>
               <button
                 onClick={() => setViewMode('map')}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-0 shadow-sm transition-all ${
+                className={`flex items-center space-x-2 px-4 py-3 rounded-xl border-0 shadow-sm transition-all ${
                   viewMode === 'map'
                     ? 'bg-blue-500 text-white'
                     : theme === 'dark'
@@ -1118,7 +1118,7 @@ export default function BrowsePage() {
             <div className="relative" ref={filterRef}>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-lg border-0 shadow-sm transition-all ${
+                className={`flex items-center space-x-2 px-4 py-3 rounded-xl border-0 shadow-sm transition-all ${
                   showFilters
                     ? 'bg-blue-500 text-white'
                     : theme === 'dark'
@@ -1265,7 +1265,7 @@ export default function BrowsePage() {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                   selectedCategory === category
                     ? 'bg-blue-500 text-white shadow-lg'
                     : theme === 'dark'
@@ -1492,7 +1492,7 @@ export default function BrowsePage() {
                     setSelectedCategory('All');
                     setSearchSubmitted(false);
                   }}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
                     theme === 'dark'
                       ? 'bg-gray-800/60 hover:bg-gray-800/80 text-white'
                       : 'bg-white/80 hover:bg-white/90 text-gray-900 backdrop-blur-sm'
@@ -1613,7 +1613,7 @@ export default function BrowsePage() {
               <h3 className="text-lg font-semibold">Request to Rent</h3>
               <button
                 onClick={() => setShowRentModal(false)}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`p-2 rounded-xl transition-colors ${
                   theme === 'dark'
                     ? 'hover:bg-gray-700'
                     : 'hover:bg-gray-100'
@@ -1739,7 +1739,7 @@ export default function BrowsePage() {
             <div className="flex space-x-3 p-6 border-t border-gray-200/20">
               <button
                 onClick={() => setShowRentModal(false)}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors ${
                   theme === 'dark'
                     ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                     : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
@@ -1750,7 +1750,7 @@ export default function BrowsePage() {
               <button
                 onClick={handleRentRequestSubmit}
                 disabled={!rentRequest.startDate || !rentRequest.endDate}
-                className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
               >
                 Send Request
               </button>

@@ -215,13 +215,13 @@ export default function ProfilePage() {
               <div className="flex space-x-3 mt-4">
                 <button
                   onClick={handleSaveProfile}
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
                 >
                   Save Changes
                 </button>
                 <button
                   onClick={() => setEditMode(false)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl font-medium transition-colors ${
                     theme === 'dark'
                       ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                       : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
@@ -395,7 +395,7 @@ export default function ProfilePage() {
                     <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
                       You haven't listed any tools yet.
                     </p>
-                    <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors">
+                    <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors">
                       List Your First Tool
                     </button>
                   </div>
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                 <h3 className="text-lg font-semibold">Account Settings</h3>
                 <button
                   onClick={() => navigate('/settings')}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
                 >
                   <Settings className="w-4 h-4" />
                   <span>Open Full Settings</span>
@@ -548,7 +548,7 @@ export default function ProfilePage() {
                   </div>
                   <button
                     onClick={() => navigate('/settings')}
-                    className="mt-3 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                    className="mt-3 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
                   >
                     Manage Account Settings
                   </button>

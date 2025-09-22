@@ -64,7 +64,7 @@ const LiquidGlassNav: React.FC = () => {
             }`}>
               <button
                 onClick={() => navigate('/browse')}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -74,7 +74,7 @@ const LiquidGlassNav: React.FC = () => {
               </button>
               <button
                 onClick={() => navigate('/list-item')}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -84,7 +84,7 @@ const LiquidGlassNav: React.FC = () => {
               </button>
               <button
                 onClick={() => navigate('/my-rentals')}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -94,7 +94,7 @@ const LiquidGlassNav: React.FC = () => {
               </button>
               <button
                 onClick={() => navigate('/favorites')}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -104,7 +104,7 @@ const LiquidGlassNav: React.FC = () => {
               </button>
               <button
                 onClick={() => navigate('/chat')}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -121,7 +121,7 @@ const LiquidGlassNav: React.FC = () => {
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className={`p-2 rounded-lg transition-all ${
+                className={`p-2 rounded-xl transition-all ${
                   theme === 'dark'
                     ? 'text-white/80 hover:text-white hover:bg-white/10'
                     : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -132,7 +132,7 @@ const LiquidGlassNav: React.FC = () => {
               </button>
 
               {/* Notification Bell */}
-              <button className={`p-2 rounded-lg transition-all ${
+              <button className={`p-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'

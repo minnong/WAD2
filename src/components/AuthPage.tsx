@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, User, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,7 +8,14 @@ import { FcGoogle } from 'react-icons/fc';
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { signup, login, loginWithGoogle, resetPassword } = useAuth();
+  const { signup, login, loginWithGoogle, resetPassword, currentUser } = useAuth();
+
+  // Redirect to home if already logged in
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/home');
+    }
+  }, [currentUser, navigate]);
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

@@ -8,7 +8,6 @@ import {
   onSnapshot,
   query,
   orderBy,
-  where,
   serverTimestamp,
   Timestamp
 } from 'firebase/firestore';

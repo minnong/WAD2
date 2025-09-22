@@ -501,7 +501,7 @@ export default function ListingDetailPage() {
 
     // Create rental request and add to context
     const rentalRequestData = {
-      toolId: tool.id,
+      toolId: String(tool.id),
       toolName: tool.name,
       toolImage: tool.image,
       renterName: currentUser.displayName || 'Anonymous',

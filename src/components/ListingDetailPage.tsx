@@ -442,7 +442,14 @@ export default function ListingDetailPage() {
 
   // Combine mock tools with user listings
   const allTools = [...mockTools, ...listings];
-  const tool = allTools.find(t => t.id === parseInt(id || '0'));
+  // Handle both string and number IDs
+  const tool = allTools.find(t =>
+    t.id === id || t.id === parseInt(id || '0') || String(t.id) === id
+  );
+
+  console.log('ListingDetailPage - ID:', id);
+  console.log('ListingDetailPage - All tools:', allTools.map(t => ({ id: t.id, name: t.name })));
+  console.log('ListingDetailPage - Found tool:', tool);
 
   const loadListingData = async () => {
     if (!id) return;
@@ -506,7 +513,7 @@ export default function ListingDetailPage() {
       toolImage: tool.image,
       renterName: currentUser.displayName || 'Anonymous',
       renterEmail: currentUser.email || '',
-      ownerEmail: tool.ownerContact,
+      ownerEmail: (tool as any).ownerContact || (tool as any).ownerEmail || tool.ownerContact,
       ownerName: tool.owner,
       startDate: rentRequest.startDate,
       endDate: rentRequest.endDate,
@@ -565,7 +572,13 @@ export default function ListingDetailPage() {
             <div className={`aspect-square rounded-2xl overflow-hidden ${
               theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
             }`}>
-              {(tool as any).imageUrl ? (
+              {(tool as any).imageUrls && (tool as any).imageUrls.length > 0 ? (
+                <img
+                  src={(tool as any).imageUrls[0]}
+                  alt={tool.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (tool as any).imageUrl ? (
                 <img
                   src={(tool as any).imageUrl}
                   alt={tool.name}

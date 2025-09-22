@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
@@ -7,17 +8,27 @@ import LiquidGlassNav from './LiquidGlassNav';
 import { Package, Clock, CheckCircle, XCircle, Eye, MessageCircle, Calendar } from 'lucide-react';
 
 export default function MyRentalsPage() {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { theme } = useTheme();
-  const { listings } = useListings();
-  const { getUserRentals } = useRentals();
+  const { userListings } = useListings(); // Get user-specific listings
+  const { userRentalRequests } = useRentals(); // Get user's rental requests directly
   const [activeTab, setActiveTab] = useState<'rented' | 'listed'>('rented');
 
-  // Get user's actual rental requests and listings
-  const userRentals = currentUser ? getUserRentals(currentUser.email || '') : [];
-  const userOwnListings = currentUser ? listings : [];
+  // Get user's rental activity - separate active rentals and pending requests
+  const activeRentals = userRentalRequests.filter(request =>
+    request.status === 'approved' || request.status === 'active' || request.status === 'completed'
+  );
+  const pendingRequests = userRentalRequests.filter(request =>
+    request.status === 'pending'
+  );
+  const userRentals = [...activeRentals, ...pendingRequests]; // Show both active rentals and pending requests
+  const userOwnListings = userListings;
 
 
+  const handleViewListing = (listingId: string) => {
+    navigate(`/listing/${listingId}`);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -96,85 +107,172 @@ export default function MyRentalsPage() {
 
         {/* Content */}
         {activeTab === 'rented' ? (
-          <div className="space-y-4">
-            {userRentals.map((item) => (
-              <div key={item.id} className={`rounded-2xl p-6 border-0 shadow-sm ${
-                theme === 'dark'
-                  ? 'bg-gray-800/60'
-                  : 'bg-white/80 backdrop-blur-sm'
-              }`}>
-                <div className="flex items-start space-x-4">
-                  <div className="text-4xl">{item.toolImage}</div>
+          <div className="space-y-6">
+            {/* Active Rentals Section */}
+            {activeRentals.length > 0 && (
+              <div>
+                <h2 className={`text-xl font-semibold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  Active Rentals
+                </h2>
+                <div className="space-y-4">
+                  {activeRentals.map((item) => (
+                    <div key={item.id} className={`rounded-2xl p-6 border-0 shadow-sm ${
+                      theme === 'dark'
+                        ? 'bg-gray-800/60'
+                        : 'bg-white/80 backdrop-blur-sm'
+                    }`}>
+                      <div className="flex items-start space-x-4">
+                        <div className="text-4xl">{item.toolImage}</div>
 
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="text-lg font-semibold">{item.toolName}</h3>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          From {item.ownerName} • {item.location}
-                        </p>
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="text-lg font-semibold">{item.toolName}</h3>
+                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                                From {item.ownerName} • {item.location}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(item.status)}`}>
+                              {getStatusIcon(item.status)}
+                              <span className="capitalize">{item.status}</span>
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Rental Period</p>
+                              <p className="font-medium">{item.startDate} to {item.endDate}</p>
+                            </div>
+                            <div>
+                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</p>
+                              <p className="font-medium text-blue-500">${item.totalCost}</p>
+                            </div>
+                            <div>
+                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
+                              <p className="font-medium">
+                                {item.requestDate instanceof Date
+                                  ? item.requestDate.toLocaleDateString()
+                                  : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+
+                          {item.message && (
+                            <div className={`p-3 rounded-xl mb-4 ${
+                              theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
+                            }`}>
+                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                                <strong>Your message:</strong> {item.message}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="flex space-x-3">
+                            <button className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all ${
+                              theme === 'dark'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                            }`}>
+                              <MessageCircle className="w-4 h-4" />
+                              <span>Contact Owner</span>
+                            </button>
+                            {item.status === 'active' && (
+                              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors">
+                                <Calendar className="w-4 h-4" />
+                                <span>Extend Rental</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(item.status)}`}>
-                        {getStatusIcon(item.status)}
-                        <span className="capitalize">{item.status}</span>
-                      </span>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Rental Period</p>
-                        <p className="font-medium">{item.startDate} to {item.endDate}</p>
-                      </div>
-                      <div>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</p>
-                        <p className="font-medium text-blue-500">${item.totalCost}</p>
-                      </div>
-                      <div>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
-                        <p className="font-medium">
-                          {item.requestDate instanceof Date
-                            ? item.requestDate.toLocaleDateString()
-                            : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-
-                    {item.message && (
-                      <div className={`p-3 rounded-xl mb-4 ${
-                        theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
-                      }`}>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                          <strong>Your message:</strong> {item.message}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex space-x-3">
-                      <button className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all ${
-                        theme === 'dark'
-                          ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                      }`}>
-                        <MessageCircle className="w-4 h-4" />
-                        <span>Contact Owner</span>
-                      </button>
-                      {item.status === 'pending' && (
-                        <button className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors">
-                          <XCircle className="w-4 h-4" />
-                          <span>Cancel Request</span>
-                        </button>
-                      )}
-                      {item.status === 'active' && (
-                        <button className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors">
-                          <Calendar className="w-4 h-4" />
-                          <span>Extend Rental</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Pending Requests Section */}
+            {pendingRequests.length > 0 && (
+              <div>
+                <h2 className={`text-xl font-semibold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  Pending Requests
+                </h2>
+                <div className="space-y-4">
+                  {pendingRequests.map((item) => (
+                    <div key={item.id} className={`rounded-2xl p-6 border-0 shadow-sm ${
+                      theme === 'dark'
+                        ? 'bg-gray-800/60'
+                        : 'bg-white/80 backdrop-blur-sm'
+                    }`}>
+                      <div className="flex items-start space-x-4">
+                        <div className="text-4xl">{item.toolImage}</div>
+
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="text-lg font-semibold">{item.toolName}</h3>
+                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                                From {item.ownerName} • {item.location}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(item.status)}`}>
+                              {getStatusIcon(item.status)}
+                              <span className="capitalize">{item.status}</span>
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Rental Period</p>
+                              <p className="font-medium">{item.startDate} to {item.endDate}</p>
+                            </div>
+                            <div>
+                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</p>
+                              <p className="font-medium text-blue-500">${item.totalCost}</p>
+                            </div>
+                            <div>
+                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
+                              <p className="font-medium">
+                                {item.requestDate instanceof Date
+                                  ? item.requestDate.toLocaleDateString()
+                                  : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+
+                          {item.message && (
+                            <div className={`p-3 rounded-xl mb-4 ${
+                              theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
+                            }`}>
+                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                                <strong>Your message:</strong> {item.message}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="flex space-x-3">
+                            <button className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all ${
+                              theme === 'dark'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                            }`}>
+                              <MessageCircle className="w-4 h-4" />
+                              <span>Contact Owner</span>
+                            </button>
+                            {item.status === 'pending' && (
+                              <button className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors">
+                                <XCircle className="w-4 h-4" />
+                                <span>Cancel Request</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -233,7 +331,9 @@ export default function MyRentalsPage() {
                     )}
 
                     <div className="flex space-x-3">
-                      <button className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all ${
+                      <button
+                        onClick={() => handleViewListing(item.id)}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all ${
                         theme === 'dark'
                           ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
                           : 'bg-gray-100 hover:bg-gray-200 text-gray-700'

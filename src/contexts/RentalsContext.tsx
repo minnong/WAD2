@@ -7,6 +7,7 @@ import {
   doc,
   onSnapshot,
   query,
+  where,
   orderBy,
   serverTimestamp,
   Timestamp
@@ -35,32 +36,14 @@ interface RentalRequest {
   userId: string;
 }
 
-interface UserListing {
-  id: number;
-  name: string;
-  price: number;
-  period: string;
-  listedDate: string;
-  status: 'available' | 'rented' | 'maintenance';
-  views: number;
-  inquiries: number;
-  image: string;
-  imageUrl?: string;
-  totalEarnings: number;
-  currentRenter?: string;
-  returnDate?: string;
-}
 
 interface RentalsContextType {
-  rentalRequests: RentalRequest[];
-  userListings: UserListing[];
+  userRentalRequests: RentalRequest[]; // Requests made BY the current user
+  receivedRentalRequests: RentalRequest[]; // Requests received by the current user (for their listings)
   loading: boolean;
   addRentalRequest: (request: Omit<RentalRequest, 'id' | 'requestDate' | 'userId'>) => Promise<void>;
-  addUserListing: (listing: UserListing) => void;
   updateRentalStatus: (id: string, status: RentalRequest['status']) => Promise<void>;
-  updateListingStatus: (id: number, status: UserListing['status']) => void;
-  getUserRentals: (userEmail: string) => RentalRequest[];
-  getUserListings: (userEmail: string) => UserListing[];
+  getUserRentals: () => RentalRequest[];
 }
 
 const RentalsContext = createContext<RentalsContextType | null>(null);
@@ -78,31 +61,63 @@ interface RentalsProviderProps {
 }
 
 export function RentalsProvider({ children }: RentalsProviderProps) {
-  const [rentalRequests, setRentalRequests] = useState<RentalRequest[]>([]);
-  const [userListings, setUserListings] = useState<UserListing[]>([]);
+  const [userRentalRequests, setUserRentalRequests] = useState<RentalRequest[]>([]);
+  const [receivedRentalRequests, setReceivedRentalRequests] = useState<RentalRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const { currentUser } = useAuth();
 
-  // Subscribe to rental requests in real-time
+  // Subscribe to rental requests made BY the current user
   useEffect(() => {
-    const rentalsCollection = collection(db, 'rentalRequests');
-    const rentalsQuery = query(rentalsCollection, orderBy('requestDate', 'desc'));
+    if (!currentUser) {
+      setUserRentalRequests([]);
+      setReceivedRentalRequests([]);
+      setLoading(false);
+      return;
+    }
 
-    const unsubscribe = onSnapshot(rentalsQuery, (snapshot) => {
-      const rentalsData = snapshot.docs.map(doc => ({
+    const rentalsCollection = collection(db, 'rentalRequests');
+
+    // Get requests made BY the current user (where they are the renter)
+    const userRequestsQuery = query(
+      rentalsCollection,
+      where('userId', '==', currentUser.uid)
+    );
+
+    const unsubscribeUserRequests = onSnapshot(userRequestsQuery, (snapshot) => {
+      const userRequestsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       })) as RentalRequest[];
 
-      setRentalRequests(rentalsData);
+      setUserRentalRequests(userRequestsData);
       setLoading(false);
     }, (error) => {
-      console.error('Error fetching rental requests:', error);
+      console.error('Error fetching user rental requests:', error);
       setLoading(false);
     });
 
-    return () => unsubscribe();
-  }, []);
+    // Get requests received BY the current user (where they are the owner)
+    const receivedRequestsQuery = query(
+      rentalsCollection,
+      where('ownerEmail', '==', currentUser.email || '')
+    );
+
+    const unsubscribeReceivedRequests = onSnapshot(receivedRequestsQuery, (snapshot) => {
+      const receivedRequestsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as RentalRequest[];
+
+      setReceivedRentalRequests(receivedRequestsData);
+    }, (error) => {
+      console.error('Error fetching received rental requests:', error);
+    });
+
+    return () => {
+      unsubscribeUserRequests();
+      unsubscribeReceivedRequests();
+    };
+  }, [currentUser]);
 
   const addRentalRequest = async (requestData: Omit<RentalRequest, 'id' | 'requestDate' | 'userId'>) => {
     if (!currentUser) {
@@ -123,12 +138,22 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
     }
   };
 
-  const addUserListing = (listing: UserListing) => {
-    setUserListings(prev => [...prev, listing]);
-  };
-
   const updateRentalStatus = async (id: string, status: RentalRequest['status']) => {
+    if (!currentUser) {
+      throw new Error('User must be authenticated to update rental status');
+    }
+
     try {
+      // Verify the user has permission to update this rental
+      const canUpdate = [...userRentalRequests, ...receivedRentalRequests].some(
+        request => request.id === id &&
+        (request.renterEmail === currentUser.email || request.ownerEmail === currentUser.email)
+      );
+
+      if (!canUpdate) {
+        throw new Error('You can only update rentals you are involved in');
+      }
+
       const rentalRef = doc(db, 'rentalRequests', id);
       await updateDoc(rentalRef, { status });
     } catch (error) {
@@ -137,36 +162,20 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
     }
   };
 
-  const updateListingStatus = (id: number, status: UserListing['status']) => {
-    setUserListings(prev =>
-      prev.map(listing =>
-        listing.id === id ? { ...listing, status } : listing
-      )
-    );
-  };
-
-  const getUserRentals = (userEmail: string) => {
-    return rentalRequests.filter(request => request.renterEmail === userEmail);
-  };
-
-  const getUserListings = () => {
-    // For now, we'll return all user listings since we don't have owner email tracking
-    // In a real app, you'd filter by owner email
-    return userListings;
+  const getUserRentals = () => {
+    // Return the user's rental requests (already filtered by current user)
+    return userRentalRequests;
   };
 
   return (
     <RentalsContext.Provider
       value={{
-        rentalRequests,
-        userListings,
+        userRentalRequests,
+        receivedRentalRequests,
         loading,
         addRentalRequest,
-        addUserListing,
         updateRentalStatus,
-        updateListingStatus,
         getUserRentals,
-        getUserListings,
       }}
     >
       {children}

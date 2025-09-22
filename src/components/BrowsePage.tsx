@@ -22,7 +22,7 @@ export default function BrowsePage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { theme } = useTheme();
-  const { listings, loading: listingsLoading } = useListings();
+  const { listings } = useListings();
   const { addRentalRequest } = useRentals();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -432,7 +432,7 @@ export default function BrowsePage() {
       case 'rating':
         return b.rating - a.rating;
       case 'newest':
-        return b.id - a.id;
+        return Number(b.id) - Number(a.id);
       default:
         return 0;
     }
@@ -489,10 +489,10 @@ export default function BrowsePage() {
     }
   }, []);
 
-  // Initialize Discover Map
+  // Initialize Discover Map (only show when not in map view mode)
   useEffect(() => {
     const initializeDiscoverMap = async () => {
-      if (discoverMapRef.current && userLocation && !searchSubmitted && !loading) {
+      if (discoverMapRef.current && userLocation && !searchSubmitted && !loading && viewMode !== 'map') {
         try {
           // Load Google Maps script if not already loaded
           await loadGoogleMapsScript();
@@ -565,8 +565,8 @@ export default function BrowsePage() {
         ]
       });
 
-      // Add markers for all tools
-      allTools.slice(0, 12).forEach((tool) => {
+      // Add markers for filtered tools (respects categories and filters)
+      filteredTools.slice(0, 12).forEach((tool) => {
         const marker = new window.google.maps.Marker({
           position: tool.coordinates,
           map: discoverMap,
@@ -670,9 +670,9 @@ export default function BrowsePage() {
     };
 
     initializeDiscoverMap();
-  }, [userLocation, theme, searchSubmitted, loading, allTools]);
+  }, [userLocation, theme, searchSubmitted, loading, viewMode, filteredTools]);
 
-  // Initialize Google Map
+  // Initialize Google Map (for all views - both before and after search)
   useEffect(() => {
     const initializeMainMap = async () => {
       if (viewMode === 'map' && mapRef.current && userLocation) {
@@ -748,8 +748,9 @@ export default function BrowsePage() {
         ]
       });
 
-      // Add markers for filtered tools
-      filteredTools.forEach((tool) => {
+      // Add markers for filtered tools (respects current filters and categories)
+      const toolsToShow = searchSubmitted || selectedCategory !== 'All' ? filteredTools : filteredTools;
+      toolsToShow.forEach((tool) => {
         const marker = new window.google.maps.Marker({
           position: tool.coordinates,
           map: map,
@@ -853,7 +854,7 @@ export default function BrowsePage() {
     };
 
     initializeMainMap();
-  }, [viewMode, userLocation, filteredTools, theme]);
+  }, [viewMode, userLocation, filteredTools, theme, searchSubmitted, selectedCategory]);
 
   // Global functions for map info windows
   useEffect(() => {
@@ -872,8 +873,8 @@ export default function BrowsePage() {
     };
 
     return () => {
-      delete window.rentTool;
-      delete window.viewListing;
+      (window as any).rentTool = undefined;
+      (window as any).viewListing = undefined;
     };
   }, [filteredTools]);
 
@@ -1291,8 +1292,8 @@ export default function BrowsePage() {
           </div>
         )}
 
-        {/* Discover Tools Near You Map */}
-        {!searchSubmitted && !loading && (
+        {/* Discover Tools Near You Map - Only show in list view and when not searched */}
+        {!searchSubmitted && !loading && viewMode === 'list' && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
@@ -1315,18 +1316,20 @@ export default function BrowsePage() {
           </div>
         )}
 
-        {/* Featured Categories */}
+        {/* Featured Categories - Show in both list and map view when not searched */}
         {!searchSubmitted && !loading && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Popular Categories</h2>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
-              >
-                <span>See all</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              {viewMode === 'map' && (
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
+                >
+                  <span>See list view</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {featuredCategories.map((category) => (
@@ -1352,8 +1355,8 @@ export default function BrowsePage() {
           </div>
         )}
 
-        {/* Top Rated Tools */}
-        {!searchSubmitted && !loading && topRatedTools.length > 0 && (
+        {/* Top Rated Tools - Only show in list view when not searched */}
+        {!searchSubmitted && !loading && topRatedTools.length > 0 && viewMode === 'list' && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
@@ -1410,8 +1413,8 @@ export default function BrowsePage() {
           </div>
         )}
 
-        {/* Trending Tools */}
-        {!searchSubmitted && !loading && trendingTools.length > 0 && (
+        {/* Trending Tools - Only show in list view when not searched */}
+        {!searchSubmitted && !loading && trendingTools.length > 0 && viewMode === 'list' && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
@@ -1469,119 +1472,127 @@ export default function BrowsePage() {
           </div>
         )}
 
-        {/* Search Results / Filtered Listings */}
-        {(searchSubmitted || selectedCategory !== 'All') && !loading && (
+        {/* Main Content Area - Shows for both initial state and search results */}
+        {!loading && (
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-semibold">
-                  {searchTerm ? `Search Results for "${searchTerm}"` : `${selectedCategory} Tools`}
-                </h2>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {filteredTools.length} tool{filteredTools.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('All');
-                  setSearchSubmitted(false);
-                }}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-gray-800/60 hover:bg-gray-800/80 text-white'
-                    : 'bg-white/80 hover:bg-white/90 text-gray-900 backdrop-blur-sm'
-                }`}
-              >
-                <X className="w-4 h-4" />
-                <span>Clear</span>
-              </button>
-            </div>
-
-            {viewMode === 'map' ? (
-              /* Map View */
-              <div className={`h-96 rounded-xl overflow-hidden ${
-                theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
-              }`}>
-                <div ref={mapRef} className="w-full h-full" />
-              </div>
-            ) : filteredTools.length > 0 ? (
-              /* List View */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredTools.map((tool) => (
-                  <div
-                    key={tool.id}
-                    onClick={() => handleCardClick(tool)}
-                    className={`rounded-2xl border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden group ${
-                      theme === 'dark'
-                        ? 'bg-gray-800/60 hover:bg-gray-800/80'
-                        : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
-                    }`}
-                  >
-                    {/* Tool Image */}
-                    <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
-                      <div className="text-6xl group-hover:scale-110 transition-transform">{tool.image}</div>
-                      <div className="absolute top-3 right-3 bg-blue-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
-                        <Star className="w-3 h-3 fill-current" />
-                        <span>{tool.rating}</span>
-                      </div>
-                    </div>
-
-                    {/* Tool Info */}
-                    <div className="p-4 space-y-3">
-                      <div>
-                        <h3 className="font-semibold text-lg line-clamp-2">{tool.name}</h3>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          by {tool.owner}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-xl font-bold text-blue-500">${tool.price}</span>
-                          <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                            /{tool.period}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                          <span className="text-sm font-medium">{tool.rating}</span>
-                          <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                            ({tool.reviews})
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        📍 {tool.location}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className={`text-center py-12 rounded-2xl ${
-                theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
-              }`}>
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold mb-2">No tools found</h3>
-                <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {searchTerm
-                    ? `No tools match your search for "${searchTerm}"`
-                    : `No tools found in the ${selectedCategory} category`
-                  }
-                </p>
+            {/* Header for filtered results */}
+            {(searchSubmitted || selectedCategory !== 'All') && (
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold">
+                    {searchTerm ? `Search Results for "${searchTerm}"` : `${selectedCategory} Tools`}
+                  </h2>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {filteredTools.length} tool{filteredTools.length !== 1 ? 's' : ''} found
+                  </p>
+                </div>
                 <button
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedCategory('All');
                     setSearchSubmitted(false);
                   }}
-                  className="mt-4 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                    theme === 'dark'
+                      ? 'bg-gray-800/60 hover:bg-gray-800/80 text-white'
+                      : 'bg-white/80 hover:bg-white/90 text-gray-900 backdrop-blur-sm'
+                  }`}
                 >
-                  Browse All Tools
+                  <X className="w-4 h-4" />
+                  <span>Clear</span>
                 </button>
               </div>
+            )}
+
+            {/* Content based on view mode */}
+            {viewMode === 'map' ? (
+              /* Map View - Show map for all states */
+              <div className={`h-96 rounded-xl overflow-hidden ${
+                theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
+              }`}>
+                <div ref={mapRef} className="w-full h-full" />
+              </div>
+            ) : (
+              /* List View - Show tools only when searched/filtered */
+              (searchSubmitted || selectedCategory !== 'All') && (
+                filteredTools.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filteredTools.map((tool) => (
+                      <div
+                        key={tool.id}
+                        onClick={() => handleCardClick(tool)}
+                        className={`rounded-2xl border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden group ${
+                          theme === 'dark'
+                            ? 'bg-gray-800/60 hover:bg-gray-800/80'
+                            : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
+                        }`}
+                      >
+                        {/* Tool Image */}
+                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
+                          <div className="text-6xl group-hover:scale-110 transition-transform">{tool.image}</div>
+                          <div className="absolute top-3 right-3 bg-blue-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
+                            <Star className="w-3 h-3 fill-current" />
+                            <span>{tool.rating}</span>
+                          </div>
+                        </div>
+
+                        {/* Tool Info */}
+                        <div className="p-4 space-y-3">
+                          <div>
+                            <h3 className="font-semibold text-lg line-clamp-2">{tool.name}</h3>
+                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                              by {tool.owner}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-xl font-bold text-blue-500">${tool.price}</span>
+                              <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                                /{tool.period}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                              <span className="text-sm font-medium">{tool.rating}</span>
+                              <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                ({tool.reviews})
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                            📍 {tool.location}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={`text-center py-12 rounded-2xl ${
+                    theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
+                  }`}>
+                    <div className="text-6xl mb-4">🔍</div>
+                    <h3 className="text-xl font-semibold mb-2">No tools found</h3>
+                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {searchTerm
+                        ? `No tools match your search for "${searchTerm}"`
+                        : `No tools found in the ${selectedCategory} category`
+                      }
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategory('All');
+                        setSearchSubmitted(false);
+                      }}
+                      className="mt-4 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
+                    >
+                      Browse All Tools
+                    </button>
+                  </div>
+                )
+              )
             )}
           </div>
         )}

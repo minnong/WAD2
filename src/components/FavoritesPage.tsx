@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import { Heart, Star, MapPin, Clock, Trash2, Share2, MessageCircle } from 'lucide-react';
 
 export default function FavoritesPage() {
-  const { currentUser } = useAuth();
   const { theme } = useTheme();
   const [favorites, setFavorites] = useState([
     {

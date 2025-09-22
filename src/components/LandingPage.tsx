@@ -2,7 +2,7 @@ import LiquidEther from './LiquidEther'
 import LiquidGlassNav from './LiquidGlassNav'
 import TextType from './TextType'
 import shareLahLogo from './sharelah.png'
-import { ArrowRight, Shield, MapPin, Clock, Star, Users, CreditCard, MessageCircle, CheckCircle, Zap, Heart } from 'lucide-react';
+import { ArrowRight, Shield, MapPin, Clock, Star, Users, CreditCard, MessageCircle, CheckCircle, Heart } from 'lucide-react';
 import { FaReact } from 'react-icons/fa';
 import { SiFirebase } from 'react-icons/si';
 import { FaStripe } from 'react-icons/fa';

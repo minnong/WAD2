@@ -10,92 +10,14 @@ export default function MyRentalsPage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
   const { listings } = useListings();
-  const { getUserRentals, getUserListings } = useRentals();
+  const { getUserRentals } = useRentals();
   const [activeTab, setActiveTab] = useState<'rented' | 'listed'>('rented');
 
   // Get user's actual rental requests and listings
   const userRentals = currentUser ? getUserRentals(currentUser.email || '') : [];
   const userOwnListings = currentUser ? listings : [];
 
-  const mockRentedItems = [
-    {
-      id: 1,
-      name: 'Professional Camera',
-      owner: 'Mike R.',
-      price: 60,
-      period: 'day',
-      rentedDate: '2024-01-15',
-      returnDate: '2024-01-17',
-      status: 'active',
-      image: '📷',
-      location: 'Jurong, Singapore'
-    },
-    {
-      id: 2,
-      name: 'Drill Press',
-      owner: 'John D.',
-      price: 25,
-      period: 'day',
-      rentedDate: '2024-01-10',
-      returnDate: '2024-01-12',
-      status: 'completed',
-      image: '🔨',
-      location: 'Orchard, Singapore'
-    },
-    {
-      id: 3,
-      name: 'Lawn Mower',
-      owner: 'Sarah L.',
-      price: 40,
-      period: 'day',
-      rentedDate: '2024-01-08',
-      returnDate: '2024-01-09',
-      status: 'completed',
-      image: '🌱',
-      location: 'Tampines, Singapore'
-    }
-  ];
 
-  const mockListedItems = [
-    {
-      id: 1,
-      name: 'Stand Mixer',
-      price: 15,
-      period: 'day',
-      listedDate: '2024-01-01',
-      status: 'available',
-      views: 24,
-      inquiries: 3,
-      image: '🍳',
-      totalEarnings: 120
-    },
-    {
-      id: 2,
-      name: 'Tennis Racket Set',
-      price: 20,
-      period: 'day',
-      listedDate: '2023-12-20',
-      status: 'rented',
-      views: 18,
-      inquiries: 5,
-      image: '🎾',
-      totalEarnings: 80,
-      currentRenter: 'Alex M.',
-      returnDate: '2024-01-20'
-    },
-    {
-      id: 3,
-      name: 'Paint Sprayer',
-      price: 35,
-      period: 'day',
-      listedDate: '2023-12-15',
-      status: 'available',
-      views: 31,
-      inquiries: 7,
-      image: '🎨',
-      totalEarnings: 210
-    }
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -210,7 +132,9 @@ export default function MyRentalsPage() {
                       <div>
                         <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
                         <p className="font-medium">
-                          {new Date(item.requestDate).toLocaleDateString()}
+                          {item.requestDate instanceof Date
+                            ? item.requestDate.toLocaleDateString()
+                            : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -268,7 +192,9 @@ export default function MyRentalsPage() {
                       <div>
                         <h3 className="text-lg font-semibold">{item.name}</h3>
                         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Listed on {new Date(item.createdAt).toLocaleDateString()}
+                          Listed on {item.createdAt instanceof Date
+                            ? item.createdAt.toLocaleDateString()
+                            : new Date((item.createdAt as any).toDate()).toLocaleDateString()}
                         </p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor('available')}`}>
@@ -322,7 +248,7 @@ export default function MyRentalsPage() {
                       }`}>
                         <span>Edit</span>
                       </button>
-                      {item.status === 'available' && (
+                      {item.availability === 'available' && (
                         <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors">
                           Boost Listing
                         </button>

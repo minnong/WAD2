@@ -243,7 +243,9 @@ export default function HomePage() {
                     <div className="flex-1">
                       <p className="font-medium">You listed "{listing.name}"</p>
                       <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {new Date(listing.createdAt).toLocaleDateString()}
+                        {listing.createdAt instanceof Date
+                          ? listing.createdAt.toLocaleDateString()
+                          : new Date((listing.createdAt as any).toDate()).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-green-600 dark:text-green-400 font-semibold">

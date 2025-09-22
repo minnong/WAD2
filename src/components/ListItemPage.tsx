@@ -7,7 +7,7 @@ import { listingsService, imageUploadService } from '../services/firebase';
 import { loadGoogleMapsScript } from '../utils/googleMaps';
 import LiquidGlassNav from './LiquidGlassNav';
 import SuccessModal from './SuccessModal';
-import { Camera, MapPin, DollarSign, Clock, Tag, FileText, X, Crosshair, Navigation, Upload } from 'lucide-react';
+import { Camera, MapPin, DollarSign, FileText, X, Crosshair, Upload } from 'lucide-react';
 
 export default function ListItemPage() {
   const { currentUser } = useAuth();
@@ -152,9 +152,9 @@ export default function ListItemPage() {
               componentRestrictions: { country: 'sg' }, // Restrict to Singapore
               types: ['geocode'] // Only geographical locations
             },
-            (predictions, status) => {
+            (predictions: any, status: any) => {
               if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-                const suggestions = predictions.slice(0, 5).map(p => p.description);
+                const suggestions = predictions.slice(0, 5).map((p: any) => p.description);
                 setLocationSuggestions(suggestions);
                 setShowLocationSuggestions(true);
               } else {
@@ -232,7 +232,7 @@ export default function ListItemPage() {
       // Use Google Maps Geocoding API
       if (window.google && window.google.maps) {
         const geocoder = new window.google.maps.Geocoder();
-        geocoder.geocode({ address: location }, (results, status) => {
+        geocoder.geocode({ address: location }, (results: any, status: any) => {
           if (status === 'OK' && results && results[0]) {
             const coords = {
               lat: results[0].geometry.location.lat(),
@@ -282,7 +282,7 @@ export default function ListItemPage() {
             // Use reverse geocoding with Google Maps API
             if (window.google && window.google.maps) {
               const geocoder = new window.google.maps.Geocoder();
-              geocoder.geocode({ location: coords }, (results, status) => {
+              geocoder.geocode({ location: coords }, (results: any, status: any) => {
                 if (status === 'OK' && results && results[0]) {
                   const address = results[0].formatted_address;
                   setFormData(prev => ({ ...prev, location: address }));
@@ -437,6 +437,7 @@ export default function ListItemPage() {
         coordinates: coordinates
       };
 
+      // @ts-ignore: listingId may be used for logging or future functionality
       const listingId = await listingsService.createListing(listingData);
 
       // Also add to local context for immediate UI update

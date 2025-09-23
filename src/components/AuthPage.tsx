@@ -375,7 +375,7 @@ export default function AuthPage() {
                     type="button"
                     onClick={handleForgotPassword}
                     disabled={isLoading}
-                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors font-sf-pro-text disabled:opacity-50"
+                    className="text-sm text-purple-300 hover:text-purple-200 transition-colors font-sf-pro-text disabled:opacity-50"
                   >
                     Forgot password?
                   </button>
@@ -432,7 +432,7 @@ export default function AuthPage() {
                 <button
                   type="button"
                   onClick={toggleMode}
-                  className="ml-2 text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                  className="ml-2 text-purple-300 hover:text-purple-200 font-medium transition-colors"
                 >
                   {isLogin ? 'Create account' : 'Sign in'}
                 </button>
@@ -443,9 +443,9 @@ export default function AuthPage() {
           {/* Terms */}
           <div className="mt-6 text-center text-xs text-white/50 font-sf-pro-text animate-fadeInUp delay-600">
             By {isLogin ? 'signing in' : 'creating an account'}, you agree to ShareLah's{' '}
-            <a href="#" className="text-blue-400 hover:text-blue-300 transition-colors">Terms of Service</a>
+            <a href="#" className="text-purple-300 hover:text-purple-200 transition-colors">Terms of Service</a>
             {' '}and{' '}
-            <a href="#" className="text-blue-400 hover:text-blue-300 transition-colors">Privacy Policy</a>
+            <a href="#" className="text-purple-300 hover:text-purple-200 transition-colors">Privacy Policy</a>
           </div>
         </div>
       </div>

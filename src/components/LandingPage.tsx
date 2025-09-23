@@ -114,7 +114,7 @@ export default function LandingPage() {
                 delay={200}
                 className="block"
               />
-              <span className="block mt-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+              <span className="block mt-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-500 bg-clip-text text-transparent">
                 Share Lah.
               </span>
             </h1>
@@ -125,7 +125,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp delay-1500">
               <button 
                 onClick={() => navigate('/auth')}
-                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition-apple shadow-2xl hover:shadow-blue-500/25 font-medium text-lg flex items-center justify-center group"
+                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-300 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition-apple shadow-2xl hover:shadow-blue-500/25 font-medium text-lg flex items-center justify-center group"
               >
                 Start Browsing
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -174,7 +174,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="glass-effect p-8 rounded-2xl hover:bg-white/15 transition-apple group animate-fadeInUp" style={{animationDelay: `${index * 100}ms`}}>
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-300 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <feature.icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold font-sf-pro-display text-white mb-3">{feature.title}</h3>
@@ -201,7 +201,7 @@ export default function LandingPage() {
             {steps.map((step, index) => (
               <div key={index} className="text-center animate-fadeInUp" style={{animationDelay: `${index * 200}ms`}}>
                 <div className="mb-6">
-                  <span className="text-6xl font-bold font-sf-pro-display bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                  <span className="text-6xl font-bold font-sf-pro-display bg-gradient-to-r from-blue-500 to-purple-300 bg-clip-text text-transparent">
                     {step.step}
                   </span>
                 </div>
@@ -243,7 +243,7 @@ export default function LandingPage() {
 
             <div className="glass-effect p-8 rounded-2xl animate-fadeInUp delay-300">
               <div className="flex items-center space-x-4 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-300 rounded-full flex items-center justify-center">
                   <Users className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -317,7 +317,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => navigate('/auth')}
-                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition-apple shadow-2xl hover:shadow-blue-500/25 font-medium text-lg flex items-center justify-center group"
+                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-300 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition-apple shadow-2xl hover:shadow-blue-500/25 font-medium text-lg flex items-center justify-center group"
               >
                 Create Your Account
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

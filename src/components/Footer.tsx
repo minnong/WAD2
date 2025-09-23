@@ -17,7 +17,7 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <img src={shareLahLogo} alt="ShareLah Logo" className="w-8 h-8" />
-              <h3 className="text-lg font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+              <h3 className="text-lg font-bold">
                 ShareLah
               </h3>
             </div>
@@ -91,19 +91,19 @@ export default function Footer() {
             <h4 className="font-semibold">Contact Us</h4>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
-                <Mail className="w-4 h-4 text-blue-500" />
+                <Mail className="w-4 h-4 text-purple-300" />
                 <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                   hello@sharelah.sg
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <Phone className="w-4 h-4 text-blue-500" />
+                <Phone className="w-4 h-4 text-purple-300" />
                 <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                   +65 8888 0000
                 </span>
               </div>
               <div className="flex items-center space-x-3">
-                <MapPin className="w-4 h-4 text-blue-500" />
+                <MapPin className="w-4 h-4 text-purple-300" />
                 <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                   Singapore
                 </span>

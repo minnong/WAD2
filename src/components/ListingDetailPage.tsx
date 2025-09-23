@@ -599,7 +599,7 @@ export default function ListingDetailPage() {
               theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
             }`}>
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-300 to-purple-400 flex items-center justify-center text-white font-bold">
                   {tool.owner.charAt(0)}
                 </div>
                 <div>
@@ -666,7 +666,7 @@ export default function ListingDetailPage() {
               <div className="mt-6 pt-6 border-t border-gray-200/20">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <span className="text-3xl font-bold text-blue-500">${tool.price}</span>
+                    <span className="text-3xl font-bold text-purple-300">${tool.price}</span>
                     <span className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                       /{tool.period}
                     </span>
@@ -676,7 +676,7 @@ export default function ListingDetailPage() {
                 <div className="flex space-x-3">
                   <button
                     onClick={handleRentClick}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-xl font-semibold transition-colors"
+                    className="flex-1 bg-purple-900 hover:bg-purple-950 text-white py-3 px-6 rounded-xl font-semibold transition-colors"
                   >
                     Rent Now
                   </button>
@@ -743,7 +743,7 @@ export default function ListingDetailPage() {
                   <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                     by {tool.owner} • {tool.location}
                   </p>
-                  <p className="text-lg font-bold text-blue-500">
+                  <p className="text-lg font-bold text-purple-300">
                     ${tool.price}/{tool.period}
                   </p>
                 </div>
@@ -834,7 +834,7 @@ export default function ListingDetailPage() {
                 }`}>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Total Cost:</span>
-                    <span className="font-bold text-lg text-blue-500">
+                    <span className="font-bold text-lg text-purple-300">
                       ${Math.ceil((new Date(rentRequest.endDate).getTime() - new Date(rentRequest.startDate).getTime()) / (1000 * 60 * 60 * 24)) * tool.price}
                     </span>
                   </div>
@@ -860,7 +860,7 @@ export default function ListingDetailPage() {
               <button
                 onClick={handleRentRequestSubmit}
                 disabled={!rentRequest.startDate || !rentRequest.endDate}
-                className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-purple-900 hover:bg-purple-950 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
               >
                 Send Request
               </button>

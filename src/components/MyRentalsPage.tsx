@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
 import LiquidGlassNav from './LiquidGlassNav';
-import { Package, Clock, CheckCircle, XCircle, Eye, MessageCircle, Calendar } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, Eye, MessageCircle, Calendar, AlertTriangle } from 'lucide-react';
 
 export default function MyRentalsPage() {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
   const { theme } = useTheme();
   const { userListings } = useListings(); // Get user-specific listings
-  const { userRentalRequests } = useRentals(); // Get user's rental requests directly
+  const { userRentalRequests, updateRentalStatus } = useRentals(); // Get user's rental requests directly
   const [activeTab, setActiveTab] = useState<'rented' | 'listed'>('rented');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   // Get user's rental activity - separate active rentals and pending requests
   const activeRentals = userRentalRequests.filter(request =>
@@ -30,16 +32,53 @@ export default function MyRentalsPage() {
     navigate(`/listing/${listingId}`);
   };
 
+  const handleCancelRequest = (requestId: string) => {
+    setSelectedRequestId(requestId);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelRequest = async () => {
+    if (!selectedRequestId) return;
+
+    setIsLoading(true);
+    try {
+      await updateRentalStatus(selectedRequestId, 'cancelled');
+      setShowCancelModal(false);
+      setSelectedRequestId(null);
+      setShowSuccessMessage(true);
+
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error cancelling request:', error);
+      alert('Failed to cancel request. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const closeCancelModal = () => {
+    setShowCancelModal(false);
+    setSelectedRequestId(null);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
       case 'rented':
-        return 'text-blue-500 bg-blue-500/10';
+        return 'text-purple-300 bg-purple-300/10';
       case 'completed':
       case 'available':
         return 'text-green-500 bg-green-500/10';
       case 'overdue':
         return 'text-red-500 bg-red-500/10';
+      case 'cancelled':
+      case 'declined':
+        return 'text-gray-500 bg-gray-500/10';
+      case 'pending':
+        return 'text-yellow-500 bg-yellow-500/10';
       default:
         return 'text-gray-500 bg-gray-500/10';
     }
@@ -55,6 +94,11 @@ export default function MyRentalsPage() {
         return <CheckCircle className="w-4 h-4" />;
       case 'overdue':
         return <XCircle className="w-4 h-4" />;
+      case 'cancelled':
+      case 'declined':
+        return <XCircle className="w-4 h-4" />;
+      case 'pending':
+        return <Clock className="w-4 h-4" />;
       default:
         return <Package className="w-4 h-4" />;
     }
@@ -83,7 +127,7 @@ export default function MyRentalsPage() {
             onClick={() => setActiveTab('rented')}
             className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
               activeTab === 'rented'
-                ? 'bg-blue-500 text-white shadow-lg'
+                ? 'bg-purple-900 text-white shadow-lg'
                 : theme === 'dark'
                 ? 'bg-gray-800/60 text-gray-300 hover:bg-gray-800/80'
                 : 'bg-white/80 text-gray-700 hover:bg-white/90 backdrop-blur-sm'
@@ -95,7 +139,7 @@ export default function MyRentalsPage() {
             onClick={() => setActiveTab('listed')}
             className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
               activeTab === 'listed'
-                ? 'bg-blue-500 text-white shadow-lg'
+                ? 'bg-purple-900 text-white shadow-lg'
                 : theme === 'dark'
                 ? 'bg-gray-800/60 text-gray-300 hover:bg-gray-800/80'
                 : 'bg-white/80 text-gray-700 hover:bg-white/90 backdrop-blur-sm'
@@ -145,7 +189,7 @@ export default function MyRentalsPage() {
                             </div>
                             <div>
                               <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</p>
-                              <p className="font-medium text-blue-500">${item.totalCost}</p>
+                              <p className="font-medium text-purple-300">${item.totalCost}</p>
                             </div>
                             <div>
                               <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
@@ -177,7 +221,7 @@ export default function MyRentalsPage() {
                               <span>Contact Owner</span>
                             </button>
                             {item.status === 'active' && (
-                              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors">
+                              <button className="flex items-center space-x-2 px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl transition-colors">
                                 <Calendar className="w-4 h-4" />
                                 <span>Extend Rental</span>
                               </button>
@@ -228,7 +272,7 @@ export default function MyRentalsPage() {
                             </div>
                             <div>
                               <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</p>
-                              <p className="font-medium text-blue-500">${item.totalCost}</p>
+                              <p className="font-medium text-purple-300">${item.totalCost}</p>
                             </div>
                             <div>
                               <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
@@ -260,7 +304,10 @@ export default function MyRentalsPage() {
                               <span>Contact Owner</span>
                             </button>
                             {item.status === 'pending' && (
-                              <button className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors">
+                              <button
+                                onClick={() => handleCancelRequest(item.id)}
+                                className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors"
+                              >
                                 <XCircle className="w-4 h-4" />
                                 <span>Cancel Request</span>
                               </button>
@@ -304,7 +351,7 @@ export default function MyRentalsPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       <div>
                         <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Price</p>
-                        <p className="font-medium text-blue-500">${item.price}/{item.period}</p>
+                        <p className="font-medium text-purple-300">${item.price}/{item.period}</p>
                       </div>
                       <div>
                         <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Category</p>
@@ -349,7 +396,7 @@ export default function MyRentalsPage() {
                         <span>Edit</span>
                       </button>
                       {item.availability === 'available' && (
-                        <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors">
+                        <button className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl transition-colors">
                           Boost Listing
                         </button>
                       )}
@@ -377,6 +424,67 @@ export default function MyRentalsPage() {
           </div>
         )}
       </div>
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`rounded-2xl p-6 max-w-md w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Cancel Rental Request</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">This action cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-gray-700 dark:text-gray-300 mb-6">
+              Are you sure you want to cancel this rental request? The owner will be notified and you won't be able to rent this item for the selected dates.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={closeCancelModal}
+                disabled={isLoading}
+                className={`flex-1 py-2 px-4 rounded-xl border transition-colors ${
+                  theme === 'dark'
+                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                } disabled:opacity-50`}
+              >
+                Keep Request
+              </button>
+              <button
+                onClick={confirmCancelRequest}
+                disabled={isLoading}
+                className="flex-1 py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center"
+              >
+                {isLoading ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                ) : (
+                  'Cancel Request'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`rounded-xl p-4 shadow-lg border-l-4 border-green-500 flex items-center space-x-3 ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Request Cancelled</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Your rental request has been successfully cancelled</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

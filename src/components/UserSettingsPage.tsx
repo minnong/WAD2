@@ -266,7 +266,7 @@ export default function UserSettingsPage() {
           <h2 className="text-2xl font-bold mb-4">Please log in to access settings</h2>
           <button
             onClick={() => navigate('/auth')}
-                            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+                            className="px-6 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors"
           >
             Go to Login
           </button>
@@ -327,7 +327,7 @@ export default function UserSettingsPage() {
                     onClick={() => setActiveSection(section.id)}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                       activeSection === section.id
-                        ? 'bg-blue-500 text-white'
+                        ? 'bg-purple-900 text-white'
                         : theme === 'dark'
                         ? 'hover:bg-gray-700/50 text-gray-300'
                         : 'hover:bg-gray-100 text-gray-700'
@@ -354,7 +354,7 @@ export default function UserSettingsPage() {
                   {/* Profile Picture */}
                   <div className="flex items-center space-x-6">
                     <div className="relative">
-                      <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                      <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-r from-purple-900 to-purple-500 flex items-center justify-center">
                         {settings.photoURL ? (
                           <img
                             src={settings.photoURL}
@@ -367,7 +367,7 @@ export default function UserSettingsPage() {
                           </span>
                         )}
                       </div>
-                      <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-blue-600 transition-colors">
+                      <label className="absolute -bottom-1 -right-1 w-8 h-8 bg-purple-900 text-white rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-purple-950 transition-colors">
                         <Camera className="w-4 h-4" />
                         <input
                           type="file"
@@ -395,9 +395,9 @@ export default function UserSettingsPage() {
                         onChange={(e) => setSettings(prev => ({ ...prev, displayName: e.target.value }))}
                         className={`w-full px-4 py-3 rounded-lg border ${
                           theme === 'dark'
-                            ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
-                            : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500'
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                            ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
+                            : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
+                        } focus:outline-none focus:ring-2 focus:ring-purple-900/20`}
                       />
                     </div>
                     <div>
@@ -429,9 +429,9 @@ export default function UserSettingsPage() {
                           onChange={(e) => setSettings(prev => ({ ...prev, phone: e.target.value }))}
                           className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
                             theme === 'dark'
-                              ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
-                              : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500'
-                          } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                              ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
+                              : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
+                          } focus:outline-none focus:ring-2 focus:ring-purple-900/20`}
                           placeholder="+65 1234 5678"
                         />
                       </div>
@@ -446,9 +446,9 @@ export default function UserSettingsPage() {
                           onChange={(e) => setSettings(prev => ({ ...prev, location: e.target.value }))}
                           className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
                             theme === 'dark'
-                              ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
-                              : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500'
-                          } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                              ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
+                              : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
+                          } focus:outline-none focus:ring-2 focus:ring-purple-900/20`}
                           placeholder="Singapore"
                         />
                       </div>
@@ -464,9 +464,9 @@ export default function UserSettingsPage() {
                       rows={4}
                       className={`w-full px-4 py-3 rounded-lg border resize-none ${
                         theme === 'dark'
-                          ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
-                          : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500'
-                      } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                          ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
+                          : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
+                      } focus:outline-none focus:ring-2 focus:ring-purple-900/20`}
                       placeholder="Tell others about yourself..."
                     />
                   </div>
@@ -476,7 +476,7 @@ export default function UserSettingsPage() {
                     <button
                       onClick={handleProfileUpdate}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
+                      className="flex items-center space-x-2 px-6 py-3 bg-purple-900 hover:bg-purple-950 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
                     >
                       <Save className="w-4 h-4" />
                       <span>{loading ? 'Saving...' : 'Save Changes'}</span>
@@ -501,7 +501,7 @@ export default function UserSettingsPage() {
                           value="public"
                           checked={settings.profileVisibility === 'public'}
                           onChange={(e) => setSettings(prev => ({ ...prev, profileVisibility: e.target.value as any }))}
-                          className="text-blue-500"
+                          className="text-purple-300"
                         />
                         <div>
                           <span className="font-medium">Public</span>
@@ -517,7 +517,7 @@ export default function UserSettingsPage() {
                           value="private"
                           checked={settings.profileVisibility === 'private'}
                           onChange={(e) => setSettings(prev => ({ ...prev, profileVisibility: e.target.value as any }))}
-                          className="text-blue-500"
+                          className="text-purple-300"
                         />
                         <div>
                           <span className="font-medium">Private</span>
@@ -539,7 +539,7 @@ export default function UserSettingsPage() {
                           type="checkbox"
                           checked={settings.showEmail}
                           onChange={(e) => setSettings(prev => ({ ...prev, showEmail: e.target.checked }))}
-                          className="text-blue-500"
+                          className="text-purple-300"
                         />
                       </label>
                       <label className="flex items-center justify-between">
@@ -548,7 +548,7 @@ export default function UserSettingsPage() {
                           type="checkbox"
                           checked={settings.showPhone}
                           onChange={(e) => setSettings(prev => ({ ...prev, showPhone: e.target.checked }))}
-                          className="text-blue-500"
+                          className="text-purple-300"
                         />
                       </label>
                       <label className="flex items-center justify-between">
@@ -557,7 +557,7 @@ export default function UserSettingsPage() {
                           type="checkbox"
                           checked={settings.showLocation}
                           onChange={(e) => setSettings(prev => ({ ...prev, showLocation: e.target.checked }))}
-                          className="text-blue-500"
+                          className="text-purple-300"
                         />
                       </label>
                     </div>
@@ -576,9 +576,9 @@ export default function UserSettingsPage() {
                             onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                             className={`w-full px-4 py-3 pr-12 rounded-lg border ${
                               theme === 'dark'
-                                ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
-                                : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500'
-                            } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                                ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
+                                : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
+                            } focus:outline-none focus:ring-2 focus:ring-purple-900/20`}
                           />
                           <button
                             type="button"
@@ -598,9 +598,9 @@ export default function UserSettingsPage() {
                             onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
                             className={`w-full px-4 py-3 pr-12 rounded-lg border ${
                               theme === 'dark'
-                                ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
-                                : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500'
-                            } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                                ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
+                                : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
+                            } focus:outline-none focus:ring-2 focus:ring-purple-900/20`}
                           />
                           <button
                             type="button"
@@ -620,9 +620,9 @@ export default function UserSettingsPage() {
                             onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                             className={`w-full px-4 py-3 pr-12 rounded-lg border ${
                               theme === 'dark'
-                                ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
-                                : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-blue-500'
-                            } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                                ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
+                                : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
+                            } focus:outline-none focus:ring-2 focus:ring-purple-900/20`}
                           />
                           <button
                             type="button"
@@ -636,7 +636,7 @@ export default function UserSettingsPage() {
                       <button
                         onClick={handlePasswordChange}
                         disabled={loading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-                        className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
+                        className="flex items-center space-x-2 px-4 py-2 bg-purple-900 hover:bg-purple-950 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
                       >
                         <Key className="w-4 h-4" />
                         <span>{loading ? 'Updating...' : 'Update Password'}</span>
@@ -659,7 +659,7 @@ export default function UserSettingsPage() {
                           type="checkbox"
                           checked={settings.twoFactorEnabled}
                           onChange={(e) => setSettings(prev => ({ ...prev, twoFactorEnabled: e.target.checked }))}
-                          className="text-blue-500"
+                          className="text-purple-300"
                         />
                       </label>
                       <label className="flex items-center justify-between">
@@ -673,7 +673,7 @@ export default function UserSettingsPage() {
                           type="checkbox"
                           checked={settings.loginAlerts}
                           onChange={(e) => setSettings(prev => ({ ...prev, loginAlerts: e.target.checked }))}
-                          className="text-blue-500"
+                          className="text-purple-300"
                         />
                       </label>
                     </div>
@@ -684,7 +684,7 @@ export default function UserSettingsPage() {
                     <button
                       onClick={handleProfileUpdate}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
+                      className="flex items-center space-x-2 px-6 py-3 bg-purple-900 hover:bg-purple-950 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
                     >
                       <Save className="w-4 h-4" />
                       <span>{loading ? 'Saving...' : 'Save Changes'}</span>
@@ -713,7 +713,7 @@ export default function UserSettingsPage() {
                             type="checkbox"
                             checked={settings.emailNotifications}
                             onChange={(e) => setSettings(prev => ({ ...prev, emailNotifications: e.target.checked }))}
-                            className="text-blue-500"
+                            className="text-purple-300"
                           />
                         </label>
                         <label className="flex items-center justify-between">
@@ -727,7 +727,7 @@ export default function UserSettingsPage() {
                             type="checkbox"
                             checked={settings.pushNotifications}
                             onChange={(e) => setSettings(prev => ({ ...prev, pushNotifications: e.target.checked }))}
-                            className="text-blue-500"
+                            className="text-purple-300"
                           />
                         </label>
                       </div>
@@ -747,7 +747,7 @@ export default function UserSettingsPage() {
                             type="checkbox"
                             checked={settings.rentalUpdates}
                             onChange={(e) => setSettings(prev => ({ ...prev, rentalUpdates: e.target.checked }))}
-                            className="text-blue-500"
+                            className="text-purple-300"
                           />
                         </label>
                         <label className="flex items-center justify-between">
@@ -761,7 +761,7 @@ export default function UserSettingsPage() {
                             type="checkbox"
                             checked={settings.messageNotifications}
                             onChange={(e) => setSettings(prev => ({ ...prev, messageNotifications: e.target.checked }))}
-                            className="text-blue-500"
+                            className="text-purple-300"
                           />
                         </label>
                       </div>
@@ -781,7 +781,7 @@ export default function UserSettingsPage() {
                             type="checkbox"
                             checked={settings.marketingEmails}
                             onChange={(e) => setSettings(prev => ({ ...prev, marketingEmails: e.target.checked }))}
-                            className="text-blue-500"
+                            className="text-purple-300"
                           />
                         </label>
                       </div>
@@ -793,7 +793,7 @@ export default function UserSettingsPage() {
                     <button
                       onClick={handleProfileUpdate}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                      className="flex items-center space-x-2 px-6 py-3 bg-purple-900 hover:bg-purple-950 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
                     >
                       <Save className="w-4 h-4" />
                       <span>{loading ? 'Saving...' : 'Save Changes'}</span>
@@ -842,7 +842,7 @@ export default function UserSettingsPage() {
                       }`}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
-                            <LogOut className="w-5 h-5 text-blue-500" />
+                            <LogOut className="w-5 h-5 text-purple-300" />
                             <div>
                               <h4 className="font-medium">Sign Out</h4>
                               <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -852,7 +852,7 @@ export default function UserSettingsPage() {
                           </div>
                           <button
                             onClick={handleLogout}
-                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+                            className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors"
                           >
                             Sign Out
                           </button>

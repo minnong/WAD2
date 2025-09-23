@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import LandingPage from './LandingPage';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -18,9 +18,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // If not authenticated, show landing page
+  // If not authenticated, redirect to landing page
   if (!currentUser) {
-    return <LandingPage />;
+    return <Navigate to="/" replace />;
   }
 
   // If authenticated, render the protected component

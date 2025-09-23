@@ -1090,7 +1090,7 @@ export default function BrowsePage() {
                 onClick={() => setViewMode('list')}
                 className={`flex items-center space-x-2 px-4 py-3 rounded-xl border-0 shadow-sm transition-all ${
                   viewMode === 'list'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-purple-900 text-white'
                     : theme === 'dark'
                     ? 'bg-gray-800/60 hover:bg-gray-800/80 text-white'
                     : 'bg-white/80 hover:bg-white/90 text-gray-900 backdrop-blur-sm'
@@ -1103,7 +1103,7 @@ export default function BrowsePage() {
                 onClick={() => setViewMode('map')}
                 className={`flex items-center space-x-2 px-4 py-3 rounded-xl border-0 shadow-sm transition-all ${
                   viewMode === 'map'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-purple-900 text-white'
                     : theme === 'dark'
                     ? 'bg-gray-800/60 hover:bg-gray-800/80 text-white'
                     : 'bg-white/80 hover:bg-white/90 text-gray-900 backdrop-blur-sm'
@@ -1120,7 +1120,7 @@ export default function BrowsePage() {
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center space-x-2 px-4 py-3 rounded-xl border-0 shadow-sm transition-all ${
                   showFilters
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-purple-900 text-white'
                     : theme === 'dark'
                     ? 'bg-gray-800/60 hover:bg-gray-800/80 text-white'
                     : 'bg-white/80 hover:bg-white/90 text-gray-900 backdrop-blur-sm'
@@ -1163,7 +1163,7 @@ export default function BrowsePage() {
                             placeholder="0"
                             value={priceRange.min}
                             onChange={(e) => setPriceRange({...priceRange, min: parseInt(e.target.value) || 0})}
-                            className={`w-full px-3 py-2.5 rounded-xl border-0 text-sm transition-all focus:ring-2 focus:ring-blue-500 ${
+                            className={`w-full px-3 py-2.5 rounded-xl border-0 text-sm transition-all focus:ring-2 focus:ring-purple-300 ${
                               theme === 'dark'
                                 ? 'bg-gray-700/50 text-white placeholder-gray-400'
                                 : 'bg-gray-50 text-gray-900 placeholder-gray-500'
@@ -1177,7 +1177,7 @@ export default function BrowsePage() {
                             placeholder="100"
                             value={priceRange.max}
                             onChange={(e) => setPriceRange({...priceRange, max: parseInt(e.target.value) || 100})}
-                            className={`w-full px-3 py-2.5 rounded-xl border-0 text-sm transition-all focus:ring-2 focus:ring-blue-500 ${
+                            className={`w-full px-3 py-2.5 rounded-xl border-0 text-sm transition-all focus:ring-2 focus:ring-purple-300 ${
                               theme === 'dark'
                                 ? 'bg-gray-700/50 text-white placeholder-gray-400'
                                 : 'bg-gray-50 text-gray-900 placeholder-gray-500'
@@ -1193,7 +1193,7 @@ export default function BrowsePage() {
                       <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
-                        className={`w-full px-3 py-2.5 rounded-xl border-0 text-sm transition-all focus:ring-2 focus:ring-blue-500 ${
+                        className={`w-full px-3 py-2.5 rounded-xl border-0 text-sm transition-all focus:ring-2 focus:ring-purple-300 ${
                           theme === 'dark'
                             ? 'bg-gray-700/50 text-white'
                             : 'bg-gray-50 text-gray-900'
@@ -1224,7 +1224,7 @@ export default function BrowsePage() {
                         />
                         <div className="flex justify-between text-xs text-gray-500">
                           <span>1 km</span>
-                          <span className="font-semibold text-blue-500">{distance} km</span>
+                          <span className="font-semibold text-purple-300">{distance} km</span>
                           <span>50 km</span>
                         </div>
                       </div>
@@ -1248,7 +1248,7 @@ export default function BrowsePage() {
                       </button>
                       <button
                         onClick={() => setShowFilters(false)}
-                        className="flex-1 py-2.5 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-medium transition-colors"
+                        className="flex-1 py-2.5 px-4 bg-purple-900 hover:bg-purple-950 text-white rounded-xl text-sm font-medium transition-colors"
                       >
                         Apply Filters
                       </button>
@@ -1267,7 +1267,7 @@ export default function BrowsePage() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                   selectedCategory === category
-                    ? 'bg-blue-500 text-white shadow-lg'
+                    ? 'bg-purple-900 text-white shadow-lg'
                     : theme === 'dark'
                     ? 'bg-gray-800/60 text-gray-300 hover:bg-gray-800/80'
                     : 'bg-white/80 text-gray-700 hover:bg-white/90 backdrop-blur-sm'
@@ -1286,7 +1286,7 @@ export default function BrowsePage() {
             theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
           }`}>
             <div className="flex items-center justify-center space-x-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-300"></div>
               <span className="text-lg">Loading tools...</span>
             </div>
           </div>
@@ -1297,12 +1297,12 @@ export default function BrowsePage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <MapIcon className="w-5 h-5 text-blue-500" />
+                <MapIcon className="w-5 h-5 text-purple-300" />
                 <h2 className="text-xl font-semibold">Discover tools near you!</h2>
               </div>
               <button
                 onClick={() => setViewMode('map')}
-                className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
+                className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-purple-200 hover:text-purple-200' : 'text-purple-300 hover:text-purple-300'}`}
               >
                 <span>Full map view</span>
                 <ChevronRight className="w-4 h-4" />
@@ -1324,7 +1324,7 @@ export default function BrowsePage() {
               {viewMode === 'map' && (
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
+                  className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-purple-200 hover:text-purple-200' : 'text-purple-300 hover:text-purple-300'}`}
                 >
                   <span>See list view</span>
                   <ChevronRight className="w-4 h-4" />
@@ -1371,7 +1371,7 @@ export default function BrowsePage() {
                   setViewMode('list');
                   setTimeout(() => setLoading(false), 800);
                 }}
-                className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
+                className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-purple-200 hover:text-purple-200' : 'text-purple-300 hover:text-purple-300'}`}
               >
                 <span>View all</span>
                 <ChevronRight className="w-4 h-4" />
@@ -1401,7 +1401,7 @@ export default function BrowsePage() {
                   <div className="p-3 space-y-2">
                     <h3 className="font-medium text-sm line-clamp-2">{tool.name}</h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-blue-500">${tool.price}/{tool.period}</span>
+                      <span className="text-sm font-bold text-purple-300">${tool.price}/{tool.period}</span>
                       <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         {tool.reviews} reviews
                       </span>
@@ -1429,7 +1429,7 @@ export default function BrowsePage() {
                   setViewMode('list');
                   setTimeout(() => setLoading(false), 800);
                 }}
-                className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'}`}
+                className={`flex items-center space-x-1 text-sm ${theme === 'dark' ? 'text-purple-200 hover:text-purple-200' : 'text-purple-300 hover:text-purple-300'}`}
               >
                 <span>View all</span>
                 <ChevronRight className="w-4 h-4" />
@@ -1459,7 +1459,7 @@ export default function BrowsePage() {
                   <div className="p-3 space-y-2">
                     <h3 className="font-medium text-sm line-clamp-2">{tool.name}</h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-blue-500">${tool.price}/{tool.period}</span>
+                      <span className="text-sm font-bold text-purple-300">${tool.price}/{tool.period}</span>
                       <div className="flex items-center space-x-1">
                         <Star className="w-3 h-3 text-yellow-400 fill-current" />
                         <span className="text-xs">{tool.rating}</span>
@@ -1530,7 +1530,7 @@ export default function BrowsePage() {
                         {/* Tool Image */}
                         <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
                           <div className="text-6xl group-hover:scale-110 transition-transform">{tool.image}</div>
-                          <div className="absolute top-3 right-3 bg-blue-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
+                          <div className="absolute top-3 right-3 bg-purple-900 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
                             <Star className="w-3 h-3 fill-current" />
                             <span>{tool.rating}</span>
                           </div>
@@ -1547,7 +1547,7 @@ export default function BrowsePage() {
 
                           <div className="flex items-center justify-between">
                             <div>
-                              <span className="text-xl font-bold text-blue-500">${tool.price}</span>
+                              <span className="text-xl font-bold text-purple-300">${tool.price}</span>
                               <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                                 /{tool.period}
                               </span>
@@ -1586,7 +1586,7 @@ export default function BrowsePage() {
                         setSelectedCategory('All');
                         setSearchSubmitted(false);
                       }}
-                      className="mt-4 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition-colors"
+                      className="mt-4 px-6 py-3 bg-purple-900 hover:bg-purple-950 text-white rounded-full font-medium transition-colors"
                     >
                       Browse All Tools
                     </button>
@@ -1633,7 +1633,7 @@ export default function BrowsePage() {
                   <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                     by {selectedTool.owner} • {selectedTool.location}
                   </p>
-                  <p className="text-lg font-bold text-blue-500">
+                  <p className="text-lg font-bold text-purple-300">
                     ${selectedTool.price}/{selectedTool.period}
                   </p>
                 </div>
@@ -1724,7 +1724,7 @@ export default function BrowsePage() {
                 }`}>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Total Cost:</span>
-                    <span className="font-bold text-lg text-blue-500">
+                    <span className="font-bold text-lg text-purple-300">
                       ${Math.ceil((new Date(rentRequest.endDate).getTime() - new Date(rentRequest.startDate).getTime()) / (1000 * 60 * 60 * 24)) * selectedTool.price}
                     </span>
                   </div>
@@ -1750,7 +1750,7 @@ export default function BrowsePage() {
               <button
                 onClick={handleRentRequestSubmit}
                 disabled={!rentRequest.startDate || !rentRequest.endDate}
-                className="flex-1 py-2 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
+                className="flex-1 py-2 px-4 bg-purple-900 hover:bg-purple-950 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
               >
                 Send Request
               </button>
@@ -1783,7 +1783,7 @@ export default function BrowsePage() {
               {/* Request Summary */}
               <div>
                 <h3 className="font-semibold text-lg mb-4 flex items-center space-x-2">
-                  <Eye className="w-5 h-5 text-blue-500" />
+                  <Eye className="w-5 h-5 text-purple-300" />
                   <span>Request Summary</span>
                 </h3>
                 <div className="space-y-3">
@@ -1823,7 +1823,7 @@ export default function BrowsePage() {
               <div className={`p-4 rounded-xl ${
                 theme === 'dark' ? 'bg-blue-900/20 border border-blue-800' : 'bg-blue-50 border border-blue-200'
               }`}>
-                <h4 className="font-semibold text-blue-600 mb-2">What happens next?</h4>
+                <h4 className="font-semibold text-purple-300 mb-2">What happens next?</h4>
                 <ul className={`text-sm space-y-1 ${theme === 'dark' ? 'text-blue-200' : 'text-blue-700'}`}>
                   <li>• The owner will be notified via email</li>
                   <li>• They can approve or decline your request</li>
@@ -1837,7 +1837,7 @@ export default function BrowsePage() {
             <div className="px-6 pb-6 flex space-x-3">
               <button
                 onClick={() => navigate('/my-rentals')}
-                className="flex-1 py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+                className="flex-1 py-3 px-4 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors"
               >
                 View My Rentals
               </button>
@@ -1863,7 +1863,7 @@ export default function BrowsePage() {
             theme === 'dark' ? 'bg-gray-800' : 'bg-white'
           }`}>
             <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-300"></div>
               <p className="text-lg font-medium">Loading listing...</p>
             </div>
           </div>

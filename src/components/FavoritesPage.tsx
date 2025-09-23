@@ -189,7 +189,7 @@ export default function FavoritesPage() {
 
                   <div className="flex items-center justify-between pt-2">
                     <div>
-                      <span className="text-2xl font-bold text-blue-500">${item.price}</span>
+                      <span className="text-2xl font-bold text-purple-300">${item.price}</span>
                       <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                         /{item.period}
                       </span>
@@ -201,7 +201,7 @@ export default function FavoritesPage() {
                     <button
                       className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
                         item.availability === 'Available'
-                          ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                          ? 'bg-purple-900 hover:bg-purple-950 text-white'
                           : theme === 'dark'
                           ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed'
                           : 'bg-gray-200 text-gray-500 cursor-not-allowed'
@@ -249,7 +249,7 @@ export default function FavoritesPage() {
                 ? "Start browsing and save tools you're interested in!"
                 : `No ${selectedCategory.toLowerCase()} tools in your favorites yet.`}
             </p>
-            <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-colors">
+            <button className="bg-purple-900 hover:bg-purple-950 text-white px-6 py-3 rounded-xl font-medium transition-colors">
               Browse Tools
             </button>
           </div>
@@ -275,7 +275,7 @@ export default function FavoritesPage() {
                 <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Available Now</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-500">
+                <p className="text-2xl font-bold text-purple-300">
                   ${Math.round(favorites.reduce((sum, item) => sum + item.price, 0) / favorites.length)}
                 </p>
                 <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Avg. Price/Day</p>

@@ -236,8 +236,8 @@ export default function ChatPage() {
                   className={`w-full p-4 text-left transition-colors border-b border-gray-200/10 ${
                     selectedChat === chat.id
                       ? theme === 'dark'
-                        ? 'bg-blue-500/20'
-                        : 'bg-blue-500/10'
+                        ? 'bg-purple-900/20'
+                        : 'bg-purple-900/10'
                       : theme === 'dark'
                       ? 'hover:bg-gray-800/60'
                       : 'hover:bg-gray-100/60'
@@ -245,7 +245,7 @@ export default function ChatPage() {
                 >
                   <div className="flex items-center space-x-3">
                     <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-xl">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-900 to-purple-600 flex items-center justify-center text-white text-xl">
                         {chat.userAvatar}
                       </div>
                       {chat.isOnline && (
@@ -266,7 +266,7 @@ export default function ChatPage() {
                       </p>
                     </div>
                     {chat.unreadCount > 0 && (
-                      <div className="w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+                      <div className="w-5 h-5 bg-purple-900 text-white text-xs rounded-full flex items-center justify-center">
                         {chat.unreadCount}
                       </div>
                     )}
@@ -286,7 +286,7 @@ export default function ChatPage() {
                 }`}>
                   <div className="flex items-center space-x-3">
                     <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-900 to-purple-600 flex items-center justify-center text-white">
                         {selectedChatData?.userAvatar}
                       </div>
                       {selectedChatData?.isOnline && (
@@ -341,7 +341,7 @@ export default function ChatPage() {
                         <div
                           className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                             isCurrentUser
-                              ? 'bg-blue-500 text-white'
+                              ? 'bg-purple-900 text-white'
                               : theme === 'dark'
                               ? 'bg-gray-800 text-white'
                               : 'bg-gray-200 text-gray-900'
@@ -405,7 +405,7 @@ export default function ChatPage() {
                     <button
                       onClick={handleSendMessage}
                       disabled={!message.trim()}
-                      className="p-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-2xl transition-colors"
+                      className="p-3 bg-purple-900 hover:bg-purple-950 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-2xl transition-colors"
                     >
                       <Send className="w-5 h-5" />
                     </button>

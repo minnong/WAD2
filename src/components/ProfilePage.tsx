@@ -56,10 +56,10 @@ export default function ProfilePage() {
     userListings.reduce((sum, l) => sum + l.rating, 0) / userListings.length : 0;
 
   const stats = [
-    { label: 'Tools Listed', value: userListings.length, icon: Award, color: 'text-blue-500' },
+    { label: 'Tools Listed', value: userListings.length, icon: Award, color: 'text-purple-300' },
     { label: 'Total Rentals', value: userRentals.length, icon: Clock, color: 'text-green-500' },
     { label: 'Total Earnings', value: `$${totalEarnings}`, icon: Star, color: 'text-yellow-500' },
-    { label: 'Average Rating', value: averageRating.toFixed(1), icon: Star, color: 'text-purple-500' }
+    { label: 'Average Rating', value: averageRating.toFixed(1), icon: Star, color: 'text-purple-400' }
   ];
 
   const handleSaveProfile = () => {
@@ -91,10 +91,10 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
             {/* Avatar */}
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-900 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
                 {currentUser?.displayName?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
               </div>
-              <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg">
+              <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-purple-900 text-white rounded-full flex items-center justify-center shadow-lg">
                 <Edit3 className="w-4 h-4" />
               </button>
             </div>
@@ -108,7 +108,7 @@ export default function ProfilePage() {
                   <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
                 </div>
                 {profileData.emailVerified && (
-                  <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-600 rounded-full text-xs">
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 dark:bg-purple-300/20 text-purple-300 rounded-full text-xs">
                     <Shield className="w-3 h-3" />
                     <span>Verified</span>
                   </div>
@@ -215,7 +215,7 @@ export default function ProfilePage() {
               <div className="flex space-x-3 mt-4">
                 <button
                   onClick={handleSaveProfile}
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+                  className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors"
                 >
                   Save Changes
                 </button>
@@ -266,7 +266,7 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                   activeTab === tab.id
-                    ? 'bg-blue-500 text-white shadow-lg'
+                    ? 'bg-purple-900 text-white shadow-lg'
                     : theme === 'dark'
                     ? 'bg-gray-800/60 text-gray-300 hover:bg-gray-800/80'
                     : 'bg-white/80 text-gray-700 hover:bg-white/90 backdrop-blur-sm'
@@ -320,7 +320,7 @@ export default function ProfilePage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Active Listings:</span>
-                      <span className="font-semibold text-blue-600">{userListings.length}</span>
+                      <span className="font-semibold text-purple-300">{userListings.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Total Rentals:</span>
@@ -328,7 +328,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Completed Rentals:</span>
-                      <span className="font-semibold text-purple-600">{completedRentals.length}</span>
+                      <span className="font-semibold text-purple-300">{completedRentals.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Total Earnings:</span>
@@ -352,7 +352,7 @@ export default function ProfilePage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-blue-500">${rental.totalCost}</p>
+                        <p className="font-bold text-purple-300">${rental.totalCost}</p>
                         <span className={`text-xs px-2 py-1 rounded-lg ${
                           rental.status === 'completed' ? 'bg-green-100 text-green-800' :
                           rental.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -383,7 +383,7 @@ export default function ProfilePage() {
                   }`}>
                     <div className="text-3xl mb-2">{listing.image}</div>
                     <h4 className="font-medium mb-1">{listing.name}</h4>
-                    <p className="text-sm text-blue-500 font-bold">${listing.price}/{listing.period}</p>
+                    <p className="text-sm text-purple-300 font-bold">${listing.price}/{listing.period}</p>
                     <div className="flex items-center space-x-1 mt-2">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
                       <span className="text-sm">{listing.rating} ({listing.reviews} reviews)</span>
@@ -395,7 +395,7 @@ export default function ProfilePage() {
                     <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
                       You haven't listed any tools yet.
                     </p>
-                    <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors">
+                    <button className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors">
                       List Your First Tool
                     </button>
                   </div>
@@ -426,7 +426,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-blue-500">${rental.totalCost}</p>
+                        <p className="font-bold text-purple-300">${rental.totalCost}</p>
                         <span className={`text-xs px-2 py-1 rounded-lg ${
                           rental.status === 'completed' ? 'bg-green-100 text-green-800' :
                           rental.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                 <h3 className="text-lg font-semibold">Account Settings</h3>
                 <button
                   onClick={() => navigate('/settings')}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors"
                 >
                   <Settings className="w-4 h-4" />
                   <span>Open Full Settings</span>
@@ -462,7 +462,7 @@ export default function ProfilePage() {
                 }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <User className="w-5 h-5 text-blue-500" />
+                      <User className="w-5 h-5 text-purple-300" />
                       <div>
                         <h4 className="font-medium">Profile Settings</h4>
                         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -472,7 +472,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                       onClick={() => navigate('/settings')}
-                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                      className="text-purple-300 hover:text-purple-300 text-sm font-medium"
                     >
                       Configure
                     </button>
@@ -484,7 +484,7 @@ export default function ProfilePage() {
                 }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <Shield className="w-5 h-5 text-blue-500" />
+                      <Shield className="w-5 h-5 text-purple-300" />
                       <div>
                         <h4 className="font-medium">Privacy & Security</h4>
                         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -494,7 +494,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                       onClick={() => navigate('/settings')}
-                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                      className="text-purple-300 hover:text-purple-300 text-sm font-medium"
                     >
                       Configure
                     </button>
@@ -506,7 +506,7 @@ export default function ProfilePage() {
                 }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <Settings className="w-5 h-5 text-blue-500" />
+                      <Settings className="w-5 h-5 text-purple-300" />
                       <div>
                         <h4 className="font-medium">Notification Preferences</h4>
                         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -516,7 +516,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                       onClick={() => navigate('/settings')}
-                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                      className="text-purple-300 hover:text-purple-300 text-sm font-medium"
                     >
                       Manage
                     </button>
@@ -543,7 +543,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500">Profile Visibility:</span>
-                      <span className="text-blue-600">Public</span>
+                      <span className="text-purple-300">Public</span>
                     </div>
                   </div>
                   <button

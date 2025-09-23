@@ -580,7 +580,7 @@ export default function ListItemPage() {
                 <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                   Drag and drop or click to upload (max 5 photos)
                 </p>
-                <button type="button" className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full font-medium transition-colors">
+                <button type="button" className="mt-4 bg-purple-900 hover:bg-purple-950 text-white px-6 py-2 rounded-full font-medium transition-colors">
                   Choose Files
                 </button>
               </div>
@@ -856,7 +856,7 @@ export default function ListItemPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
+              className="flex-1 bg-purple-900 hover:bg-purple-950 disabled:bg-purple-800 disabled:cursor-not-allowed text-white py-3 rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
             >
               {isUploadingImages ? (
                 <>

@@ -87,10 +87,10 @@ export default function HomePage() {
         } blur-3xl animate-pulse`}></div>
         <div className={`absolute top-1/4 left-1/4 w-96 h-96 ${
           theme === 'dark' ? 'bg-blue-500/5' : 'bg-blue-400/10'
-        } rounded-full blur-3xl animate-pulse delay-1000`}></div>
+        } rounded-sm blur-3xl animate-pulse delay-1000`}></div>
         <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 ${
-          theme === 'dark' ? 'bg-purple-500/5' : 'bg-purple-400/10'
-        } rounded-full blur-3xl animate-pulse delay-2000`}></div>
+          theme === 'dark' ? 'bg-blue-500/5' : 'bg-blue-400/10'
+        } rounded-sm blur-3xl animate-pulse delay-2000`}></div>
       </div>
 
       {/* Keep your original LiquidGlassNav */}
@@ -368,73 +368,125 @@ export default function HomePage() {
         {/* Recent Activity */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-8 px-2">Recent Activity</h2>
-          <div className={`rounded-2xl p-6 border-0 shadow-sm ${
+          <div className={`rounded-3xl p-8 border-0 shadow-2xl backdrop-blur-sm ${
             theme === 'dark'
-              ? 'bg-gray-800/60'
-              : 'bg-white/80 backdrop-blur-sm'
-          }`}>
+              ? 'bg-gray-900/80 border border-gray-700/30'
+              : 'bg-white/90 border border-gray-200/50'
+          }`}
+          style={{
+            boxShadow: `
+              0 0 20px rgba(139, 92, 246, 0.15),
+              0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04)
+            `
+          }}>
             {userRentals.length > 0 || userListings.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* Show recent listings */}
                 {userListings.slice(0, 2).map((listing, index) => (
-                  <div key={`listing-${index}`} className="flex items-center space-x-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <Plus className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">You listed "{listing.name}"</p>
-                      <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {listing.createdAt instanceof Date
-                          ? listing.createdAt.toLocaleDateString()
-                          : new Date((listing.createdAt as any).toDate()).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-green-600 dark:text-green-400 font-semibold">
-                      ${listing.price}/{listing.period}
+                  <div key={`listing-${index}`} className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] ${
+                    theme === 'dark'
+                      ? 'bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-500/20'
+                      : 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50'
+                  }`}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center space-x-5">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                          <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-lg truncate">You listed "{listing.name}"</p>
+                        <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          📅 {listing.createdAt instanceof Date
+                            ? listing.createdAt.toLocaleDateString()
+                            : new Date((listing.createdAt as any).toDate()).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <div className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl shadow-md">
+                          ${listing.price}/{listing.period}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
 
                 {/* Show recent rentals */}
                 {userRentals.slice(0, 2).map((rental, index) => (
-                  <div key={`rental-${index}`} className="flex items-center space-x-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <ShoppingBag className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">You rented "{rental.toolName}"</p>
-                      <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {rental.startDate} - {rental.endDate}
-                      </p>
-                    </div>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      rental.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
-                      rental.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
-                      rental.status === 'active' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
-                      'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                    }`}>
-                      {rental.status}
+                  <div key={`rental-${index}`} className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] ${
+                    theme === 'dark'
+                      ? 'bg-gradient-to-r from-purple-900/20 to-purple-800/20 border border-purple-500/20'
+                      : 'bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200/50'
+                  }`}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative flex items-center space-x-5">
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                          <ShoppingBag className="w-6 h-6 text-white" strokeWidth={2.5} />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-lg truncate">You rented "{rental.toolName}"</p>
+                        <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          📅 {rental.startDate} - {rental.endDate}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <div className={`px-4 py-2 rounded-xl text-sm font-bold shadow-md ${
+                          rental.status === 'pending' ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' :
+                          rental.status === 'approved' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
+                          rental.status === 'active' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white' :
+                          'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+                        }`}>
+                          {rental.status.toUpperCase()}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
 
                 {(userRentals.length > 2 || userListings.length > 2) && (
-                  <div className="text-center">
+                  <div className="text-center pt-4">
                     <button
                       onClick={() => navigate('/my-rentals')}
-                      className="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                     >
-                      View all activity →
+                      View all activity
+                      <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <p className={`text-center py-6 text-sm ${
-                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                No recent activity yet. Start browsing or listing items to see your activity here!
-              </p>
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center">
+                  <div className="text-4xl">📈</div>
+                </div>
+                <p className={`text-lg font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  No recent activity yet
+                </p>
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Start browsing or listing items to see your activity here!
+                </p>
+                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => navigate('/browse')}
+                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300"
+                  >
+                    Browse Items
+                  </button>
+                  <button
+                    onClick={() => navigate('/list-item')}
+                    className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300"
+                  >
+                    List an Item
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -442,34 +494,87 @@ export default function HomePage() {
         {/* Quick Tips */}
         <div>
           <h2 className="text-3xl font-bold mb-8 px-2">Quick Tips</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className={`rounded-2xl p-4 border-0 shadow-sm ${
-              theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
-            }`}>
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                  <Users className="w-4 h-4 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className={`group relative overflow-hidden rounded-3xl p-8 border-0 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] ${
+              theme === 'dark'
+                ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-blue-500/20'
+                : 'bg-gradient-to-br from-white/90 to-blue-50/80 border border-blue-200/50'
+            }`}
+            style={{
+              boxShadow: `
+                0 0 20px rgba(147, 51, 234, 0.15),
+                0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04)
+              `
+            }}>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative flex items-start space-x-5">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <Users className="w-8 h-8 text-white" strokeWidth={2.5} />
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Build Your Reputation</h3>
-                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Complete rentals and maintain your tools well to earn higher ratings and more bookings.
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    Build Your Reputation
+                  </h3>
+                  <p className={`text-base leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Complete rentals and maintain your tools well to earn higher ratings and more bookings. Great reviews lead to more trust!
                   </p>
+                  <div className="mt-4 flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Aim for 5-star reviews
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className={`rounded-2xl p-4 border-0 shadow-sm ${
-              theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
-            }`}>
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                  <TrendingUp className="w-4 h-4 text-white" />
+
+            <div className={`group relative overflow-hidden rounded-3xl p-8 border-0 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] ${
+              theme === 'dark'
+                ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-green-500/20'
+                : 'bg-gradient-to-br from-white/90 to-green-50/80 border border-green-200/50'
+            }`}
+            style={{
+              boxShadow: `
+                0 0 20px rgba(34, 197, 94, 0.15),
+                0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04)
+              `
+            }}>
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative flex items-start space-x-5">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <TrendingUp className="w-8 h-8 text-white" strokeWidth={2.5} />
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Maximize Earnings</h3>
-                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Set competitive prices and keep your availability updated to attract more renters.
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    Maximize Earnings
+                  </h3>
+                  <p className={`text-base leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Set competitive prices and keep your availability updated to attract more renters. Regular updates keep you visible!
                   </p>
+                  <div className="mt-4 flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Stay active
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="text-green-500">💰</div>
+                      <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Earn more
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

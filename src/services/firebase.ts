@@ -258,21 +258,62 @@ export class ReviewsService {
 // Image Upload Services
 export class ImageUploadService {
   async uploadImages(files: File[], path: string): Promise<string[]> {
-    const uploadPromises = files.map(async (file, index) => {
-      const timestamp = Date.now();
-      const filename = `${timestamp}_${index}_${file.name}`;
-      const storageRef = ref(storage, `${path}/${filename}`);
+    if (!files || files.length === 0) {
+      throw new Error('No files provided for upload');
+    }
 
-      const snapshot = await uploadBytes(storageRef, file);
-      return await getDownloadURL(snapshot.ref);
-    });
+    console.log(`Converting ${files.length} files to base64 (Firebase Storage bypass mode)`);
 
-    return await Promise.all(uploadPromises);
+    try {
+      const uploadPromises = files.map(async (file, index) => {
+        // Validate file
+        if (!file) {
+          throw new Error(`File at index ${index} is null or undefined`);
+        }
+
+        if (!file.type.startsWith('image/')) {
+          throw new Error(`File "${file.name}" is not an image file`);
+        }
+
+        console.log(`Converting file: ${file.name}, size: ${file.size} bytes, type: ${file.type}`);
+
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+
+          reader.onload = () => {
+            const base64String = reader.result as string;
+            console.log(`Converted ${file.name} to base64`);
+            resolve(base64String);
+          };
+
+          reader.onerror = () => {
+            reject(new Error(`Failed to convert ${file.name} to base64`));
+          };
+
+          reader.readAsDataURL(file);
+        });
+      });
+
+      console.log('Converting all images to base64...');
+      const urls = await Promise.all(uploadPromises);
+      console.log('All images converted successfully');
+      return urls;
+
+    } catch (error) {
+      console.error('Error converting images:', error);
+      throw new Error(error.message || 'Failed to process images. Please try again.');
+    }
   }
 
   async deleteImage(imageUrl: string): Promise<void> {
-    const imageRef = ref(storage, imageUrl);
-    await deleteObject(imageRef);
+    try {
+      const imageRef = ref(storage, imageUrl);
+      await deleteObject(imageRef);
+      console.log('Image deleted successfully:', imageUrl);
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      throw new Error(`Failed to delete image: ${error.message}`);
+    }
   }
 }
 

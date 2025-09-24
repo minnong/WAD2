@@ -52,6 +52,57 @@ export default function BrowsePage() {
   const filterRef = useRef<HTMLDivElement>(null);
   const discoverMapRef = useRef<HTMLDivElement>(null);
 
+  // Helper function to render tool image (emoji or base64)
+  const renderToolImage = (tool: any, className: string = "text-4xl") => {
+    // Check if image is a base64 data URL
+    if (tool.image && tool.image.startsWith('data:image/')) {
+      return (
+        <img
+          src={tool.image}
+          alt={tool.name}
+          className={`w-full h-full object-cover rounded-lg ${className.includes('group-hover:scale-110') ? 'group-hover:scale-110 transition-transform' : ''}`}
+        />
+      );
+    }
+    // Otherwise, treat as emoji
+    return (
+      <div className={`${className} group-hover:scale-110 transition-transform`}>
+        {tool.image}
+      </div>
+    );
+  };
+
+  // Helper function to get category emoji for map markers
+  const getCategoryIcon = (tool: any) => {
+    // If it has a base64 image, return category emoji instead
+    if (tool.image && tool.image.startsWith('data:image/')) {
+      const categoryEmojis = {
+        'Power Tools': '🔨',
+        'Garden Tools': '🌱',
+        'Electronics': '📱',
+        'Kitchen Appliances': '🍳',
+        'Sports Equipment': '🎾',
+        'Home & DIY': '🔧',
+        'Photography': '📷',
+        'Automotive': '🚗',
+        'Musical Instruments': '🎵',
+        'Health & Fitness': '💪',
+        'Baby & Kids': '🧸',
+        'Books & Education': '📚',
+        'Art & Craft': '🎭',
+        'Outdoor & Camping': '🏕️',
+        'Party & Events': '🎉',
+        'Office Equipment': '💼',
+        'Beauty & Personal Care': '💄',
+        'Gaming': '🎮',
+        'Other': '🔧'
+      };
+      return categoryEmojis[tool.category] || '🔧';
+    }
+    // Otherwise return the emoji image
+    return tool.image;
+  };
+
   const categories = [
     'All',
     'Power Tools',
@@ -416,7 +467,24 @@ export default function BrowsePage() {
   ];
 
   // Combine mock tools with user listings
+  console.log('Firebase listings:', listings);
+  console.log('Mock tools:', mockTools);
   const allTools = [...mockTools, ...listings];
+  console.log('All tools combined:', allTools);
+
+  // Debug coordinates in each listing
+  listings.forEach((listing, index) => {
+    console.log(`Listing ${index + 1}:`, {
+      name: listing.name,
+      hasCoordinates: !!listing.coordinates,
+      coordinates: listing.coordinates,
+      coordsType: typeof listing.coordinates,
+      hasLat: listing.coordinates ? !!listing.coordinates.lat : false,
+      hasLng: listing.coordinates ? !!listing.coordinates.lng : false,
+      latType: listing.coordinates ? typeof listing.coordinates.lat : 'undefined',
+      lngType: listing.coordinates ? typeof listing.coordinates.lng : 'undefined'
+    });
+  });
 
   const filteredTools = allTools.filter(tool => {
     const matchesSearch = tool.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -566,7 +634,16 @@ export default function BrowsePage() {
       });
 
       // Add markers for filtered tools (respects categories and filters)
-      filteredTools.slice(0, 12).forEach((tool) => {
+      // Filter out tools without valid coordinates
+      const toolsWithCoordinates = filteredTools.filter(tool =>
+        tool.coordinates &&
+        typeof tool.coordinates.lat === 'number' &&
+        typeof tool.coordinates.lng === 'number'
+      );
+
+      console.log('Tools with coordinates for discover map:', toolsWithCoordinates.length, 'out of', filteredTools.length);
+
+      toolsWithCoordinates.slice(0, 12).forEach((tool) => {
         const marker = new window.google.maps.Marker({
           position: tool.coordinates,
           map: discoverMap,
@@ -576,7 +653,7 @@ export default function BrowsePage() {
               <svg width="32" height="48" viewBox="0 0 32 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 48 16 48S32 28 32 16C32 7.16 24.84 0 16 0Z" fill="#3B82F6"/>
                 <circle cx="16" cy="16" r="10" fill="white"/>
-                <text x="16" y="20" text-anchor="middle" font-size="12" fill="#3B82F6">${tool.image}</text>
+                <text x="16" y="20" text-anchor="middle" font-size="12" fill="#3B82F6">${getCategoryIcon(tool)}</text>
               </svg>
             `),
             scaledSize: new window.google.maps.Size(32, 48),
@@ -584,7 +661,11 @@ export default function BrowsePage() {
           }
         });
 
-        // Create info window
+        // Create info window with conditional image display
+        const imageContent = tool.image && tool.image.startsWith('data:image/')
+          ? `<img src="${tool.image}" alt="${tool.name}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 6px; margin-right: 8px;">`
+          : `<span style="font-size: 24px; margin-right: 8px;">${tool.image}</span>`;
+
         const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div
@@ -601,7 +682,7 @@ export default function BrowsePage() {
               onmouseout="this.style.background='white'; this.style.transform='scale(1)'"
             >
               <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 24px; margin-right: 8px;">${tool.image}</span>
+                ${imageContent}
                 <div>
                   <h3 style="margin: 0; font-size: 16px; font-weight: 600;">${tool.name}</h3>
                   <p style="margin: 2px 0; font-size: 12px; color: #666;">by ${tool.owner}</p>
@@ -750,7 +831,17 @@ export default function BrowsePage() {
 
       // Add markers for filtered tools (respects current filters and categories)
       const toolsToShow = searchSubmitted || selectedCategory !== 'All' ? filteredTools : filteredTools;
-      toolsToShow.forEach((tool) => {
+
+      // Filter out tools without valid coordinates
+      const toolsWithCoordinates = toolsToShow.filter(tool =>
+        tool.coordinates &&
+        typeof tool.coordinates.lat === 'number' &&
+        typeof tool.coordinates.lng === 'number'
+      );
+
+      console.log('Tools with coordinates for main map:', toolsWithCoordinates.length, 'out of', toolsToShow.length);
+
+      toolsWithCoordinates.forEach((tool) => {
         const marker = new window.google.maps.Marker({
           position: tool.coordinates,
           map: map,
@@ -760,7 +851,7 @@ export default function BrowsePage() {
               <svg width="32" height="48" viewBox="0 0 32 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 48 16 48S32 28 32 16C32 7.16 24.84 0 16 0Z" fill="#3B82F6"/>
                 <circle cx="16" cy="16" r="10" fill="white"/>
-                <text x="16" y="20" text-anchor="middle" font-size="12" fill="#3B82F6">${tool.image}</text>
+                <text x="16" y="20" text-anchor="middle" font-size="12" fill="#3B82F6">${getCategoryIcon(tool)}</text>
               </svg>
             `),
             scaledSize: new window.google.maps.Size(32, 48),
@@ -768,7 +859,11 @@ export default function BrowsePage() {
           }
         });
 
-        // Create info window
+        // Create info window with conditional image display
+        const imageContent = tool.image && tool.image.startsWith('data:image/')
+          ? `<img src="${tool.image}" alt="${tool.name}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 6px; margin-right: 8px;">`
+          : `<span style="font-size: 24px; margin-right: 8px;">${tool.image}</span>`;
+
         const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div
@@ -785,7 +880,7 @@ export default function BrowsePage() {
               onmouseout="this.style.background='white'; this.style.transform='scale(1)'"
             >
               <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 24px; margin-right: 8px;">${tool.image}</span>
+                ${imageContent}
                 <div>
                   <h3 style="margin: 0; font-size: 16px; font-weight: 600;">${tool.name}</h3>
                   <p style="margin: 2px 0; font-size: 12px; color: #666;">by ${tool.owner}</p>
@@ -1390,7 +1485,7 @@ export default function BrowsePage() {
                 >
                   {/* Tool Image */}
                   <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
-                    <div className="text-4xl group-hover:scale-110 transition-transform">{tool.image}</div>
+                    {renderToolImage(tool, "text-4xl")}
                     <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center space-x-1">
                       <Star className="w-3 h-3 fill-current" />
                       <span>{tool.rating}</span>
@@ -1448,7 +1543,7 @@ export default function BrowsePage() {
                 >
                   {/* Tool Image */}
                   <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
-                    <div className="text-4xl group-hover:scale-110 transition-transform">{tool.image}</div>
+                    {renderToolImage(tool, "text-4xl")}
                     <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center space-x-1">
                       <TrendingUp className="w-3 h-3" />
                       <span>Hot</span>
@@ -1529,7 +1624,7 @@ export default function BrowsePage() {
                       >
                         {/* Tool Image */}
                         <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
-                          <div className="text-6xl group-hover:scale-110 transition-transform">{tool.image}</div>
+                          {renderToolImage(tool, "text-6xl")}
                           <div className="absolute top-3 right-3 bg-purple-900 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
                             <Star className="w-3 h-3 fill-current" />
                             <span>{tool.rating}</span>
@@ -1627,7 +1722,7 @@ export default function BrowsePage() {
             <div className="p-6 space-y-4">
               {/* Tool Info */}
               <div className="flex items-center space-x-4">
-                <div className="text-3xl">{selectedTool.image}</div>
+                {renderToolImage(selectedTool, "text-3xl")}
                 <div>
                   <h4 className="font-semibold">{selectedTool.name}</h4>
                   <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>

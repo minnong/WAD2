@@ -4,7 +4,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
 import LiquidGlassNav from './LiquidGlassNav';
-import { Package, Clock, CheckCircle, XCircle, Eye, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 export default function MyRentalsPage() {
   const navigate = useNavigate();
@@ -31,10 +31,10 @@ export default function MyRentalsPage() {
   const userOwnListings = userListings;
   const incomingRequests = receivedRentalRequests.filter(request => request.status === 'pending');
 
-  // Helper function to render tool image (emoji or base64) - enhanced for better layout
+  // Helper function to render tool image (emoji or base64) - enhanced for full height
   const renderToolImage = (imageStr: string, size: 'small' | 'large' = 'small') => {
     const sizeClasses = size === 'large'
-      ? "w-32 h-32 md:w-40 md:h-40"
+      ? "w-48 h-48 md:w-56 md:h-56"
       : "w-16 h-16";
 
     // Check if image is a base64 data URL
@@ -43,14 +43,14 @@ export default function MyRentalsPage() {
         <img
           src={imageStr}
           alt="Tool"
-          className={`${sizeClasses} object-cover rounded-xl shadow-md`}
+          className={`${sizeClasses} object-cover rounded-xl shadow-lg`}
         />
       );
     }
     // Otherwise, treat as emoji
     return (
-      <div className={`${sizeClasses} flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl shadow-md ${
-        size === 'large' ? 'text-6xl md:text-7xl' : 'text-4xl'
+      <div className={`${sizeClasses} flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl shadow-lg ${
+        size === 'large' ? 'text-8xl md:text-9xl' : 'text-4xl'
       }`}>
         {imageStr}
       </div>
@@ -333,80 +333,96 @@ export default function MyRentalsPage() {
             {activeRentals.length > 0 && (
               <div>
                 <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  🔥 Active Rentals
+                  Active Rentals
                 </h2>
                 <div className="space-y-6">
                   {activeRentals.map((item) => (
                     <div
                       key={item.id}
                       onClick={() => handleViewListing(item.toolId)}
-                      className={`rounded-2xl p-6 border-0 shadow-sm cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+                      className={`rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
                         theme === 'dark'
-                          ? 'bg-gray-800/60 hover:bg-gray-800/80'
-                          : 'bg-white/80 backdrop-blur-sm hover:bg-white/90'
+                          ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
                       }`}>
-                      <div className="flex items-start space-x-4">
-                        {renderToolImage(item.toolImage, "text-4xl")}
+                      <div className="flex items-center p-6 gap-6">
+                        {/* Large Image on Left */}
+                        <div className="flex-shrink-0">
+                          {renderToolImage(item.toolImage, "large")}
+                        </div>
 
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="text-lg font-semibold">{item.toolName}</h3>
-                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                                From {item.ownerName} • {item.location}
+                        {/* Listing Details in Center */}
+                        <div className="flex-1 min-w-0">
+                          <div className="mb-4">
+                            <h3 className="text-xl font-bold mb-1 text-purple-300">{item.toolName}</h3>
+                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                              From <span className="font-medium">{item.ownerName}</span> • {item.location}
+                            </p>
+                          </div>
+
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
+                              <span className="font-semibold text-sm">{item.startDate} - {item.endDate}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
+                              <span className="font-semibold text-sm">{item.startTime} - {item.endTime}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
+                              <span className="font-bold text-lg text-purple-500">${item.totalCost}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
+                              <span className="font-semibold text-sm">
+                                {item.requestDate instanceof Date
+                                  ? item.requestDate.toLocaleDateString()
+                                  : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+
+                          {item.message && (
+                            <div className={`p-3 rounded-lg border-l-4 border-purple-400 ${
+                              theme === 'dark' ? 'bg-purple-900/20' : 'bg-purple-50'
+                            }`}>
+                              <p className={`text-xs font-medium ${theme === 'dark' ? 'text-purple-300' : 'text-purple-600'}`}>YOUR MESSAGE</p>
+                              <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                                "{item.message}"
                               </p>
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(item.status)}`}>
+                          )}
+                        </div>
+
+                        {/* Status & Actions on Right */}
+                        <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
+                          {/* Status Badge */}
+                          <div className="flex flex-col items-end space-y-2">
+                            <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(item.status)}`}>
                               {getStatusIcon(item.status)}
                               <span className="capitalize">{item.status}</span>
                             </span>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Rental Period</p>
-                              <p className="font-medium">{item.startDate} to {item.endDate}</p>
-                            </div>
-                            <div>
-                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</p>
-                              <p className="font-medium text-purple-300">${item.totalCost}</p>
-                            </div>
-                            <div>
-                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
-                              <p className="font-medium">
-                                {item.requestDate instanceof Date
-                                  ? item.requestDate.toLocaleDateString()
-                                  : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-
-                          {item.message && (
-                            <div className={`p-3 rounded-xl mb-4 ${
-                              theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
-                            }`}>
-                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                                <strong>Your message:</strong> {item.message}
-                              </p>
-                            </div>
-                          )}
-
-                          <div className="flex space-x-3" onClick={(e) => e.stopPropagation()}>
+                          {/* Action Buttons */}
+                          <div className="flex flex-col space-y-2 w-full">
                             <button
                               onClick={() => handleContactOwner(item)}
-                              className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all hover:scale-105 ${
+                              className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
                                 theme === 'dark'
-                                  ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                  ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
+                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
                               }`}
                             >
                               <MessageCircle className="w-4 h-4" />
                               <span>Contact Owner</span>
                             </button>
+
                             {item.status === 'active' && (
                               <button
                                 onClick={() => handleExtendRental(item)}
-                                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl transition-all hover:scale-105 shadow-md"
+                                className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
                               >
                                 <Calendar className="w-4 h-4" />
                                 <span>Extend Rental</span>
@@ -432,78 +448,94 @@ export default function MyRentalsPage() {
                     <div
                       key={item.id}
                       onClick={() => handleViewListing(item.toolId)}
-                      className={`rounded-2xl p-6 border-0 shadow-sm cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+                      className={`rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
                         theme === 'dark'
-                          ? 'bg-gray-800/60 hover:bg-gray-800/80'
-                          : 'bg-white/80 backdrop-blur-sm hover:bg-white/90'
+                          ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
                       }`}>
-                      <div className="flex items-start space-x-4">
-                        {renderToolImage(item.toolImage, "text-4xl")}
+                      <div className="flex items-center p-6 gap-6">
+                        {/* Large Image on Left */}
+                        <div className="flex-shrink-0">
+                          {renderToolImage(item.toolImage, "large")}
+                        </div>
 
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="text-lg font-semibold">{item.toolName}</h3>
-                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                                From {item.ownerName} • {item.location}
-                              </p>
-                            </div>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(item.status)}`}>
-                              {getStatusIcon(item.status)}
-                              <span className="capitalize">{item.status}</span>
-                            </span>
+                        {/* Listing Details in Center */}
+                        <div className="flex-1 min-w-0">
+                          <div className="mb-4">
+                            <h3 className="text-xl font-bold mb-1 text-purple-300">{item.toolName}</h3>
+                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                              From <span className="font-medium">{item.ownerName}</span> • {item.location}
+                            </p>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Rental Period</p>
-                              <p className="font-medium">{item.startDate} to {item.endDate}</p>
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
+                              <span className="font-semibold text-sm">{item.startDate} - {item.endDate}</span>
                             </div>
-                            <div>
-                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Cost</p>
-                              <p className="font-medium text-purple-300">${item.totalCost}</p>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
+                              <span className="font-semibold text-sm">{item.startTime} - {item.endTime}</span>
                             </div>
-                            <div>
-                              <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
-                              <p className="font-medium">
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
+                              <span className="font-bold text-lg text-purple-500">${item.totalCost}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
+                              <span className="font-semibold text-sm">
                                 {item.requestDate instanceof Date
                                   ? item.requestDate.toLocaleDateString()
                                   : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
-                              </p>
+                              </span>
                             </div>
                           </div>
 
                           {item.message && (
-                            <div className={`p-3 rounded-xl mb-4 ${
-                              theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
+                            <div className={`p-3 rounded-lg mb-4 ${
+                              theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
                             }`}>
+                              <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>YOUR MESSAGE</p>
                               <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                                <strong>Your message:</strong> {item.message}
+                                "{item.message}"
                               </p>
                             </div>
                           )}
+                        </div>
 
-                          <div className="flex space-x-3" onClick={(e) => e.stopPropagation()}>
+                        {/* Status & Actions on Right */}
+                        <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
+                          {/* Status Badge */}
+                          <div className="flex flex-col items-end space-y-2">
+                            <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(item.status)}`}>
+                              {getStatusIcon(item.status)}
+                              <span className="capitalize">{item.status}</span>
+                            </span>
+                            <p className="text-xs text-orange-500 font-medium">⏳ Waiting for approval</p>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex flex-col space-y-2 w-full">
                             <button
                               onClick={() => handleContactOwner(item)}
-                              className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all hover:scale-105 ${
+                              className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
                                 theme === 'dark'
-                                  ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                  ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
+                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
                               }`}
                             >
                               <MessageCircle className="w-4 h-4" />
                               <span>Contact Owner</span>
                             </button>
-                            {item.status === 'pending' && (
-                              <button
-                                onClick={() => handleCancelRequest(item.id)}
-                                className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors"
-                              >
-                                <XCircle className="w-4 h-4" />
-                                <span>Cancel Request</span>
-                              </button>
-                            )}
+
+                            <button
+                              onClick={() => handleCancelRequest(item.id)}
+                              className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                            >
+                              <XCircle className="w-4 h-4" />
+                              <span>Cancel Request</span>
+                            </button>
+
                           </div>
                         </div>
                       </div>
@@ -516,112 +548,102 @@ export default function MyRentalsPage() {
         ) : activeTab === 'listed' ? (
           <div>
             <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              💼 My Tool Listings
+              My Tool Listings
             </h2>
             <div className="space-y-6">
               {userOwnListings.map((item) => (
-                <div key={item.id} className={`group rounded-3xl p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] ${
-                  theme === 'dark'
-                    ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                    : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
-                }`}>
-                  <div className="flex items-start space-x-6">
+                <div
+                  key={item.id}
+                  onClick={() => handleViewListing(item.id)}
+                  className={`group rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                    theme === 'dark'
+                      ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                      : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                  }`}>
+                  <div className="flex items-center p-6 gap-6">
+                    {/* Large Image on Left */}
                     <div className="flex-shrink-0">
-                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl ${
-                        theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'
-                      }`}>
-                        {renderToolImage(item.image, "text-3xl")}
-                      </div>
+                      {renderToolImage(item.image, "large")}
                     </div>
 
+                    {/* Listing Details in Center */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="text-lg font-semibold">{item.name}</h3>
-                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Listed on {item.createdAt instanceof Date
+                      <div className="mb-4">
+                        <h3 className="text-xl font-bold mb-1 text-purple-300">{item.name}</h3>
+                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Listed on <span className="font-medium">
+                            {item.createdAt instanceof Date
                               ? item.createdAt.toLocaleDateString()
                               : new Date((item.createdAt as any).toDate()).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor('available')}`}>
-                          {getStatusIcon('available')}
-                          <span className="capitalize">Available</span>
-                        </span>
+                          </span>
+                        </p>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div>
-                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Price</p>
-                          <p className="font-medium text-purple-300">${item.price}/{item.period}</p>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Price:</span>
+                          <span className="font-bold text-lg text-purple-500">${item.price} per {item.period}</span>
                         </div>
-                        <div>
-                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Category</p>
-                          <p className="font-medium">{item.category}</p>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Category:</span>
+                          <span className="font-semibold text-sm">{item.category}</span>
                         </div>
-                        <div>
-                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Condition</p>
-                          <p className="font-medium capitalize">{item.condition}</p>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Condition:</span>
+                          <span className="font-semibold text-sm capitalize">{item.condition}</span>
                         </div>
-                        <div>
-                          <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Location</p>
-                          <p className="font-medium">{item.location}</p>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Location:</span>
+                          <span className="font-semibold text-sm">{item.location}</span>
                         </div>
                       </div>
 
                       {item.description && (
-                        <div className={`p-3 rounded-xl mb-4 ${
-                          theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
+                        <div className={`p-3 rounded-lg mb-4 ${
+                          theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
                         }`}>
+                          <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>DESCRIPTION</p>
                           <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                             {item.description}
                           </p>
                         </div>
                       )}
+                    </div>
 
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={() => handleViewListing(item.id)}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all hover:scale-105 ${
-                            theme === 'dark'
-                              ? 'bg-blue-600/20 hover:bg-blue-600/30 text-blue-400'
-                              : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
-                          }`}
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span>View Details</span>
-                        </button>
+                    {/* Status & Actions on Right */}
+                    <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
+                      {/* Status Badge */}
+                      <div className="flex flex-col items-end space-y-2">
+                        <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor('available')}`}>
+                          {getStatusIcon('available')}
+                          <span className="capitalize">Available</span>
+                        </span>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col space-y-2 w-full">
                         <button
                           onClick={() => handleEditListing(item.id)}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all hover:scale-105 ${
+                          className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
                             theme === 'dark'
-                              ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                              ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
+                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
                           }`}
                         >
                           <Edit className="w-4 h-4" />
                           <span>Edit Listing</span>
                         </button>
+
+
                         {item.availability === 'available' && (
                           <button
                             onClick={() => handleBoostListing(item.id)}
-                            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl transition-all hover:scale-105 shadow-md"
+                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
                           >
                             <TrendingUp className="w-4 h-4" />
                             <span>Boost Listing</span>
                           </button>
                         )}
-                        <button
-                          onClick={() => navigate('/chat')}
-                          className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all hover:scale-105 ${
-                            theme === 'dark'
-                              ? 'bg-green-600/20 hover:bg-green-600/30 text-green-400'
-                              : 'bg-green-100 hover:bg-green-200 text-green-700'
-                          }`}
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                          <span>Messages</span>
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -640,81 +662,94 @@ export default function MyRentalsPage() {
                   <div
                     key={request.id}
                     onClick={() => handleViewListing(request.toolId)}
-                    className={`rounded-2xl p-6 border-0 shadow-sm cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${
+                    className={`rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
                       theme === 'dark'
-                        ? 'bg-gray-800/60 hover:bg-gray-800/80'
-                        : 'bg-white/80 backdrop-blur-sm hover:bg-white/90'
+                        ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                        : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
                     }`}>
-                    <div className="flex items-start space-x-4">
-                      {renderToolImage(request.toolImage, "text-4xl")}
+                    <div className="flex items-center p-6 gap-6">
+                      {/* Large Image on Left */}
+                      <div className="flex-shrink-0">
+                        {renderToolImage(request.toolImage, "large")}
+                      </div>
 
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="text-lg font-semibold">{request.toolName}</h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              Request from {request.renterName} • {request.renterEmail}
-                            </p>
-                          </div>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getStatusColor(request.status)}`}>
-                            {getStatusIcon(request.status)}
-                            <span className="capitalize">{request.status}</span>
-                          </span>
+                      {/* Listing Details in Center */}
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-4">
+                          <h3 className="text-xl font-bold mb-1 text-purple-300">{request.toolName}</h3>
+                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Request from <span className="font-medium">{request.renterName}</span> • {request.renterEmail}
+                          </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          <div>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested Period</p>
-                            <p className="font-medium">{request.startDate} to {request.endDate}</p>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {request.startTime} - {request.endTime}
-                            </p>
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
+                            <span className="font-semibold text-sm">{request.startDate} - {request.endDate}</span>
                           </div>
-                          <div>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Offered Amount</p>
-                            <p className="font-medium text-green-400">${request.totalCost}</p>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
+                            <span className="font-semibold text-sm">{request.startTime} - {request.endTime}</span>
                           </div>
-                          <div>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Request Date</p>
-                            <p className="font-medium">
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
+                            <span className="font-bold text-lg text-purple-500">${request.totalCost}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
+                            <span className="font-semibold text-sm">
                               {request.requestDate instanceof Date
                                 ? request.requestDate.toLocaleDateString()
                                 : new Date((request.requestDate as any).toDate()).toLocaleDateString()}
-                            </p>
+                            </span>
                           </div>
                         </div>
 
                         {request.message && (
-                          <div className={`p-3 rounded-xl mb-4 ${
-                            theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'
+                          <div className={`p-3 rounded-lg mb-4 ${
+                            theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
                           }`}>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                              <strong>Renter's message:</strong> {request.message}
+                            <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>RENTER'S MESSAGE</p>
+                            <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                              "{request.message}"
                             </p>
                           </div>
                         )}
+                      </div>
 
-                        <div className="flex space-x-3" onClick={(e) => e.stopPropagation()}>
+                      {/* Status & Actions on Right */}
+                      <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
+                        {/* Status Badge */}
+                        <div className="flex flex-col items-end space-y-2">
+                          <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(request.status)}`}>
+                            {getStatusIcon(request.status)}
+                            <span className="capitalize">{request.status}</span>
+                          </span>
+                          <p className="text-xs text-yellow-500 font-medium">⏳ Awaiting response</p>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col space-y-2 w-full">
                           <button
                             onClick={() => handleApprovalAction(request.id, 'approve')}
-                            className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors"
+                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
                           >
                             <ThumbsUp className="w-4 h-4" />
                             <span>Approve</span>
                           </button>
                           <button
                             onClick={() => handleApprovalAction(request.id, 'decline')}
-                            className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors"
+                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
                           >
                             <ThumbsDown className="w-4 h-4" />
                             <span>Decline</span>
                           </button>
                           <button
                             onClick={() => handleContactOwner(request)}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all hover:scale-105 ${
+                            className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
                               theme === 'dark'
-                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
                             }`}
                           >
                             <MessageCircle className="w-4 h-4" />

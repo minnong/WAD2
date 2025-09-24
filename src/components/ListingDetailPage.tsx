@@ -28,6 +28,32 @@ export default function ListingDetailPage() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [listingData, setListingData] = useState<any>(null);
 
+  // Helper function to render tool image (emoji or base64)
+  const renderToolImage = (imageStr: string, size: 'small' | 'medium' | 'large' = 'medium') => {
+    const sizeClasses = size === 'small'
+      ? "w-8 h-8 text-2xl"
+      : size === 'large'
+      ? "w-16 h-16 text-5xl"
+      : "w-12 h-12 text-3xl";
+
+    // Check if image is a base64 data URL
+    if (imageStr && imageStr.startsWith('data:image/')) {
+      return (
+        <img
+          src={imageStr}
+          alt="Tool"
+          className={`${sizeClasses} object-cover rounded-lg`}
+        />
+      );
+    }
+    // Otherwise, treat as emoji
+    return (
+      <div className={`${sizeClasses} flex items-center justify-center`}>
+        {imageStr}
+      </div>
+    );
+  };
+
   // Mock tools data (same as BrowsePage)
   const mockTools = [
     {
@@ -622,7 +648,7 @@ export default function ListingDetailPage() {
                 <div>
                   <h1 className="text-2xl font-bold mb-2">{tool.name}</h1>
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{tool.category}</span>
+                    <span className="bg-gray-100 dark:bg-gray-700 text-white px-2 py-1 rounded">{tool.category}</span>
                     <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
                       {tool.condition}
                     </span>
@@ -737,7 +763,7 @@ export default function ListingDetailPage() {
             <div className="p-6 space-y-4">
               {/* Tool Info */}
               <div className="flex items-center space-x-4">
-                <div className="text-3xl">{tool.image}</div>
+                {renderToolImage(tool.image, 'medium')}
                 <div>
                   <h4 className="font-semibold">{tool.name}</h4>
                   <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>

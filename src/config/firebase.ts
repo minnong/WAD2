@@ -45,6 +45,10 @@ export const db = getFirestore(app);
 // Initialize Firebase Storage
 export const storage = getStorage(app);
 
+// Test Firebase Storage connection
+console.log('Firebase Storage initialized:', storage);
+console.log('Storage bucket:', storage.app.options.storageBucket);
+
 // Initialize Analytics
 export const analytics = getAnalytics(app);
 

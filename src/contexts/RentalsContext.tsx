@@ -44,6 +44,8 @@ interface RentalsContextType {
   addRentalRequest: (request: Omit<RentalRequest, 'id' | 'requestDate' | 'userId'>) => Promise<void>;
   updateRentalStatus: (id: string, status: RentalRequest['status']) => Promise<void>;
   getUserRentals: () => RentalRequest[];
+  checkDateConflict: (toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => boolean;
+  getUnavailableDates: (toolId: string) => Array<{ start: string; end: string; status: string }>;
 }
 
 const RentalsContext = createContext<RentalsContextType | null>(null);
@@ -119,9 +121,51 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
     };
   }, [currentUser]);
 
+  const checkDateConflict = (toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => {
+    // Get all approved/active rentals for this tool
+    const approvedRentals = [...userRentalRequests, ...receivedRentalRequests].filter(
+      rental =>
+        rental.toolId === toolId &&
+        (rental.status === 'approved' || rental.status === 'active') &&
+        rental.id !== excludeRequestId // Exclude the current request when checking
+    );
+
+    const newStart = new Date(startDate);
+    const newEnd = new Date(endDate);
+
+    // Check for overlaps with existing rentals
+    return approvedRentals.some(rental => {
+      const existingStart = new Date(rental.startDate);
+      const existingEnd = new Date(rental.endDate);
+
+      // Check if dates overlap
+      return (newStart <= existingEnd) && (newEnd >= existingStart);
+    });
+  };
+
+  const getUnavailableDates = (toolId: string) => {
+    // Get all approved/active rentals for this tool
+    const approvedRentals = [...userRentalRequests, ...receivedRentalRequests].filter(
+      rental =>
+        rental.toolId === toolId &&
+        (rental.status === 'approved' || rental.status === 'active')
+    );
+
+    return approvedRentals.map(rental => ({
+      start: rental.startDate,
+      end: rental.endDate,
+      status: rental.status
+    }));
+  };
+
   const addRentalRequest = async (requestData: Omit<RentalRequest, 'id' | 'requestDate' | 'userId'>) => {
     if (!currentUser) {
       throw new Error('User must be authenticated to create rental requests');
+    }
+
+    // Check for date conflicts before creating the request
+    if (checkDateConflict(requestData.toolId, requestData.startDate, requestData.endDate)) {
+      throw new Error('The selected dates conflict with an existing rental. Please choose different dates.');
     }
 
     try {
@@ -176,6 +220,8 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
         addRentalRequest,
         updateRentalStatus,
         getUserRentals,
+        checkDateConflict,
+        getUnavailableDates,
       }}
     >
       {children}

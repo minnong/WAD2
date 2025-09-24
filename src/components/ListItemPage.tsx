@@ -32,6 +32,8 @@ export default function ListItemPage() {
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
 
@@ -86,8 +88,34 @@ export default function ListItemPage() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    // Limit to 5 images
-    const newFiles = files.slice(0, 5 - uploadedImages.length);
+    // Validate file types and sizes
+    const validFiles = files.filter(file => {
+      // Check if file is an image
+      if (!file.type.startsWith('image/')) {
+        alert(`${file.name} is not an image file. Please select only image files.`);
+        return false;
+      }
+
+      // Check file size (max 5MB per image)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert(`${file.name} is too large. Please select images smaller than 5MB.`);
+        return false;
+      }
+
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    // Limit to 5 images total
+    const remainingSlots = 5 - uploadedImages.length;
+    const newFiles = validFiles.slice(0, remainingSlots);
+
+    if (validFiles.length > remainingSlots) {
+      alert(`You can only upload ${remainingSlots} more images. ${validFiles.length - remainingSlots} files were not added.`);
+    }
+
     setUploadedImages(prev => [...prev, ...newFiles]);
 
     // Create preview URLs
@@ -102,6 +130,29 @@ export default function ListItemPage() {
       URL.revokeObjectURL(prev[index]); // Clean up object URL
       return prev.filter((_, i) => i !== index);
     });
+  };
+
+  // Debug Firebase Storage connection
+  const testFirebaseStorage = async () => {
+    try {
+      setDebugInfo('Testing Firebase Storage connection...');
+      console.log('Testing Firebase Storage connection...');
+
+      // Test storage reference creation
+      const { ref } = await import('firebase/storage');
+      const { storage } = await import('../config/firebase');
+
+      console.log('Storage instance:', storage);
+      console.log('Storage bucket:', storage.app.options.storageBucket);
+
+      const testRef = ref(storage, 'test/connection-test.txt');
+      console.log('Test reference created:', testRef);
+
+      setDebugInfo(`✅ Storage connected! Bucket: ${storage.app.options.storageBucket}`);
+    } catch (error) {
+      console.error('Firebase Storage test failed:', error);
+      setDebugInfo(`❌ Storage test failed: ${error.message}`);
+    }
   };
 
   // Singapore locations for suggestions
@@ -412,9 +463,33 @@ export default function ListItemPage() {
       // Upload images if any
       if (uploadedImages.length > 0) {
         setIsUploadingImages(true);
-        const timestamp = Date.now();
-        const imagePath = `listings/${currentUser.uid}/${timestamp}`;
-        imageUrls = await imageUploadService.uploadImages(uploadedImages, imagePath);
+        setUploadError(null);
+        try {
+          const timestamp = Date.now();
+          const imagePath = `listings/${currentUser.uid}/${timestamp}`;
+          console.log('Uploading images to path:', imagePath);
+          imageUrls = await imageUploadService.uploadImages(uploadedImages, imagePath);
+          console.log('Images uploaded successfully:', imageUrls);
+        } catch (uploadError) {
+          console.error('Image upload failed:', uploadError);
+          setUploadError(`Failed to upload images: ${uploadError.message}`);
+          setIsUploadingImages(false);
+          setIsSubmitting(false);
+
+          // Ask user if they want to continue without images
+          const continueWithoutImages = confirm(
+            'Image upload failed. Would you like to create the listing without images? You can add images later by editing the listing.'
+          );
+
+          if (!continueWithoutImages) {
+            return;
+          }
+
+          // Continue without images
+          imageUrls = [];
+          setUploadError(null);
+          setIsSubmitting(true);
+        }
         setIsUploadingImages(false);
       }
 
@@ -440,7 +515,7 @@ export default function ListItemPage() {
       // Create the listing through the context (which handles Firebase automatically)
       const contextListingData = {
         ...listingData,
-        image: imageUrls.length > 0 ? '' : getCategoryEmoji(formData.category), // Use emoji only if no images
+        image: imageUrls.length > 0 ? imageUrls[0] : getCategoryEmoji(formData.category), // Use first image or emoji fallback
       };
 
       await addListing(contextListingData);
@@ -474,9 +549,17 @@ export default function ListItemPage() {
       imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
       setImagePreviewUrls([]);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating listing:', error);
-      alert('Error creating listing. Please try again.');
+      console.error('Error details:', {
+        message: error?.message || 'Unknown error',
+        stack: error?.stack || 'No stack trace',
+        formData,
+        currentUser: currentUser?.email || 'No user',
+        selectedCoordinates,
+        uploadedImages: uploadedImages.length
+      });
+      alert(`Error creating listing: ${error?.message || 'Unknown error'}. Please check the console for more details.`);
     } finally {
       setIsSubmitting(false);
       setIsUploadingImages(false);
@@ -542,6 +625,7 @@ export default function ListItemPage() {
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <Camera className="w-5 h-5 mr-2" />
               Photos ({uploadedImages.length}/5)
+
             </h3>
 
             {/* Image Previews */}
@@ -563,6 +647,13 @@ export default function ListItemPage() {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Upload Error Display */}
+            {uploadError && (
+              <div className="mb-4 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+                <p className="text-sm font-medium">{uploadError}</p>
               </div>
             )}
 

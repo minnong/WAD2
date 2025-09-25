@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
-import { Search, Plus, Heart, ShoppingBag, Star, TrendingUp, Users, Award, ChevronLeft, ChevronRight, Hammer, Leaf, Smartphone, ChefHat, Dumbbell, Camera, Music, Baby, Gamepad2, Palette, Briefcase, Wrench } from 'lucide-react';
+import { Search, Plus, Heart, ShoppingBag, Star, TrendingUp, Users, Award, ChevronLeft, ChevronRight, Hammer, Leaf, Smartphone, ChefHat, Dumbbell, Camera, Music, Baby, Gamepad2, Palette, Briefcase, Wrench, Clock, CheckCircle, XCircle, AlertCircle, DollarSign } from 'lucide-react';
 
 import toolLibrary from '../assets/tool_library.jpg';
 import rentImage from '../assets/rent.jpg';
@@ -17,7 +17,7 @@ export default function HomePage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
   const { listings, userListings } = useListings();
-  const { getUserRentals } = useRentals();
+  const { getUserRentals, userRentalRequests, receivedRentalRequests } = useRentals();
   const navigate = useNavigate();
 
   // Get user stats
@@ -199,7 +199,7 @@ export default function HomePage() {
                   <div
                     key={index}
                     onClick={() => navigate(`/browse?category=${encodeURIComponent(category.category)}`)}
-                    className="flex-none cursor-pointer group"
+                    className="flex-none cursor-pointer group mt-1 ml-1 mr-1"
                   >
                     <div className={`w-24 h-24 rounded-full border border-gray-200/40 flex items-center justify-center mb-3 transition-all group-hover:border-gray-300/60 group-hover:shadow-lg group-hover:scale-105 ${
                       theme === 'dark' ? 'bg-gray-800/15' : 'bg-gray-100/25'
@@ -380,114 +380,177 @@ export default function HomePage() {
               0 10px 10px -5px rgba(0, 0, 0, 0.04)
             `
           }}>
-            {userRentals.length > 0 || userListings.length > 0 ? (
-              <div className="space-y-6">
-                {/* Show recent listings */}
-                {userListings.slice(0, 2).map((listing, index) => (
-                  <div key={`listing-${index}`} className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] ${
-                    theme === 'dark'
-                      ? 'bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-500/20'
-                      : 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200/50'
-                  }`}>
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative flex items-center space-x-5">
-                      <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                          <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-lg truncate">You listed "{listing.name}"</p>
-                        <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          📅 {listing.createdAt instanceof Date
-                            ? listing.createdAt.toLocaleDateString()
-                            : new Date((listing.createdAt as any).toDate()).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <div className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl shadow-md">
-                          ${listing.price}/{listing.period}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            {(() => {
+              // Combine all activities and sort by most recent
+              interface Activity {
+                id: string;
+                type: string;
+                title: string;
+                subtitle: string;
+                icon: any;
+                iconColor: string;
+                bgColor: string;
+                badge: string;
+                badgeColor: string;
+                date: Date;
+              }
+              const allActivities: Activity[] = [];
 
-                {/* Show recent rentals */}
-                {userRentals.slice(0, 2).map((rental, index) => (
-                  <div key={`rental-${index}`} className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] ${
-                    theme === 'dark'
-                      ? 'bg-gradient-to-r from-purple-900/20 to-purple-800/20 border border-purple-500/20'
-                      : 'bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200/50'
-                  }`}>
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative flex items-center space-x-5">
-                      <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                          <ShoppingBag className="w-6 h-6 text-white" strokeWidth={2.5} />
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-lg truncate">You rented "{rental.toolName}"</p>
-                        <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          📅 {rental.startDate} - {rental.endDate}
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <div className={`px-4 py-2 rounded-xl text-sm font-bold shadow-md ${
-                          rental.status === 'pending' ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' :
-                          rental.status === 'approved' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
-                          rental.status === 'active' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white' :
-                          'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
-                        }`}>
-                          {rental.status.toUpperCase()}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              // Add user listings
+              userListings.forEach((listing) => {
+                allActivities.push({
+                  id: `listing-${listing.id}`,
+                  type: 'listing_created',
+                  title: `You listed "${listing.name}"`,
+                  subtitle: listing.createdAt instanceof Date
+                    ? listing.createdAt.toLocaleDateString()
+                    : new Date((listing.createdAt as any).toDate()).toLocaleDateString(),
+                  icon: Plus,
+                  iconColor: 'from-green-500 to-emerald-600',
+                  bgColor: theme === 'dark'
+                    ? 'from-green-900/20 to-emerald-900/20 border border-green-500/20'
+                    : 'from-green-50 to-emerald-50 border border-green-200/50',
+                  badge: `$${listing.price}/${listing.period}`,
+                  badgeColor: 'from-green-500 to-emerald-500',
+                  date: listing.createdAt instanceof Date ? listing.createdAt : new Date((listing.createdAt as any).toDate())
+                });
+              });
 
-                {(userRentals.length > 2 || userListings.length > 2) && (
-                  <div className="text-center pt-4">
+              // Add user rental requests (requests made BY user)
+              userRentalRequests.forEach((rental) => {
+                const statusIcon = rental.status === 'pending' ? Clock :
+                                   rental.status === 'approved' ? CheckCircle :
+                                   rental.status === 'declined' ? XCircle :
+                                   rental.status === 'completed' ? DollarSign :
+                                   ShoppingBag;
+
+                allActivities.push({
+                  id: `rental-${rental.id}`,
+                  type: 'rental_request',
+                  title: `You requested "${rental.toolName}"`,
+                  subtitle: `${rental.startDate} - ${rental.endDate}`,
+                  icon: statusIcon,
+                  iconColor: rental.status === 'pending' ? 'from-yellow-500 to-orange-600' :
+                             rental.status === 'approved' ? 'from-green-500 to-emerald-600' :
+                             rental.status === 'declined' ? 'from-red-500 to-red-600' :
+                             rental.status === 'completed' ? 'from-purple-500 to-indigo-600' :
+                             'from-blue-500 to-indigo-600',
+                  bgColor: theme === 'dark'
+                    ? 'from-purple-900/20 to-indigo-900/20 border border-purple-500/20'
+                    : 'from-purple-50 to-indigo-50 border border-purple-200/50',
+                  badge: rental.status.toUpperCase(),
+                  badgeColor: rental.status === 'pending' ? 'from-yellow-400 to-orange-500' :
+                              rental.status === 'approved' ? 'from-green-500 to-emerald-500' :
+                              rental.status === 'declined' ? 'from-red-500 to-red-600' :
+                              rental.status === 'completed' ? 'from-purple-500 to-indigo-600' :
+                              'from-blue-500 to-indigo-500',
+                  date: rental.requestDate instanceof Date ? rental.requestDate : new Date((rental.requestDate as any).toDate())
+                });
+              });
+
+              // Add incoming rental requests (requests received by user for their items)
+              receivedRentalRequests.forEach((request) => {
+                const statusIcon = request.status === 'pending' ? AlertCircle :
+                                   request.status === 'approved' ? CheckCircle :
+                                   request.status === 'declined' ? XCircle :
+                                   request.status === 'completed' ? DollarSign :
+                                   Users;
+
+                allActivities.push({
+                  id: `received-${request.id}`,
+                  type: 'received_request',
+                  title: `${request.renterName} wants to rent "${request.toolName}"`,
+                  subtitle: `${request.startDate} - ${request.endDate} • $${request.totalCost}`,
+                  icon: statusIcon,
+                  iconColor: request.status === 'pending' ? 'from-blue-500 to-cyan-600' :
+                             request.status === 'approved' ? 'from-green-500 to-emerald-600' :
+                             request.status === 'declined' ? 'from-red-500 to-red-600' :
+                             request.status === 'completed' ? 'from-purple-500 to-indigo-600' :
+                             'from-orange-500 to-amber-600',
+                  bgColor: theme === 'dark'
+                    ? 'from-blue-900/20 to-cyan-900/20 border border-blue-500/20'
+                    : 'from-blue-50 to-cyan-50 border border-blue-200/50',
+                  badge: request.status.toUpperCase(),
+                  badgeColor: request.status === 'pending' ? 'from-blue-500 to-cyan-500' :
+                              request.status === 'approved' ? 'from-green-500 to-emerald-500' :
+                              request.status === 'declined' ? 'from-red-500 to-red-600' :
+                              request.status === 'completed' ? 'from-purple-500 to-indigo-600' :
+                              'from-orange-500 to-amber-500',
+                  date: request.requestDate instanceof Date ? request.requestDate : new Date((request.requestDate as any).toDate())
+                });
+              });
+
+              // Sort by date (most recent first)
+              allActivities.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+              return allActivities.length > 0 ? (
+                <div className="space-y-6">
+                  {allActivities.slice(0, 3).map((activity) => {
+                    const IconComponent = activity.icon;
+                    return (
+                      <div key={activity.id} className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r ${activity.bgColor}`}>
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="relative flex items-center space-x-5">
+                          <div className="flex-shrink-0">
+                            <div className={`w-12 h-12 bg-gradient-to-br ${activity.iconColor} rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+                              <IconComponent className="w-6 h-6 text-white" strokeWidth={2.5} />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-lg truncate">{activity.title}</p>
+                            <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                              📅 {activity.subtitle}
+                            </p>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <div className={`px-4 py-2 bg-gradient-to-r ${activity.badgeColor} text-white font-bold rounded-xl shadow-md text-sm`}>
+                              {activity.badge}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {allActivities.length > 3 && (
+                    <div className="text-center pt-4">
+                      <span
+                        onClick={() => navigate('/my-rentals')}
+                        className={`cursor-pointer text-grey-500 hover:text-grey-600 transition-colors duration-200 ${theme === 'dark' ? 'hover:text-purple-400' : ''}`}
+                      >
+                        View all activity 
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center">
+                    <div className="text-4xl">📈</div>
+                  </div>
+                  <p className={`text-lg font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                    No recent activity yet
+                  </p>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Start browsing or listing items to see your activity here!
+                  </p>
+                  <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                     <button
-                      onClick={() => navigate('/my-rentals')}
-                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                      onClick={() => navigate('/browse')}
+                      className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300"
                     >
-                      View all activity
-                      <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                      Browse Items
+                    </button>
+                    <button
+                      onClick={() => navigate('/list-item')}
+                      className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300"
+                    >
+                      List an Item
                     </button>
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center">
-                  <div className="text-4xl">📈</div>
                 </div>
-                <p className={`text-lg font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                  No recent activity yet
-                </p>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Start browsing or listing items to see your activity here!
-                </p>
-                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-                  <button
-                    onClick={() => navigate('/browse')}
-                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all duration-300"
-                  >
-                    Browse Items
-                  </button>
-                  <button
-                    onClick={() => navigate('/list-item')}
-                    className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300"
-                  >
-                    List an Item
-                  </button>
-                </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
 

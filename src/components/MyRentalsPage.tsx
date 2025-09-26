@@ -31,6 +31,23 @@ export default function MyRentalsPage() {
   const userOwnListings = userListings;
   const incomingRequests = receivedRentalRequests.filter(request => request.status === 'pending');
 
+  // Helper function to format datetime
+  const formatDateTime = (date: string, time: string) => {
+    try {
+      const dateTime = new Date(`${date}T${time}`);
+      return dateTime.toLocaleString('en-SG', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return `${date} ${time}`;
+    }
+  };
+
   // Helper function to render tool image (emoji or base64) - enhanced for full height
   const renderToolImage = (imageStr: string, size: 'small' | 'large' = 'small') => {
     const sizeClasses = size === 'large'
@@ -362,24 +379,16 @@ export default function MyRentalsPage() {
 
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
-                              <span className="font-semibold text-sm">{item.startDate} - {item.endDate}</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(item.startDate, item.startTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
-                              <span className="font-semibold text-sm">{item.startTime} - {item.endTime}</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(item.endDate, item.endTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                              <span className="font-bold text-lg text-purple-500">${item.totalCost}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
-                              <span className="font-semibold text-sm">
-                                {item.requestDate instanceof Date
-                                  ? item.requestDate.toLocaleDateString()
-                                  : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
-                              </span>
+                              <span className="font-black text-2xl text-purple-500">${item.totalCost}</span>
                             </div>
                           </div>
 
@@ -470,24 +479,16 @@ export default function MyRentalsPage() {
 
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
-                              <span className="font-semibold text-sm">{item.startDate} - {item.endDate}</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(item.startDate, item.startTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
-                              <span className="font-semibold text-sm">{item.startTime} - {item.endTime}</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(item.endDate, item.endTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                              <span className="font-bold text-lg text-purple-500">${item.totalCost}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
-                              <span className="font-semibold text-sm">
-                                {item.requestDate instanceof Date
-                                  ? item.requestDate.toLocaleDateString()
-                                  : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
-                              </span>
+                              <span className="font-black text-2xl text-purple-500">${item.totalCost}</span>
                             </div>
                           </div>
 
@@ -536,6 +537,29 @@ export default function MyRentalsPage() {
                               <span>Cancel Request</span>
                             </button>
 
+                          </div>
+
+                          {/* Request Date */}
+                          <div className="text-center mt-3">
+                            <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                              Requested: {item.requestDate instanceof Date
+                                ? item.requestDate.toLocaleString('en-SG', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  })
+                                : new Date((item.requestDate as any).toDate()).toLocaleString('en-SG', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  })}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -684,24 +708,16 @@ export default function MyRentalsPage() {
 
                         <div className="space-y-2 mb-4">
                           <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
-                            <span className="font-semibold text-sm">{request.startDate} - {request.endDate}</span>
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                            <span className="font-semibold text-sm">{formatDateTime(request.startDate, request.startTime)}</span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
-                            <span className="font-semibold text-sm">{request.startTime} - {request.endTime}</span>
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                            <span className="font-semibold text-sm">{formatDateTime(request.endDate, request.endTime)}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                            <span className="font-bold text-lg text-purple-500">${request.totalCost}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
-                            <span className="font-semibold text-sm">
-                              {request.requestDate instanceof Date
-                                ? request.requestDate.toLocaleDateString()
-                                : new Date((request.requestDate as any).toDate()).toLocaleDateString()}
-                            </span>
+                            <span className="font-black text-2xl text-purple-500">${request.totalCost}</span>
                           </div>
                         </div>
 
@@ -755,6 +771,29 @@ export default function MyRentalsPage() {
                             <MessageCircle className="w-4 h-4" />
                             <span>Contact Renter</span>
                           </button>
+                        </div>
+
+                        {/* Request Date */}
+                        <div className="text-center mt-3">
+                          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                            Requested: {request.requestDate instanceof Date
+                              ? request.requestDate.toLocaleString('en-SG', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })
+                              : new Date((request.requestDate as any).toDate()).toLocaleString('en-SG', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}
+                          </span>
                         </div>
                       </div>
                     </div>

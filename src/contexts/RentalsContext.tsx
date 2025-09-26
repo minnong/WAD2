@@ -33,7 +33,6 @@ interface RentalRequest {
   status: 'pending' | 'approved' | 'declined' | 'active' | 'completed' | 'cancelled';
   requestDate: Timestamp | Date;
   location: string;
-  userId: string;
 }
 
 
@@ -41,7 +40,7 @@ interface RentalsContextType {
   userRentalRequests: RentalRequest[]; // Requests made BY the current user
   receivedRentalRequests: RentalRequest[]; // Requests received by the current user (for their listings)
   loading: boolean;
-  addRentalRequest: (request: Omit<RentalRequest, 'id' | 'requestDate' | 'userId'>) => Promise<void>;
+  addRentalRequest: (request: Omit<RentalRequest, 'id' | 'requestDate'>) => Promise<void>;
   updateRentalStatus: (id: string, status: RentalRequest['status']) => Promise<void>;
   getUserRentals: () => RentalRequest[];
   checkDateConflict: (toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => boolean;
@@ -82,7 +81,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
     // Get requests made BY the current user (where they are the renter)
     const userRequestsQuery = query(
       rentalsCollection,
-      where('userId', '==', currentUser.uid)
+      where('renterEmail', '==', currentUser.email || '')
     );
 
     const unsubscribeUserRequests = onSnapshot(userRequestsQuery, (snapshot) => {
@@ -158,7 +157,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
     }));
   };
 
-  const addRentalRequest = async (requestData: Omit<RentalRequest, 'id' | 'requestDate' | 'userId'>) => {
+  const addRentalRequest = async (requestData: Omit<RentalRequest, 'id' | 'requestDate'>) => {
     if (!currentUser) {
       throw new Error('User must be authenticated to create rental requests');
     }
@@ -172,7 +171,6 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       const newRequest = {
         ...requestData,
         requestDate: serverTimestamp(),
-        userId: currentUser.uid,
       };
 
       await addDoc(collection(db, 'rentalRequests'), newRequest);

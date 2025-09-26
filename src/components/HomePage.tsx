@@ -381,6 +381,17 @@ export default function HomePage() {
             `
           }}>
             {(() => {
+              // Helper function to get full condition description
+              const getConditionLabel = (condition: string) => {
+                const conditionMap: { [key: string]: string } = {
+                  'excellent': 'Excellent - Like new',
+                  'good': 'Good - Minor wear',
+                  'fair': 'Fair - Some wear but functional',
+                  'poor': 'Poor - Heavy wear but working'
+                };
+                return conditionMap[condition] || condition;
+              };
+
               // Combine all activities and sort by most recent
               interface Activity {
                 id: string;
@@ -398,13 +409,15 @@ export default function HomePage() {
 
               // Add user listings
               userListings.forEach((listing) => {
+                const dateStr = listing.createdAt instanceof Date
+                  ? listing.createdAt.toLocaleDateString()
+                  : new Date((listing.createdAt as any).toDate()).toLocaleDateString();
+
                 allActivities.push({
                   id: `listing-${listing.id}`,
                   type: 'listing_created',
                   title: `You listed "${listing.name}"`,
-                  subtitle: listing.createdAt instanceof Date
-                    ? listing.createdAt.toLocaleDateString()
-                    : new Date((listing.createdAt as any).toDate()).toLocaleDateString(),
+                  subtitle: `${dateStr} • ${getConditionLabel(listing.condition)}`,
                   icon: Plus,
                   iconColor: 'from-green-500 to-emerald-600',
                   bgColor: theme === 'dark'

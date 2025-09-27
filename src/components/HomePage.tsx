@@ -99,7 +99,7 @@ export default function HomePage() {
       {/* Main Content - Added padding-top to prevent navbar overlap */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
         {/* Enhanced Carousel Banner */}
-        <div className="mb-8 relative overflow-hidden rounded-3xl shadow-2xl">
+        <div className="mb-8 relative overflow-hidden rounded-2xl shadow-2xl">
           <div
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -176,7 +176,7 @@ export default function HomePage() {
         </div>
 
         {/* Category Icons Section */}
-        <div className="mb-8">
+        <div className="mb-16">
           <h2 className="text-3xl font-bold mb-8 px-2">Popular Categories</h2>
           <div className="relative">
             <div className="flex overflow-x-auto scrollbar-hide gap-8 pb-6">
@@ -219,9 +219,9 @@ export default function HomePage() {
 
         {/* User Stats with Glowing Purple Shadow */}
         {userRentals.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-16">
             <h2 className="text-3xl font-bold mb-8 px-2">Your ShareLah Stats</h2>
-            <div className={`rounded-3xl p-6 shadow-2xl ${
+            <div className={`rounded-2xl p-6 shadow-2xl ${
               theme === 'dark'
                 ? 'bg-gray-900/90 backdrop-blur-sm border border-purple-500/20'
                 : 'bg-white/90 backdrop-blur-sm border border-purple-300/30'
@@ -291,10 +291,10 @@ export default function HomePage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
           <div
             onClick={() => navigate('/browse')}
-            className={`rounded-2xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
+            className={`rounded-xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
             theme === 'dark'
               ? 'bg-gray-800/60 hover:bg-gray-800/80'
               : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
@@ -312,7 +312,7 @@ export default function HomePage() {
 
           <div
             onClick={() => navigate('/list-item')}
-            className={`rounded-2xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
+            className={`rounded-xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
             theme === 'dark'
               ? 'bg-gray-800/60 hover:bg-gray-800/80'
               : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
@@ -330,7 +330,7 @@ export default function HomePage() {
 
           <div
             onClick={() => navigate('/my-rentals')}
-            className={`rounded-2xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
+            className={`rounded-xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
             theme === 'dark'
               ? 'bg-gray-800/60 hover:bg-gray-800/80'
               : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
@@ -348,7 +348,7 @@ export default function HomePage() {
 
           <div
             onClick={() => navigate('/favorites')}
-            className={`rounded-2xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
+            className={`rounded-xl p-4 transition-all cursor-pointer border-0 shadow-sm hover:shadow-md ${
             theme === 'dark'
               ? 'bg-gray-800/60 hover:bg-gray-800/80'
               : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
@@ -366,20 +366,9 @@ export default function HomePage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="mb-8">
+        <div className="mb-16">
           <h2 className="text-3xl font-bold mb-8 px-2">Recent Activity</h2>
-          <div className={`rounded-3xl p-8 border-0 shadow-2xl backdrop-blur-sm ${
-            theme === 'dark'
-              ? 'bg-gray-900/80 border border-gray-700/30'
-              : 'bg-white/90 border border-gray-200/50'
-          }`}
-          style={{
-            boxShadow: `
-              0 0 20px rgba(139, 92, 246, 0.15),
-              0 20px 25px -5px rgba(0, 0, 0, 0.1),
-              0 10px 10px -5px rgba(0, 0, 0, 0.04)
-            `
-          }}>
+          <div>
             {(() => {
               // Helper function to get full condition description
               const getConditionLabel = (condition: string) => {
@@ -501,7 +490,7 @@ export default function HomePage() {
                   {allActivities.slice(0, 3).map((activity) => {
                     const IconComponent = activity.icon;
                     return (
-                      <div key={activity.id} className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r ${activity.bgColor}`}>
+                      <div key={activity.id} className={`group relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r ${activity.bgColor}`}>
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <div className="relative flex items-center space-x-5">
                           <div className="flex-shrink-0">
@@ -570,86 +559,54 @@ export default function HomePage() {
         {/* Quick Tips */}
         <div>
           <h2 className="text-3xl font-bold mb-8 px-2">Quick Tips</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className={`group relative overflow-hidden rounded-3xl p-8 border-0 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] ${
-              theme === 'dark'
-                ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-blue-500/20'
-                : 'bg-gradient-to-br from-white/90 to-blue-50/80 border border-blue-200/50'
-            }`}
-            style={{
-              boxShadow: `
-                0 0 20px rgba(147, 51, 234, 0.15),
-                0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                0 10px 10px -5px rgba(0, 0, 0, 0.04)
-              `
-            }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-start space-x-5">
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <Users className="w-8 h-8 text-white" strokeWidth={2.5} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="flex items-start space-x-8 p-6">
+              <div className="flex-shrink-0">
+                <Users className="w-8 h-8 text-purple-600" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-6 text-purple-600">
+                  Build Your Reputation
+                </h3>
+                <p className={`text-base leading-relaxed mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Complete rentals and maintain your tools well to earn higher ratings and more bookings. Great reviews lead to more trust!
+                </p>
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
                   </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                    Build Your Reputation
-                  </h3>
-                  <p className={`text-base leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Complete rentals and maintain your tools well to earn higher ratings and more bookings. Great reviews lead to more trust!
-                  </p>
-                  <div className="mt-4 flex items-center space-x-2">
-                    <div className="flex space-x-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Aim for 5-star reviews
-                    </span>
-                  </div>
+                  <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Aim for 5-star reviews
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className={`group relative overflow-hidden rounded-3xl p-8 border-0 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] ${
-              theme === 'dark'
-                ? 'bg-gradient-to-br from-gray-900/80 to-gray-800/60 border border-green-500/20'
-                : 'bg-gradient-to-br from-white/90 to-green-50/80 border border-green-200/50'
-            }`}
-            style={{
-              boxShadow: `
-                0 0 20px rgba(34, 197, 94, 0.15),
-                0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                0 10px 10px -5px rgba(0, 0, 0, 0.04)
-              `
-            }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-start space-x-5">
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <TrendingUp className="w-8 h-8 text-white" strokeWidth={2.5} />
+            <div className="flex items-start space-x-8 p-6">
+              <div className="flex-shrink-0">
+                <TrendingUp className="w-8 h-8 text-purple-600" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-6 text-purple-600">
+                  Maximize Earnings
+                </h3>
+                <p className={`text-base leading-relaxed mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Set competitive prices and keep your availability updated to attract more renters. Regular updates keep you visible!
+                </p>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Stay active
+                    </span>
                   </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                    Maximize Earnings
-                  </h3>
-                  <p className={`text-base leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Set competitive prices and keep your availability updated to attract more renters. Regular updates keep you visible!
-                  </p>
-                  <div className="mt-4 flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Stay active
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="text-green-500">💰</div>
-                      <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Earn more
-                      </span>
-                    </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="text-green-500">💰</div>
+                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Earn more
+                    </span>
                   </div>
                 </div>
               </div>

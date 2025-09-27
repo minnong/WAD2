@@ -7,7 +7,7 @@ import { useRentals } from '../contexts/RentalsContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import ReviewsSection from './ReviewsSection';
 import { listingsService } from '../services/firebase';
-import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart, CheckCircle } from 'lucide-react';
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +28,14 @@ export default function ListingDetailPage() {
     return conditionMap[condition] || condition;
   };
 
+  // Helper function to format price - show decimals only if needed
+  const formatPrice = (price: number) => {
+    return price % 1 === 0 ? price.toString() : price.toFixed(2);
+  };
+
   const [showRentModal, setShowRentModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState<any>(null);
   const [rentRequest, setRentRequest] = useState({
     startDateTime: '',
     endDateTime: '',
@@ -543,9 +550,22 @@ export default function ListingDetailPage() {
     const startDateTime = new Date(rentRequest.startDateTime);
     const endDateTime = new Date(rentRequest.endDateTime);
 
-    // Calculate total cost based on duration
-    const hours = Math.ceil((endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60));
-    const totalCost = hours * (tool.price / 24); // Assuming price is per day, convert to hourly
+    // Calculate total cost based on duration and pricing period
+    const millisecondsDiff = endDateTime.getTime() - startDateTime.getTime();
+
+    let totalCost: number;
+    if (tool.period.toLowerCase() === 'day') {
+      // For daily pricing, calculate number of days (minimum 1 day)
+      const days = Math.max(1, Math.ceil(millisecondsDiff / (1000 * 60 * 60 * 24)));
+      totalCost = days * tool.price;
+    } else {
+      // For hourly pricing, calculate number of hours
+      const hours = Math.ceil(millisecondsDiff / (1000 * 60 * 60));
+      totalCost = hours * tool.price;
+    }
+
+    // Ensure 2 decimal places
+    totalCost = Math.round(totalCost * 100) / 100;
 
     // Extract date and time components for compatibility with existing system
     const startDate = startDateTime.toISOString().split('T')[0];
@@ -576,10 +596,19 @@ export default function ListingDetailPage() {
 
     console.log('Rental request sent:', rentalRequestData);
 
-    alert(`Rental request sent to ${tool.owner}!\n\nRequest Details:\n• Tool: ${tool.name}\n• Start: ${startDateTime.toLocaleDateString()} ${startTime}\n• End: ${endDateTime.toLocaleDateString()} ${endTime}\n• Total Cost: $${totalCost.toFixed(2)}\n\nThe owner will be notified via email and can approve or decline your request.\n\nYou can track this request in "My Rentals".`);
+    // Store success data for the modal
+    setSuccessData({
+      tool,
+      startDateTime: startDateTime.toLocaleDateString(),
+      startTime,
+      endDateTime: endDateTime.toLocaleDateString(),
+      endTime,
+      totalCost
+    });
 
-    // Close modal and reset
+    // Close rent modal and show success modal
     setShowRentModal(false);
+    setShowSuccessModal(true);
     setRentRequest({
       startDateTime: '',
       endDateTime: '',
@@ -717,7 +746,7 @@ export default function ListingDetailPage() {
                 </div>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <span className="text-3xl font-bold text-purple-300">${tool.price}</span>
+                    <span className="text-3xl font-bold text-purple-300">${formatPrice(tool.price)}</span>
                     <span className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                       /{tool.period}
                     </span>
@@ -786,7 +815,7 @@ export default function ListingDetailPage() {
                     by {tool.owner} • {tool.location}
                   </p>
                   <p className="text-lg font-bold text-purple-300">
-                    ${tool.price}/{tool.period}
+                    ${formatPrice(tool.price)}/{tool.period}
                   </p>
                 </div>
               </div>
@@ -840,21 +869,44 @@ export default function ListingDetailPage() {
               </div>
 
               {/* Cost Calculation */}
-              {rentRequest.startDateTime && rentRequest.endDateTime && (
-                <div className={`p-3 rounded-lg ${
-                  theme === 'dark' ? 'bg-gray-700/50' : 'bg-blue-50'
-                }`}>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Total Cost:</span>
-                    <span className="font-bold text-lg text-purple-300">
-                      ${((Math.ceil((new Date(rentRequest.endDateTime).getTime() - new Date(rentRequest.startDateTime).getTime()) / (1000 * 60 * 60))) * (tool.price / 24)).toFixed(2)}
-                    </span>
+              {rentRequest.startDateTime && rentRequest.endDateTime && (() => {
+                const startDateTime = new Date(rentRequest.startDateTime);
+                const endDateTime = new Date(rentRequest.endDateTime);
+                const millisecondsDiff = endDateTime.getTime() - startDateTime.getTime();
+
+                let quantity: number;
+                let unitName: string;
+                let totalCost: number;
+
+                if (tool.period.toLowerCase() === 'day') {
+                  quantity = Math.max(1, Math.ceil(millisecondsDiff / (1000 * 60 * 60 * 24)));
+                  unitName = quantity === 1 ? 'day' : 'days';
+                  totalCost = quantity * tool.price;
+                } else {
+                  quantity = Math.ceil(millisecondsDiff / (1000 * 60 * 60));
+                  unitName = quantity === 1 ? 'hour' : 'hours';
+                  totalCost = quantity * tool.price;
+                }
+
+                // Ensure 2 decimal places
+                totalCost = Math.round(totalCost * 100) / 100;
+
+                return (
+                  <div className={`p-3 rounded-lg ${
+                    theme === 'dark' ? 'bg-gray-700/50' : 'bg-blue-50'
+                  }`}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Total Cost:</span>
+                      <span className="font-bold text-lg text-purple-300">
+                        ${formatPrice(totalCost)}
+                      </span>
+                    </div>
+                    <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {quantity} {unitName} × ${formatPrice(tool.price)}/{tool.period}
+                    </p>
                   </div>
-                  <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {Math.ceil((new Date(rentRequest.endDateTime).getTime() - new Date(rentRequest.startDateTime).getTime()) / (1000 * 60 * 60))} hour(s) × $${(tool.price / 24).toFixed(2)}/hour
-                  </p>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             {/* Modal Footer */}
@@ -876,6 +928,94 @@ export default function ListingDetailPage() {
               >
                 Send Request
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && successData && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className={`w-full max-w-lg rounded-2xl border-0 shadow-2xl overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            {/* Success Header */}
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-center text-white">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Request Sent Successfully!</h3>
+              <p className="text-green-100">Your rental request has been sent to {successData.tool.owner}</p>
+            </div>
+
+            {/* Request Details */}
+            <div className="p-6 space-y-4">
+              {/* Tool Info */}
+              <div className="flex items-center space-x-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+                {renderToolImage(successData.tool.image, 'medium')}
+                <div className="flex-1">
+                  <h4 className="font-bold text-lg text-purple-800 dark:text-purple-200">{successData.tool.name}</h4>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    by {successData.tool.owner} • {successData.tool.location}
+                  </p>
+                </div>
+              </div>
+
+              {/* Request Summary */}
+              <div className={`p-4 rounded-xl border-2 border-dashed ${
+                theme === 'dark' ? 'border-gray-600 bg-gray-700/30' : 'border-gray-300 bg-gray-50'
+              }`}>
+                <h5 className="font-semibold mb-3 text-gray-700 dark:text-gray-300">Request Details</h5>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Start:</span>
+                    <span className="font-medium">{successData.startDateTime} {successData.startTime}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">End:</span>
+                    <span className="font-medium">{successData.endDateTime} {successData.endTime}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-300 dark:border-gray-600">
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">Total Cost:</span>
+                    <span className="font-bold text-xl text-green-600 dark:text-green-400">${formatPrice(successData.totalCost)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Next Steps */}
+              <div className={`p-4 rounded-xl ${
+                theme === 'dark' ? 'bg-blue-900/20 border border-blue-700/30' : 'bg-blue-50 border border-blue-200'
+              }`}>
+                <h5 className="font-semibold mb-2 text-blue-800 dark:text-blue-200">What happens next?</h5>
+                <ul className="text-sm space-y-1 text-blue-700 dark:text-blue-300">
+                  <li>• The owner will be notified via email</li>
+                  <li>• They can approve or decline your request</li>
+                  <li>• Track this request in "My Rentals"</li>
+                  <li>• You'll receive updates about the status</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200/20">
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => navigate('/my-rentals')}
+                  className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all hover:scale-105 ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  }`}
+                >
+                  View My Rentals
+                </button>
+                <button
+                  onClick={() => setShowSuccessModal(false)}
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                >
+                  Continue Browsing
+                </button>
+              </div>
             </div>
           </div>
         </div>

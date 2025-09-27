@@ -17,6 +17,7 @@ import ProfilePage from './components/ProfilePage'
 import UserSettingsPage from './components/UserSettingsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import NotFoundPage from './components/NotFoundPage'
+import ScrollToTop from './components/ScrollToTop'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <ListingsProvider>
           <RentalsProvider>
             <Router>
+              <ScrollToTop />
               <Routes>
                 {/* Landing page with authenticated redirect */}
                 <Route path="/" element={<AuthenticatedRedirect />} />

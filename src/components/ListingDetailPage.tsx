@@ -7,7 +7,7 @@ import { useRentals } from '../contexts/RentalsContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import ReviewsSection from './ReviewsSection';
 import { listingsService } from '../services/firebase';
-import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart, CheckCircle } from 'lucide-react';
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,12 +17,28 @@ export default function ListingDetailPage() {
   const { listings } = useListings();
   const { addRentalRequest } = useRentals();
 
+  // Helper function to get full condition description
+  const getConditionLabel = (condition: string) => {
+    const conditionMap: { [key: string]: string } = {
+      'excellent': 'Excellent - Like new',
+      'good': 'Good - Minor wear',
+      'fair': 'Fair - Some wear but functional',
+      'poor': 'Poor - Heavy wear but working'
+    };
+    return conditionMap[condition] || condition;
+  };
+
+  // Helper function to format price - show decimals only if needed
+  const formatPrice = (price: number) => {
+    return price % 1 === 0 ? price.toString() : price.toFixed(2);
+  };
+
   const [showRentModal, setShowRentModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState<any>(null);
   const [rentRequest, setRentRequest] = useState({
-    startDate: '',
-    endDate: '',
-    startTime: '09:00',
-    endTime: '17:00',
+    startDateTime: '',
+    endDateTime: '',
     message: ''
   });
   const [isFavorited, setIsFavorited] = useState(false);
@@ -516,21 +532,46 @@ export default function ListingDetailPage() {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    // Format for datetime-local input: YYYY-MM-DDTHH:MM
+    const startDateTime = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}T09:00`;
+    const endDateTime = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}T17:00`;
+
     setRentRequest({
       ...rentRequest,
-      startDate: today.toISOString().split('T')[0],
-      endDate: tomorrow.toISOString().split('T')[0]
+      startDateTime: startDateTime,
+      endDateTime: endDateTime
     });
   };
 
   const handleRentRequestSubmit = () => {
     if (!currentUser) return;
 
-    // Calculate total cost
-    const startDate = new Date(rentRequest.startDate);
-    const endDate = new Date(rentRequest.endDate);
-    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const totalCost = days * tool.price;
+    // Parse datetime strings
+    const startDateTime = new Date(rentRequest.startDateTime);
+    const endDateTime = new Date(rentRequest.endDateTime);
+
+    // Calculate total cost based on duration and pricing period
+    const millisecondsDiff = endDateTime.getTime() - startDateTime.getTime();
+
+    let totalCost: number;
+    if (tool.period.toLowerCase() === 'day') {
+      // For daily pricing, calculate number of days (minimum 1 day)
+      const days = Math.max(1, Math.ceil(millisecondsDiff / (1000 * 60 * 60 * 24)));
+      totalCost = days * tool.price;
+    } else {
+      // For hourly pricing, calculate number of hours
+      const hours = Math.ceil(millisecondsDiff / (1000 * 60 * 60));
+      totalCost = hours * tool.price;
+    }
+
+    // Ensure 2 decimal places
+    totalCost = Math.round(totalCost * 100) / 100;
+
+    // Extract date and time components for compatibility with existing system
+    const startDate = startDateTime.toISOString().split('T')[0];
+    const endDate = endDateTime.toISOString().split('T')[0];
+    const startTime = startDateTime.toTimeString().slice(0, 5);
+    const endTime = endDateTime.toTimeString().slice(0, 5);
 
     // Create rental request and add to context
     const rentalRequestData = {
@@ -541,10 +582,10 @@ export default function ListingDetailPage() {
       renterEmail: currentUser.email || '',
       ownerEmail: (tool as any).ownerContact || (tool as any).ownerEmail || tool.ownerContact,
       ownerName: tool.owner,
-      startDate: rentRequest.startDate,
-      endDate: rentRequest.endDate,
-      startTime: rentRequest.startTime,
-      endTime: rentRequest.endTime,
+      startDate: startDate,
+      endDate: endDate,
+      startTime: startTime,
+      endTime: endTime,
       message: rentRequest.message,
       totalCost: totalCost,
       status: 'pending' as const,
@@ -555,15 +596,22 @@ export default function ListingDetailPage() {
 
     console.log('Rental request sent:', rentalRequestData);
 
-    alert(`Rental request sent to ${tool.owner}!\n\nRequest Details:\n• Tool: ${tool.name}\n• Dates: ${rentRequest.startDate} to ${rentRequest.endDate}\n• Time: ${rentRequest.startTime} - ${rentRequest.endTime}\n• Total Cost: $${totalCost}\n\nThe owner will be notified via email and can approve or decline your request.\n\nYou can track this request in "My Rentals".`);
+    // Store success data for the modal
+    setSuccessData({
+      tool,
+      startDateTime: startDateTime.toLocaleDateString(),
+      startTime,
+      endDateTime: endDateTime.toLocaleDateString(),
+      endTime,
+      totalCost
+    });
 
-    // Close modal and reset
+    // Close rent modal and show success modal
     setShowRentModal(false);
+    setShowSuccessModal(true);
     setRentRequest({
-      startDate: '',
-      endDate: '',
-      startTime: '09:00',
-      endTime: '17:00',
+      startDateTime: '',
+      endDateTime: '',
       message: ''
     });
   };
@@ -650,7 +698,7 @@ export default function ListingDetailPage() {
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
                     <span className="bg-gray-100 dark:bg-gray-700 text-white px-2 py-1 rounded">{tool.category}</span>
                     <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
-                      {tool.condition}
+                      {getConditionLabel(tool.condition)}
                     </span>
                   </div>
                 </div>
@@ -690,9 +738,15 @@ export default function ListingDetailPage() {
               </div>
 
               <div className="mt-6 pt-6 border-t border-gray-200/20">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold mb-3">Description</h3>
+                  <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} leading-relaxed mb-10`}>
+                    {tool.description || 'No description provided for this item.'}
+                  </p>
+                </div>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <span className="text-3xl font-bold text-purple-300">${tool.price}</span>
+                    <span className="text-3xl font-bold text-purple-300">${formatPrice(tool.price)}</span>
                     <span className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                       /{tool.period}
                     </span>
@@ -717,15 +771,6 @@ export default function ListingDetailPage() {
               </div>
             </div>
 
-            {/* Description */}
-            <div className={`p-6 rounded-2xl ${
-              theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
-            }`}>
-              <h3 className="text-lg font-semibold mb-3">Description</h3>
-              <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} leading-relaxed`}>
-                {tool.description || 'No description provided for this item.'}
-              </p>
-            </div>
           </div>
         </div>
 
@@ -770,19 +815,19 @@ export default function ListingDetailPage() {
                     by {tool.owner} • {tool.location}
                   </p>
                   <p className="text-lg font-bold text-purple-300">
-                    ${tool.price}/{tool.period}
+                    ${formatPrice(tool.price)}/{tool.period}
                   </p>
                 </div>
               </div>
 
-              {/* Date Selection */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* DateTime Selection */}
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Start Date</label>
+                  <label className="block text-sm font-medium mb-2">Start Date & Time</label>
                   <input
-                    type="date"
-                    value={rentRequest.startDate}
-                    onChange={(e) => setRentRequest({...rentRequest, startDate: e.target.value})}
+                    type="datetime-local"
+                    value={rentRequest.startDateTime}
+                    onChange={(e) => setRentRequest({...rentRequest, startDateTime: e.target.value})}
                     className={`w-full px-3 py-2 rounded-lg border ${
                       theme === 'dark'
                         ? 'bg-gray-700 border-gray-600 text-white'
@@ -792,47 +837,17 @@ export default function ListingDetailPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">End Date</label>
+                  <label className="block text-sm font-medium mb-2">End Date & Time</label>
                   <input
-                    type="date"
-                    value={rentRequest.endDate}
-                    onChange={(e) => setRentRequest({...rentRequest, endDate: e.target.value})}
+                    type="datetime-local"
+                    value={rentRequest.endDateTime}
+                    onChange={(e) => setRentRequest({...rentRequest, endDateTime: e.target.value})}
                     className={`w-full px-3 py-2 rounded-lg border ${
                       theme === 'dark'
                         ? 'bg-gray-700 border-gray-600 text-white'
                         : 'bg-gray-50 border-gray-300 text-gray-900'
                     }`}
                     required
-                  />
-                </div>
-              </div>
-
-              {/* Time Selection */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Start Time</label>
-                  <input
-                    type="time"
-                    value={rentRequest.startTime}
-                    onChange={(e) => setRentRequest({...rentRequest, startTime: e.target.value})}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === 'dark'
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-gray-50 border-gray-300 text-gray-900'
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">End Time</label>
-                  <input
-                    type="time"
-                    value={rentRequest.endTime}
-                    onChange={(e) => setRentRequest({...rentRequest, endTime: e.target.value})}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === 'dark'
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-gray-50 border-gray-300 text-gray-900'
-                    }`}
                   />
                 </div>
               </div>
@@ -854,21 +869,44 @@ export default function ListingDetailPage() {
               </div>
 
               {/* Cost Calculation */}
-              {rentRequest.startDate && rentRequest.endDate && (
-                <div className={`p-3 rounded-lg ${
-                  theme === 'dark' ? 'bg-gray-700/50' : 'bg-blue-50'
-                }`}>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Total Cost:</span>
-                    <span className="font-bold text-lg text-purple-300">
-                      ${Math.ceil((new Date(rentRequest.endDate).getTime() - new Date(rentRequest.startDate).getTime()) / (1000 * 60 * 60 * 24)) * tool.price}
-                    </span>
+              {rentRequest.startDateTime && rentRequest.endDateTime && (() => {
+                const startDateTime = new Date(rentRequest.startDateTime);
+                const endDateTime = new Date(rentRequest.endDateTime);
+                const millisecondsDiff = endDateTime.getTime() - startDateTime.getTime();
+
+                let quantity: number;
+                let unitName: string;
+                let totalCost: number;
+
+                if (tool.period.toLowerCase() === 'day') {
+                  quantity = Math.max(1, Math.ceil(millisecondsDiff / (1000 * 60 * 60 * 24)));
+                  unitName = quantity === 1 ? 'day' : 'days';
+                  totalCost = quantity * tool.price;
+                } else {
+                  quantity = Math.ceil(millisecondsDiff / (1000 * 60 * 60));
+                  unitName = quantity === 1 ? 'hour' : 'hours';
+                  totalCost = quantity * tool.price;
+                }
+
+                // Ensure 2 decimal places
+                totalCost = Math.round(totalCost * 100) / 100;
+
+                return (
+                  <div className={`p-3 rounded-lg ${
+                    theme === 'dark' ? 'bg-gray-700/50' : 'bg-blue-50'
+                  }`}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Total Cost:</span>
+                      <span className="font-bold text-lg text-purple-300">
+                        ${formatPrice(totalCost)}
+                      </span>
+                    </div>
+                    <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {quantity} {unitName} × ${formatPrice(tool.price)}/{tool.period}
+                    </p>
                   </div>
-                  <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {Math.ceil((new Date(rentRequest.endDate).getTime() - new Date(rentRequest.startDate).getTime()) / (1000 * 60 * 60 * 24))} day(s) × ${tool.price}/{tool.period}
-                  </p>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             {/* Modal Footer */}
@@ -885,11 +923,99 @@ export default function ListingDetailPage() {
               </button>
               <button
                 onClick={handleRentRequestSubmit}
-                disabled={!rentRequest.startDate || !rentRequest.endDate}
+                disabled={!rentRequest.startDateTime || !rentRequest.endDateTime}
                 className="flex-1 py-2 px-4 bg-purple-900 hover:bg-purple-950 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
               >
                 Send Request
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && successData && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className={`w-full max-w-lg rounded-2xl border-0 shadow-2xl overflow-hidden ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            {/* Success Header */}
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-center text-white">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Request Sent Successfully!</h3>
+              <p className="text-green-100">Your rental request has been sent to {successData.tool.owner}</p>
+            </div>
+
+            {/* Request Details */}
+            <div className="p-6 space-y-4">
+              {/* Tool Info */}
+              <div className="flex items-center space-x-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+                {renderToolImage(successData.tool.image, 'medium')}
+                <div className="flex-1">
+                  <h4 className="font-bold text-lg text-purple-800 dark:text-purple-200">{successData.tool.name}</h4>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    by {successData.tool.owner} • {successData.tool.location}
+                  </p>
+                </div>
+              </div>
+
+              {/* Request Summary */}
+              <div className={`p-4 rounded-xl border-2 border-dashed ${
+                theme === 'dark' ? 'border-gray-600 bg-gray-700/30' : 'border-gray-300 bg-gray-50'
+              }`}>
+                <h5 className="font-semibold mb-3 text-gray-700 dark:text-gray-300">Request Details</h5>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Start:</span>
+                    <span className="font-medium">{successData.startDateTime} {successData.startTime}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">End:</span>
+                    <span className="font-medium">{successData.endDateTime} {successData.endTime}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-300 dark:border-gray-600">
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">Total Cost:</span>
+                    <span className="font-bold text-xl text-green-600 dark:text-green-400">${formatPrice(successData.totalCost)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Next Steps */}
+              <div className={`p-4 rounded-xl ${
+                theme === 'dark' ? 'bg-blue-900/20 border border-blue-700/30' : 'bg-blue-50 border border-blue-200'
+              }`}>
+                <h5 className="font-semibold mb-2 text-blue-800 dark:text-blue-200">What happens next?</h5>
+                <ul className="text-sm space-y-1 text-blue-700 dark:text-blue-300">
+                  <li>• The owner will be notified via email</li>
+                  <li>• They can approve or decline your request</li>
+                  <li>• Track this request in "My Rentals"</li>
+                  <li>• You'll receive updates about the status</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200/20">
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => navigate('/my-rentals')}
+                  className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all hover:scale-105 ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  }`}
+                >
+                  View My Rentals
+                </button>
+                <button
+                  onClick={() => setShowSuccessModal(false)}
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                >
+                  Continue Browsing
+                </button>
+              </div>
             </div>
           </div>
         </div>

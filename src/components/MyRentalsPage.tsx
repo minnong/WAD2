@@ -31,6 +31,23 @@ export default function MyRentalsPage() {
   const userOwnListings = userListings;
   const incomingRequests = receivedRentalRequests.filter(request => request.status === 'pending');
 
+  // Helper function to format datetime
+  const formatDateTime = (date: string, time: string) => {
+    try {
+      const dateTime = new Date(`${date}T${time}`);
+      return dateTime.toLocaleString('en-SG', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return `${date} ${time}`;
+    }
+  };
+
   // Helper function to render tool image (emoji or base64) - enhanced for full height
   const renderToolImage = (imageStr: string, size: 'small' | 'large' = 'small') => {
     const sizeClasses = size === 'large'
@@ -55,6 +72,11 @@ export default function MyRentalsPage() {
         {imageStr}
       </div>
     );
+  };
+
+  // Helper function to format price - show decimals only if needed
+  const formatPrice = (price: number) => {
+    return price % 1 === 0 ? price.toString() : price.toFixed(2);
   };
 
   const handleViewListing = (listingId: string) => {
@@ -159,7 +181,7 @@ export default function MyRentalsPage() {
     switch (status) {
       case 'active':
       case 'rented':
-        return 'text-purple-300 bg-purple-300/10';
+        return 'text-white bg-purple-300/10';
       case 'completed':
       case 'available':
         return 'text-green-500 bg-green-500/10';
@@ -281,8 +303,8 @@ export default function MyRentalsPage() {
           </div>
         </div>
 
-        {/* Enhanced Tabs */}
-        <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+           {/* Enhanced Tabs */}
+           <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
           <div className="grid grid-cols-3 gap-1">
             <button
               onClick={() => setActiveTab('rented')}
@@ -325,7 +347,7 @@ export default function MyRentalsPage() {
             </button>
           </div>
         </div>
-
+        
         {/* Content */}
         {activeTab === 'rented' ? (
           <div className="space-y-6">
@@ -337,15 +359,15 @@ export default function MyRentalsPage() {
                 </h2>
                 <div className="space-y-6">
                   {activeRentals.map((item) => (
-                    <div
-                      key={item.id}
-                      onClick={() => handleViewListing(item.toolId)}
-                      className={`rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
-                        theme === 'dark'
-                          ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                          : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
-                      }`}>
-                      <div className="flex items-center p-6 gap-6">
+                    <div key={item.id} className="flex items-center justify-between">
+                      {/* Listing Box - Left 2 Columns Only */}
+                      <div
+                        onClick={() => handleViewListing(item.toolId)}
+                        className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                          theme === 'dark'
+                            ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                            : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                        }`}>
                         {/* Large Image on Left */}
                         <div className="flex-shrink-0">
                           {renderToolImage(item.toolImage, "large")}
@@ -354,7 +376,7 @@ export default function MyRentalsPage() {
                         {/* Listing Details in Center */}
                         <div className="flex-1 min-w-0">
                           <div className="mb-4">
-                            <h3 className="text-xl font-bold mb-1 text-purple-300">{item.toolName}</h3>
+                            <h3 className="text-xl font-bold mb-1 text-white">{item.toolName}</h3>
                             <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                               From <span className="font-medium">{item.ownerName}</span> • {item.location}
                             </p>
@@ -362,24 +384,16 @@ export default function MyRentalsPage() {
 
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
-                              <span className="font-semibold text-sm">{item.startDate} - {item.endDate}</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(item.startDate, item.startTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
-                              <span className="font-semibold text-sm">{item.startTime} - {item.endTime}</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(item.endDate, item.endTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                              <span className="font-bold text-lg text-purple-500">${item.totalCost}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
-                              <span className="font-semibold text-sm">
-                                {item.requestDate instanceof Date
-                                  ? item.requestDate.toLocaleDateString()
-                                  : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
-                              </span>
+                              <span className="font-black text-2xl text-purple-500">${formatPrice(item.totalCost)}</span>
                             </div>
                           </div>
 
@@ -387,48 +401,48 @@ export default function MyRentalsPage() {
                             <div className={`p-3 rounded-lg border-l-4 border-purple-400 ${
                               theme === 'dark' ? 'bg-purple-900/20' : 'bg-purple-50'
                             }`}>
-                              <p className={`text-xs font-medium ${theme === 'dark' ? 'text-purple-300' : 'text-purple-600'}`}>YOUR MESSAGE</p>
+                              <p className={`text-xs font-medium ${theme === 'dark' ? 'text-white' : 'text-purple-600'}`}>YOUR MESSAGE</p>
                               <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                                 "{item.message}"
                               </p>
                             </div>
                           )}
                         </div>
+                      </div>
 
-                        {/* Status & Actions on Right */}
-                        <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
-                          {/* Status Badge */}
-                          <div className="flex flex-col items-end space-y-2">
-                            <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(item.status)}`}>
-                              {getStatusIcon(item.status)}
-                              <span className="capitalize">{item.status}</span>
-                            </span>
-                          </div>
+                      {/* Status & Actions - Outside Box on Right */}
+                      <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
+                        {/* Status Badge */}
+                        <div className="flex flex-col items-end space-y-2">
+                          <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(item.status)}`}>
+                            {getStatusIcon(item.status)}
+                            <span className="capitalize">{item.status}</span>
+                          </span>
+                        </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex flex-col space-y-2 w-full">
+                        {/* Action Buttons */}
+                        <div className="flex flex-col space-y-2 w-full">
+                          <button
+                            onClick={() => handleContactOwner(item)}
+                            className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
+                              theme === 'dark'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                            }`}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span>Contact Owner</span>
+                          </button>
+
+                          {item.status === 'active' && (
                             <button
-                              onClick={() => handleContactOwner(item)}
-                              className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
-                                theme === 'dark'
-                                  ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
-                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
-                              }`}
+                              onClick={() => handleExtendRental(item)}
+                              className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
                             >
-                              <MessageCircle className="w-4 h-4" />
-                              <span>Contact Owner</span>
+                              <Calendar className="w-4 h-4" />
+                              <span>Extend Rental</span>
                             </button>
-
-                            {item.status === 'active' && (
-                              <button
-                                onClick={() => handleExtendRental(item)}
-                                className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
-                              >
-                                <Calendar className="w-4 h-4" />
-                                <span>Extend Rental</span>
-                              </button>
-                            )}
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -445,15 +459,15 @@ export default function MyRentalsPage() {
                 </h2>
                 <div className="space-y-6">
                   {pendingRequests.map((item) => (
-                    <div
-                      key={item.id}
-                      onClick={() => handleViewListing(item.toolId)}
-                      className={`rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
-                        theme === 'dark'
-                          ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                          : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
-                      }`}>
-                      <div className="flex items-center p-6 gap-6">
+                    <div key={item.id} className="flex items-center justify-between">
+                      {/* Listing Box - Left 2 Columns Only */}
+                      <div
+                        onClick={() => handleViewListing(item.toolId)}
+                        className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                          theme === 'dark'
+                            ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                            : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                        }`}>
                         {/* Large Image on Left */}
                         <div className="flex-shrink-0">
                           {renderToolImage(item.toolImage, "large")}
@@ -462,7 +476,7 @@ export default function MyRentalsPage() {
                         {/* Listing Details in Center */}
                         <div className="flex-1 min-w-0">
                           <div className="mb-4">
-                            <h3 className="text-xl font-bold mb-1 text-purple-300">{item.toolName}</h3>
+                            <h3 className="text-xl font-bold mb-1 text-white">{item.toolName}</h3>
                             <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                               From <span className="font-medium">{item.ownerName}</span> • {item.location}
                             </p>
@@ -470,24 +484,16 @@ export default function MyRentalsPage() {
 
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
-                              <span className="font-semibold text-sm">{item.startDate} - {item.endDate}</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(item.startDate, item.startTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
-                              <span className="font-semibold text-sm">{item.startTime} - {item.endTime}</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(item.endDate, item.endTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                              <span className="font-bold text-lg text-purple-500">${item.totalCost}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
-                              <span className="font-semibold text-sm">
-                                {item.requestDate instanceof Date
-                                  ? item.requestDate.toLocaleDateString()
-                                  : new Date((item.requestDate as any).toDate()).toLocaleDateString()}
-                              </span>
+                              <span className="font-black text-2xl text-purple-500">${formatPrice(item.totalCost)}</span>
                             </div>
                           </div>
 
@@ -502,41 +508,64 @@ export default function MyRentalsPage() {
                             </div>
                           )}
                         </div>
+                      </div>
 
-                        {/* Status & Actions on Right */}
-                        <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
-                          {/* Status Badge */}
-                          <div className="flex flex-col items-end space-y-2">
-                            <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(item.status)}`}>
-                              {getStatusIcon(item.status)}
-                              <span className="capitalize">{item.status}</span>
-                            </span>
-                            <p className="text-xs text-orange-500 font-medium">⏳ Waiting for approval</p>
-                          </div>
+                      {/* Status & Actions - Outside Box on Right */}
+                      <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
+                        {/* Status Badge */}
+                        <div className="flex flex-col items-end space-y-2">
+                          <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(item.status)}`}>
+                            {getStatusIcon(item.status)}
+                            <span className="capitalize">{item.status}</span>
+                          </span>
+                          <p className="text-xs text-orange-500 font-medium">⏳ Waiting for approval</p>
+                        </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex flex-col space-y-2 w-full">
-                            <button
-                              onClick={() => handleContactOwner(item)}
-                              className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
-                                theme === 'dark'
-                                  ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
-                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
-                              }`}
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                              <span>Contact Owner</span>
-                            </button>
+                        {/* Action Buttons */}
+                        <div className="flex flex-col space-y-2 w-full">
+                          <button
+                            onClick={() => handleContactOwner(item)}
+                            className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
+                              theme === 'dark'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                            }`}
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span>Contact Owner</span>
+                          </button>
 
-                            <button
-                              onClick={() => handleCancelRequest(item.id)}
-                              className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
-                            >
-                              <XCircle className="w-4 h-4" />
-                              <span>Cancel Request</span>
-                            </button>
+                          <button
+                            onClick={() => handleCancelRequest(item.id)}
+                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                          >
+                            <XCircle className="w-4 h-4" />
+                            <span>Cancel Request</span>
+                          </button>
 
-                          </div>
+                        </div>
+
+                        {/* Request Date */}
+                        <div className="text-center mt-3">
+                          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                            Requested: {item.requestDate instanceof Date
+                              ? item.requestDate.toLocaleString('en-SG', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })
+                              : new Date((item.requestDate as any).toDate()).toLocaleString('en-SG', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -552,15 +581,15 @@ export default function MyRentalsPage() {
             </h2>
             <div className="space-y-6">
               {userOwnListings.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => handleViewListing(item.id)}
-                  className={`group rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
-                    theme === 'dark'
-                      ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                      : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
-                  }`}>
-                  <div className="flex items-center p-6 gap-6">
+                <div key={item.id} className="flex items-center justify-between">
+                  {/* Listing Box - Left 2 Columns Only */}
+                  <div
+                    onClick={() => handleViewListing(item.id)}
+                    className={`flex items-center p-6 gap-6 flex-none w-3/5 group rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                      theme === 'dark'
+                        ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                        : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                    }`}>
                     {/* Large Image on Left */}
                     <div className="flex-shrink-0">
                       {renderToolImage(item.image, "large")}
@@ -569,7 +598,7 @@ export default function MyRentalsPage() {
                     {/* Listing Details in Center */}
                     <div className="flex-1 min-w-0">
                       <div className="mb-4">
-                        <h3 className="text-xl font-bold mb-1 text-purple-300">{item.name}</h3>
+                        <h3 className="text-xl font-bold mb-1 text-white">{item.name}</h3>
                         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                           Listed on <span className="font-medium">
                             {item.createdAt instanceof Date
@@ -582,7 +611,7 @@ export default function MyRentalsPage() {
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center space-x-2">
                           <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Price:</span>
-                          <span className="font-bold text-lg text-purple-500">${item.price} per {item.period}</span>
+                          <span className="font-bold text-lg text-purple-500">${item.price.toFixed(2)} per {item.period}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Category:</span>
@@ -599,7 +628,7 @@ export default function MyRentalsPage() {
                       </div>
 
                       {item.description && (
-                        <div className={`p-3 rounded-lg mb-4 ${
+                        <div className={`p-3 rounded-lg mb-4 max-w-md ${
                           theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
                         }`}>
                           <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>DESCRIPTION</p>
@@ -609,42 +638,42 @@ export default function MyRentalsPage() {
                         </div>
                       )}
                     </div>
+                  </div>
 
-                    {/* Status & Actions on Right */}
-                    <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
-                      {/* Status Badge */}
-                      <div className="flex flex-col items-end space-y-2">
-                        <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor('available')}`}>
-                          {getStatusIcon('available')}
-                          <span className="capitalize">Available</span>
-                        </span>
-                      </div>
+                  {/* Status & Actions - Outside Box on Right */}
+                  <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
+                    {/* Status Badge */}
+                    <div className="flex flex-col items-end space-y-2">
+                      <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor('available')}`}>
+                        {getStatusIcon('available')}
+                        <span className="capitalize">Available</span>
+                      </span>
+                    </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex flex-col space-y-2 w-full">
+                    {/* Action Buttons */}
+                    <div className="flex flex-col space-y-2 w-full">
+                      <button
+                        onClick={() => handleEditListing(item.id)}
+                        className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
+                          theme === 'dark'
+                            ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                        }`}
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span>Edit Listing</span>
+                      </button>
+
+
+                      {item.availability === 'available' && (
                         <button
-                          onClick={() => handleEditListing(item.id)}
-                          className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
-                            theme === 'dark'
-                              ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
-                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
-                          }`}
+                          onClick={() => handleBoostListing(item.id)}
+                          className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
                         >
-                          <Edit className="w-4 h-4" />
-                          <span>Edit Listing</span>
+                          <TrendingUp className="w-4 h-4" />
+                          <span>Boost Listing</span>
                         </button>
-
-
-                        {item.availability === 'available' && (
-                          <button
-                            onClick={() => handleBoostListing(item.id)}
-                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
-                          >
-                            <TrendingUp className="w-4 h-4" />
-                            <span>Boost Listing</span>
-                          </button>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -659,15 +688,15 @@ export default function MyRentalsPage() {
             {incomingRequests.length > 0 ? (
               <div className="space-y-6">
                 {incomingRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    onClick={() => handleViewListing(request.toolId)}
-                    className={`rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
-                      theme === 'dark'
-                        ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                        : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
-                    }`}>
-                    <div className="flex items-center p-6 gap-6">
+                  <div key={request.id} className="flex items-center justify-between">
+                    {/* Listing Box - Left 2 Columns Only */}
+                    <div
+                      onClick={() => handleViewListing(request.toolId)}
+                      className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                        theme === 'dark'
+                          ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                      }`}>
                       {/* Large Image on Left */}
                       <div className="flex-shrink-0">
                         {renderToolImage(request.toolImage, "large")}
@@ -676,7 +705,7 @@ export default function MyRentalsPage() {
                       {/* Listing Details in Center */}
                       <div className="flex-1 min-w-0">
                         <div className="mb-4">
-                          <h3 className="text-xl font-bold mb-1 text-purple-300">{request.toolName}</h3>
+                          <h3 className="text-xl font-bold mb-1 text-white">{request.toolName}</h3>
                           <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                             Request from <span className="font-medium">{request.renterName}</span> • {request.renterEmail}
                           </p>
@@ -684,24 +713,16 @@ export default function MyRentalsPage() {
 
                         <div className="space-y-2 mb-4">
                           <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
-                            <span className="font-semibold text-sm">{request.startDate} - {request.endDate}</span>
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                            <span className="font-semibold text-sm">{formatDateTime(request.startDate, request.startTime)}</span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Time:</span>
-                            <span className="font-semibold text-sm">{request.startTime} - {request.endTime}</span>
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                            <span className="font-semibold text-sm">{formatDateTime(request.endDate, request.endTime)}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                            <span className="font-bold text-lg text-purple-500">${request.totalCost}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requested:</span>
-                            <span className="font-semibold text-sm">
-                              {request.requestDate instanceof Date
-                                ? request.requestDate.toLocaleDateString()
-                                : new Date((request.requestDate as any).toDate()).toLocaleDateString()}
-                            </span>
+                            <span className="font-black text-2xl text-purple-500">${formatPrice(request.totalCost)}</span>
                           </div>
                         </div>
 
@@ -716,46 +737,69 @@ export default function MyRentalsPage() {
                           </div>
                         )}
                       </div>
+                    </div>
 
-                      {/* Status & Actions on Right */}
-                      <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
-                        {/* Status Badge */}
-                        <div className="flex flex-col items-end space-y-2">
-                          <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(request.status)}`}>
-                            {getStatusIcon(request.status)}
-                            <span className="capitalize">{request.status}</span>
-                          </span>
-                          <p className="text-xs text-yellow-500 font-medium">⏳ Awaiting response</p>
-                        </div>
+                    {/* Status & Actions - Outside Box on Right */}
+                    <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
+                      {/* Status Badge */}
+                      <div className="flex flex-col items-end space-y-2">
+                        <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(request.status)}`}>
+                          {getStatusIcon(request.status)}
+                          <span className="capitalize">{request.status}</span>
+                        </span>
+                        <p className="text-xs text-yellow-500 font-medium">⏳ Awaiting response</p>
+                      </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-col space-y-2 w-full">
-                          <button
-                            onClick={() => handleApprovalAction(request.id, 'approve')}
-                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
-                          >
-                            <ThumbsUp className="w-4 h-4" />
-                            <span>Approve</span>
-                          </button>
-                          <button
-                            onClick={() => handleApprovalAction(request.id, 'decline')}
-                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
-                          >
-                            <ThumbsDown className="w-4 h-4" />
-                            <span>Decline</span>
-                          </button>
-                          <button
-                            onClick={() => handleContactOwner(request)}
-                            className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
-                              theme === 'dark'
-                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
-                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
-                            }`}
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                            <span>Contact Renter</span>
-                          </button>
-                        </div>
+                      {/* Action Buttons */}
+                      <div className="flex flex-col space-y-2 w-full">
+                        <button
+                          onClick={() => handleApprovalAction(request.id, 'approve')}
+                          className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                        >
+                          <ThumbsUp className="w-4 h-4" />
+                          <span>Approve</span>
+                        </button>
+                        <button
+                          onClick={() => handleApprovalAction(request.id, 'decline')}
+                          className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                        >
+                          <ThumbsDown className="w-4 h-4" />
+                          <span>Decline</span>
+                        </button>
+                        <button
+                          onClick={() => handleContactOwner(request)}
+                          className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
+                            theme === 'dark'
+                              ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
+                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                          }`}
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Contact Renter</span>
+                        </button>
+                      </div>
+
+                      {/* Request Date */}
+                      <div className="text-center mt-3">
+                        <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                          Requested: {request.requestDate instanceof Date
+                            ? request.requestDate.toLocaleString('en-SG', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                              })
+                            : new Date((request.requestDate as any).toDate()).toLocaleString('en-SG', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                              })}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -928,7 +972,7 @@ export default function MyRentalsPage() {
               <button
                 onClick={closeApprovalModal}
                 disabled={isLoading}
-                className={`flex-1 py-2 px-4 rounded-xl border transition-colors ${
+                className={`flex-none w-3/5 py-2 px-4 rounded-xl border transition-colors ${
                   theme === 'dark'
                     ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -939,7 +983,7 @@ export default function MyRentalsPage() {
               <button
                 onClick={confirmApprovalAction}
                 disabled={isLoading}
-                className={`flex-1 py-2 px-4 text-white rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center ${
+                className={`flex-none w-3/5 py-2 px-4 text-white rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center ${
                   approvalAction === 'approve'
                     ? 'bg-green-600 hover:bg-green-700'
                     : 'bg-red-600 hover:bg-red-700'

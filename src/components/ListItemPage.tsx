@@ -2,18 +2,20 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { imageUploadService } from '../services/firebase';
 import { loadGoogleMapsScript } from '../utils/googleMaps';
 import LiquidGlassNav from './LiquidGlassNav';
 import SuccessModal from './SuccessModal';
-import { Camera, MapPin, DollarSign, FileText, X, Crosshair, Upload } from 'lucide-react';
+import { Camera, MapPin, DollarSign, FileText, X, Crosshair, Upload, ArrowLeft } from 'lucide-react';
 
 export default function ListItemPage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
-  const { addListing } = useListings();
+  const { addListing, updateListing, listings } = useListings();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editListingId = searchParams.get('edit');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -407,6 +409,35 @@ export default function ListItemPage() {
     }
   };
 
+  // Load existing listing data when in edit mode
+  useEffect(() => {
+    if (editListingId && listings.length > 0) {
+      const existingListing = listings.find(listing => listing.id === editListingId);
+      if (existingListing) {
+        setFormData({
+          title: existingListing.name,
+          description: existingListing.description,
+          category: existingListing.category,
+          price: existingListing.price.toString(),
+          period: existingListing.period,
+          location: existingListing.location,
+          condition: existingListing.condition,
+          availability: existingListing.availability || '',
+        });
+
+        // Set coordinates if available
+        if (existingListing.coordinates) {
+          setSelectedCoordinates(existingListing.coordinates);
+        }
+
+        // Handle existing image if it exists
+        if (existingListing.image) {
+          setImagePreviewUrls([existingListing.image]);
+        }
+      }
+    }
+  }, [editListingId, listings]);
+
   // Click outside to close suggestions
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -496,7 +527,7 @@ export default function ListItemPage() {
       // Use selected coordinates from location picker, or get user's coordinates as fallback
       const coordinates = selectedCoordinates || await getUserLocation();
 
-      // Create the listing in Firebase
+      // Prepare listing data
       const listingData = {
         name: formData.title,
         description: formData.description,
@@ -506,24 +537,28 @@ export default function ListItemPage() {
         location: formData.location,
         condition: formData.condition,
         availability: formData.availability || 'Available',
-        imageUrls: imageUrls,
         owner: currentUser.displayName || 'Anonymous',
         ownerContact: currentUser.email || '',
-        coordinates: coordinates
+        coordinates: coordinates,
+        image: imageUrls.length > 0 ? imageUrls[0] :
+               (imagePreviewUrls.length > 0 && !uploadedImages.length) ? imagePreviewUrls[0] :
+               getCategoryEmoji(formData.category)
       };
 
-      // Create the listing through the context (which handles Firebase automatically)
-      const contextListingData = {
-        ...listingData,
-        image: imageUrls.length > 0 ? imageUrls[0] : getCategoryEmoji(formData.category), // Use first image or emoji fallback
-      };
-
-      await addListing(contextListingData);
+      if (editListingId) {
+        // Update existing listing
+        await updateListing(editListingId, listingData);
+      } else {
+        // Create new listing
+        await addListing(listingData);
+      }
 
       // Show success modal
       setSuccessMessage({
-        title: 'Listing Published Successfully!',
-        message: `Your "${formData.title}" listing is now live and visible to other users. You can manage it from the "My Rentals" page.`
+        title: editListingId ? 'Listing Updated Successfully!' : 'Listing Published Successfully!',
+        message: editListingId
+          ? `Your "${formData.title}" listing has been updated. You can manage it from the "My Rentals" page.`
+          : `Your "${formData.title}" listing is now live and visible to other users. You can manage it from the "My Rentals" page.`
       });
       setShowSuccessModal(true);
 
@@ -607,11 +642,26 @@ export default function ListItemPage() {
       <LiquidGlassNav />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className={`flex items-center space-x-2 mb-6 px-4 py-2 rounded-xl transition-colors ${
+            theme === 'dark'
+              ? ' text-gray-300'
+              : 'bg-white/80 hover:bg-white/90 text-gray-700'
+          }`}
+        >
+          <ArrowLeft className="w-8 h-8" />
+          <span></span>
+        </button>
+
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">List Your Tool</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {editListingId ? 'Edit Your Listing' : 'List Your Tool'}
+          </h1>
           <p className={`text-base ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            Share your tools and start earning money
+            {editListingId ? 'Update your listing details' : 'Share your tools and start earning money'}
           </p>
         </div>
 
@@ -957,10 +1007,10 @@ export default function ListItemPage() {
               ) : isSubmitting ? (
                 <>
                   <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
-                  <span>Publishing...</span>
+                  <span>{editListingId ? 'Updating...' : 'Publishing...'}</span>
                 </>
               ) : (
-                <span>Publish Listing</span>
+                <span>{editListingId ? 'Update Listing' : 'Publish Listing'}</span>
               )}
             </button>
           </div>

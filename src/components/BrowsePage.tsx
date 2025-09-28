@@ -4,10 +4,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import { loadGoogleMapsScript } from '../utils/googleMaps';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
-import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye } from 'lucide-react';
+import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye, Heart } from 'lucide-react';
 
 // Extend Window interface for Google Maps
 declare global {
@@ -24,6 +25,7 @@ export default function BrowsePage() {
   const { theme } = useTheme();
   const { listings } = useListings();
   const { addRentalRequest } = useRentals();
+  const { isFavorited, toggleFavorite } = useFavorites();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -1486,6 +1488,22 @@ export default function BrowsePage() {
                   {/* Tool Image */}
                   <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
                     {renderToolImage(tool, "text-4xl")}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(tool.id);
+                      }}
+                      className="absolute top-2 left-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all hover:scale-110"
+                      title={isFavorited(tool.id) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <Heart
+                        className={`w-3 h-3 transition-colors ${
+                          isFavorited(tool.id)
+                            ? 'text-pink-500 fill-current'
+                            : 'text-gray-400 hover:text-pink-500'
+                        }`}
+                      />
+                    </button>
                     <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center space-x-1">
                       <Star className="w-3 h-3 fill-current" />
                       <span>{tool.rating}</span>
@@ -1544,6 +1562,22 @@ export default function BrowsePage() {
                   {/* Tool Image */}
                   <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
                     {renderToolImage(tool, "text-4xl")}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(tool.id);
+                      }}
+                      className="absolute top-2 left-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all hover:scale-110"
+                      title={isFavorited(tool.id) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <Heart
+                        className={`w-3 h-3 transition-colors ${
+                          isFavorited(tool.id)
+                            ? 'text-pink-500 fill-current'
+                            : 'text-gray-400 hover:text-pink-500'
+                        }`}
+                      />
+                    </button>
                     <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center space-x-1">
                       <TrendingUp className="w-3 h-3" />
                       <span>Hot</span>
@@ -1629,6 +1663,23 @@ export default function BrowsePage() {
                             <Star className="w-3 h-3 fill-current" />
                             <span>{tool.rating}</span>
                           </div>
+                          {/* Favorite Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(tool.id);
+                            }}
+                            className="absolute top-3 left-3 p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all hover:scale-110"
+                            title={isFavorited(tool.id) ? "Remove from favorites" : "Add to favorites"}
+                          >
+                            <Heart
+                              className={`w-4 h-4 transition-colors ${
+                                isFavorited(tool.id)
+                                  ? 'text-pink-500 fill-current'
+                                  : 'text-gray-400 hover:text-pink-500'
+                              }`}
+                            />
+                          </button>
                         </div>
 
                         {/* Tool Info */}

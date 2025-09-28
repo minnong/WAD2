@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import ReviewsSection from './ReviewsSection';
 import { listingsService } from '../services/firebase';
@@ -16,6 +17,7 @@ export default function ListingDetailPage() {
   const { theme } = useTheme();
   const { listings } = useListings();
   const { addRentalRequest } = useRentals();
+  const { isFavorited, toggleFavorite } = useFavorites();
 
   // Helper function to get full condition description
   const getConditionLabel = (condition: string) => {
@@ -41,7 +43,6 @@ export default function ListingDetailPage() {
     endDateTime: '',
     message: ''
   });
-  const [isFavorited, setIsFavorited] = useState(false);
   const [listingData, setListingData] = useState<any>(null);
 
   // Helper function to render tool image (emoji or base64)
@@ -711,16 +712,17 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setIsFavorited(!isFavorited)}
+                  onClick={() => toggleFavorite(String(tool.id))}
                   className={`p-2 rounded-full transition-colors ${
-                    isFavorited
-                      ? 'bg-red-500 text-white'
+                    isFavorited(String(tool.id))
+                      ? 'bg-pink-500 text-white'
                       : theme === 'dark'
                         ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                         : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
+                  title={isFavorited(String(tool.id)) ? "Remove from favorites" : "Add to favorites"}
                 >
-                  <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
+                  <Heart className={`w-5 h-5 ${isFavorited(String(tool.id)) ? 'fill-current' : ''}`} />
                 </button>
               </div>
 

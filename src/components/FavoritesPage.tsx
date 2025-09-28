@@ -1,99 +1,90 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import { Heart, Star, MapPin, Clock, Trash2, Share2, MessageCircle } from 'lucide-react';
 
 export default function FavoritesPage() {
   const { theme } = useTheme();
-  const [favorites, setFavorites] = useState([
-    {
-      id: 1,
-      name: 'Professional Camera',
-      price: 60,
-      period: 'day',
-      location: 'Jurong, Singapore',
-      rating: 5.0,
-      reviews: 31,
-      image: '📷',
-      category: 'Electronics',
-      owner: 'Mike R.',
-      savedDate: '2024-01-15',
-      availability: 'Available'
-    },
-    {
-      id: 2,
-      name: 'Drill Press',
-      price: 25,
-      period: 'day',
-      location: 'Orchard, Singapore',
-      rating: 4.8,
-      reviews: 24,
-      image: '🔨',
-      category: 'Power Tools',
-      owner: 'John D.',
-      savedDate: '2024-01-12',
-      availability: 'Available'
-    },
-    {
-      id: 3,
-      name: 'Stand Mixer',
-      price: 15,
-      period: 'day',
-      location: 'Woodlands, Singapore',
-      rating: 4.7,
-      reviews: 12,
-      image: '🍳',
-      category: 'Kitchen',
-      owner: 'Lisa M.',
-      savedDate: '2024-01-10',
-      availability: 'Rented'
-    },
-    {
-      id: 4,
-      name: 'Paint Sprayer',
-      price: 35,
-      period: 'day',
-      location: 'Bishan, Singapore',
-      rating: 4.8,
-      reviews: 15,
-      image: '🎨',
-      category: 'Home & DIY',
-      owner: 'Emma T.',
-      savedDate: '2024-01-08',
-      availability: 'Available'
-    },
-    {
-      id: 5,
-      name: 'Gaming Console',
-      price: 30,
-      period: 'day',
-      location: 'Punggol, Singapore',
-      rating: 4.9,
-      reviews: 27,
-      image: '🎮',
-      category: 'Electronics',
-      owner: 'Ryan S.',
-      savedDate: '2024-01-05',
-      availability: 'Available'
-    }
-  ]);
+  const navigate = useNavigate();
+  const { favorites, loading, removeFavorite } = useFavorites();
 
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const categories = ['All', 'Power Tools', 'Electronics', 'Kitchen', 'Home & DIY'];
+  // Extract unique categories from favorites
+  const allCategories = Array.from(new Set(favorites.map(fav => fav.listing?.category).filter(Boolean)));
+  const categories = ['All', ...allCategories];
 
-  const filteredFavorites = favorites.filter(item =>
-    selectedCategory === 'All' || item.category === selectedCategory
+  const filteredFavorites = favorites.filter(fav =>
+    fav.listing && (selectedCategory === 'All' || fav.listing.category === selectedCategory)
   );
 
-  const removeFavorite = (id: number) => {
-    setFavorites(favorites.filter(item => item.id !== id));
+  const handleRemoveFavorite = async (listingId: string) => {
+    try {
+      await removeFavorite(listingId);
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
+  };
+
+  const handleViewListing = (listingId: string) => {
+    navigate(`/listing/${listingId}`);
   };
 
   const getAvailabilityColor = (availability: string) => {
-    return availability === 'Available'
+    const isAvailable = availability && availability.toLowerCase().includes('available');
+    return isAvailable
       ? 'text-green-500 bg-green-500/10'
       : 'text-orange-500 bg-orange-500/10';
+  };
+
+  const isItemAvailable = (availability: string) => {
+    return availability && availability.toLowerCase().includes('available');
+  };
+
+  const formatPrice = (price: number) => {
+    return price % 1 === 0 ? price.toString() : price.toFixed(2);
+  };
+
+  const renderToolImage = (imageUrls: string[], size: 'small' | 'large' | 'full' = 'small') => {
+    if (size === 'full') {
+      // For full-size images that fill the container
+      if (imageUrls && imageUrls.length > 0 && imageUrls[0].startsWith('data:image/')) {
+        return (
+          <img
+            src={imageUrls[0]}
+            alt="Tool"
+            className="w-full h-full object-cover"
+          />
+        );
+      }
+      // Default fallback for full size
+      return (
+        <div className="w-full h-full flex items-center justify-center text-6xl">
+          🔧
+        </div>
+      );
+    }
+
+    // Original logic for small/large sizes
+    const sizeClasses = size === 'large' ? "w-20 h-20" : "w-16 h-16";
+
+    if (imageUrls && imageUrls.length > 0 && imageUrls[0].startsWith('data:image/')) {
+      return (
+        <img
+          src={imageUrls[0]}
+          alt="Tool"
+          className={`${sizeClasses} object-cover rounded-xl`}
+        />
+      );
+    }
+    // Default fallback
+    return (
+      <div className={`${sizeClasses} flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl text-4xl`}>
+        🔧
+      </div>
+    );
   };
 
   return (
@@ -135,160 +126,116 @@ export default function FavoritesPage() {
           ))}
         </div>
 
-        {/* Favorites Grid */}
-        {filteredFavorites.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredFavorites.map((item) => (
-              <div key={item.id} className={`rounded-2xl p-4 border-0 shadow-sm hover:shadow-md transition-all group ${
-                theme === 'dark'
-                  ? 'bg-gray-800/60 hover:bg-gray-800/80'
-                  : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
-              }`}>
-                {/* Tool Image and Favorite Button */}
-                <div className="relative mb-4">
-                  <div className="text-6xl text-center">{item.image}</div>
-                  <button
-                    onClick={() => removeFavorite(item.id)}
-                    className="absolute top-0 right-0 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-                    title="Remove from favorites"
-                  >
-                    <Heart className="w-6 h-6 text-pink-500 fill-current" />
-                  </button>
-                </div>
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Loading your favorites...</p>
+          </div>
+        ) : filteredFavorites.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredFavorites.map((favorite) => {
+              const listing = favorite.listing!;
+              const savedDate = favorite.createdAt?.toDate ? favorite.createdAt.toDate().toLocaleDateString() : 'Unknown';
 
-                {/* Tool Info */}
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-lg">{item.name}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getAvailabilityColor(item.availability)}`}>
-                      {item.availability}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium">{item.rating}</span>
-                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                      ({item.reviews} reviews)
-                    </span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4 text-gray-400" />
-                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {item.location}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Saved on {item.savedDate}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2">
-                    <div>
-                      <span className="text-2xl font-bold text-purple-300">${item.price}</span>
-                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        /{item.period}
-                      </span>
+              return (
+                <div key={favorite.id} className={`rounded-2xl border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden group ${
+                  theme === 'dark'
+                    ? 'bg-gray-800/60 hover:bg-gray-800/80'
+                    : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
+                }`} onClick={() => handleViewListing(listing.id!)}>
+                  {/* Tool Image */}
+                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
+                    {renderToolImage(listing.imageUrls, "full")}
+                    <div className="absolute top-3 right-3 bg-purple-900 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
+                      <Star className="w-3 h-3 fill-current" />
+                      <span>{listing.rating?.toFixed(1) || '0.0'}</span>
                     </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex space-x-2 pt-2">
+                    {/* Favorite Button */}
                     <button
-                      className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                        item.availability === 'Available'
-                          ? 'bg-purple-900 hover:bg-purple-950 text-white'
-                          : theme === 'dark'
-                          ? 'bg-gray-700/50 text-gray-400 cursor-not-allowed'
-                          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      }`}
-                      disabled={item.availability !== 'Available'}
-                    >
-                      {item.availability === 'Available' ? 'Rent Now' : 'Not Available'}
-                    </button>
-
-                    <button className={`p-2 rounded-xl transition-all ${
-                      theme === 'dark'
-                        ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`} title="Contact owner">
-                      <MessageCircle className="w-4 h-4" />
-                    </button>
-
-                    <button className={`p-2 rounded-xl transition-all ${
-                      theme === 'dark'
-                        ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`} title="Share">
-                      <Share2 className="w-4 h-4" />
-                    </button>
-
-                    <button
-                      onClick={() => removeFavorite(item.id)}
-                      className="p-2 rounded-xl transition-all text-red-500 hover:bg-red-500/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveFavorite(listing.id!);
+                      }}
+                      className="absolute top-3 left-3 p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all hover:scale-110"
                       title="Remove from favorites"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Heart className="w-4 h-4 text-pink-500 fill-current" />
                     </button>
                   </div>
+
+                  {/* Tool Info */}
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-lg line-clamp-2">{listing.name}</h3>
+                      <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                        by <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/profile/${encodeURIComponent(listing.ownerContact)}`);
+                          }}
+                          className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                        >
+                          {listing.owner}
+                        </button>
+                      </p>
+                    </div>
+
+
+
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xl font-bold text-purple-300">${formatPrice(listing.price)}</span>
+                        <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          /{listing.period}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="text-sm font-medium">{listing.rating?.toFixed(1) || '0.0'}</span>
+                        <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                          ({listing.reviews || 0})
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      📍 {listing.location}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           /* Empty State */
-          <div className={`text-center py-16 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            <Heart className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-semibold mb-2">No favorites yet</h3>
-            <p className="text-base mb-6">
+          <div className={`text-center py-20 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+            <div className="relative inline-block mb-6">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-pink-500/20 to-purple-600/20 flex items-center justify-center mb-4 mx-auto">
+                <Heart className="w-12 h-12 text-pink-500/60" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center animate-pulse">
+                <span className="text-white text-sm font-bold">♡</span>
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold mb-3">
+              {selectedCategory === 'All' ? 'No favorites yet' : `No ${selectedCategory.toLowerCase()} favorites`}
+            </h3>
+            <p className="text-lg mb-8 max-w-md mx-auto">
               {selectedCategory === 'All'
-                ? "Start browsing and save tools you're interested in!"
-                : `No ${selectedCategory.toLowerCase()} tools in your favorites yet.`}
+                ? "Discover amazing tools and save the ones you love for easy access later!"
+                : `Browse ${selectedCategory.toLowerCase()} tools and add them to your favorites.`}
             </p>
-            <button className="bg-purple-900 hover:bg-purple-950 text-white px-6 py-3 rounded-xl font-medium transition-colors">
-              Browse Tools
+            <button
+              onClick={() => navigate('/browse')}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg"
+            >
+              Start Browsing Tools
             </button>
           </div>
         )}
 
-        {/* Summary Stats */}
-        {favorites.length > 0 && (
-          <div className={`mt-8 p-6 rounded-2xl border-0 shadow-sm ${
-            theme === 'dark'
-              ? 'bg-gray-800/60'
-              : 'bg-white/80 backdrop-blur-sm'
-          }`}>
-            <h3 className="text-lg font-semibold mb-4">Favorites Summary</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-pink-500">{favorites.length}</p>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Favorites</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-green-500">
-                  {favorites.filter(item => item.availability === 'Available').length}
-                </p>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Available Now</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-purple-300">
-                  ${Math.round(favorites.reduce((sum, item) => sum + item.price, 0) / favorites.length)}
-                </p>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Avg. Price/Day</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-yellow-500">
-                  {(favorites.reduce((sum, item) => sum + item.rating, 0) / favorites.length).toFixed(1)}
-                </p>
-                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Avg. Rating</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

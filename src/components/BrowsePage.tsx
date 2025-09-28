@@ -1636,7 +1636,15 @@ export default function BrowsePage() {
                           <div>
                             <h3 className="font-semibold text-lg line-clamp-2">{tool.name}</h3>
                             <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              by {tool.owner}
+                              by <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/profile/${encodeURIComponent(tool.ownerContact)}`);
+                                }}
+                                className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                              >
+                                {tool.owner}
+                              </button>
                             </p>
                           </div>
 
@@ -1726,7 +1734,12 @@ export default function BrowsePage() {
                 <div>
                   <h4 className="font-semibold">{selectedTool.name}</h4>
                   <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                    by {selectedTool.owner} • {selectedTool.location}
+                    by <button
+                      onClick={() => navigate(`/profile/${encodeURIComponent(selectedTool.ownerContact)}`)}
+                      className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                    >
+                      {selectedTool.owner}
+                    </button> • {selectedTool.location}
                   </p>
                   <p className="text-lg font-bold text-purple-300">
                     ${selectedTool.price}/{selectedTool.period}

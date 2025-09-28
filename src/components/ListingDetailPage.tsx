@@ -669,24 +669,32 @@ export default function ListingDetailPage() {
           {/* Right Column - Details */}
           <div className="space-y-6">
             {/* Owner Info */}
-            <div className={`p-4 rounded-2xl ${
-              theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
-            }`}>
+            <button
+              onClick={() => navigate(`/profile/${encodeURIComponent(tool.ownerContact)}`)}
+              className={`w-full p-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-left ${
+                theme === 'dark' 
+                  ? 'bg-gray-800/60 hover:bg-gray-800/80' 
+                  : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
+              }`}
+            >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-300 to-purple-400 flex items-center justify-center text-white font-bold">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-300 to-purple-400 flex items-center justify-center text-white font-bold text-lg">
                   {tool.owner.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="font-semibold">{tool.owner}</h3>
+                  <h3 className="font-semibold text-lg">{tool.owner}</h3>
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
                     <span className="text-sm">
                       {listingData?.rating ? `${listingData.rating.toFixed(1)} (${listingData.reviews} reviews)` : `${tool.rating} (${tool.reviews} reviews)`}
                     </span>
                   </div>
+                  <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Click to view profile
+                  </p>
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Tool Details */}
             <div className={`p-6 rounded-2xl ${

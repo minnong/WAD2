@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
+import { useAuth } from '../contexts/AuthContext';
+import { reviewsService } from '../services/firebase';
 import LiquidGlassNav from './LiquidGlassNav';
-import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X } from 'lucide-react';
 
 export default function MyRentalsPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { currentUser } = useAuth();
   const { userListings } = useListings(); // Get user-specific listings
   const { userRentalRequests, receivedRentalRequests, updateRentalStatus } = useRentals(); // Get user's rental requests directly
   const [activeTab, setActiveTab] = useState<'rented' | 'listed' | 'requests'>('rented');
@@ -19,6 +22,10 @@ export default function MyRentalsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedRentalForReview, setSelectedRentalForReview] = useState<any>(null);
+  const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   // Get user's rental activity - separate active rentals and pending requests
   const activeRentals = userRentalRequests.filter(request =>
@@ -93,7 +100,7 @@ export default function MyRentalsPage() {
     navigate(`/listing/${rental.toolId}`);
   };
 
-  const handleBoostListing = (listingId: string) => {
+  const handleBoostListing = (_listingId: string) => {
     // Future implementation for boosting listings
     alert('Boost listing feature coming soon!');
   };
@@ -175,6 +182,52 @@ export default function MyRentalsPage() {
   const closeCancelModal = () => {
     setShowCancelModal(false);
     setSelectedRequestId(null);
+  };
+
+  const handleWriteReview = (rental: any) => {
+    setSelectedRentalForReview(rental);
+    setShowReviewModal(true);
+    setReviewData({ rating: 5, comment: '' });
+  };
+
+  const handleSubmitReview = async () => {
+    if (!selectedRentalForReview || !currentUser) return;
+
+    setSubmittingReview(true);
+    try {
+      const reviewPayload = {
+        listingId: selectedRentalForReview.toolId,
+        reviewerName: currentUser.displayName || 'Anonymous User',
+        reviewerEmail: currentUser.email || '',
+        rating: reviewData.rating,
+        comment: reviewData.comment.trim() || ''
+      };
+
+      await reviewsService.createReview(reviewPayload);
+
+      setShowReviewModal(false);
+      setSelectedRentalForReview(null);
+      setReviewData({ rating: 5, comment: '' });
+      setSuccessMessage('Review submitted successfully!');
+      setShowSuccessMessage(true);
+
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error details:', errorMessage);
+      alert(`Failed to submit review: ${errorMessage || 'Please try again.'}`);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const closeReviewModal = () => {
+    setShowReviewModal(false);
+    setSelectedRentalForReview(null);
+    setReviewData({ rating: 5, comment: '' });
   };
 
   const getStatusColor = (status: string) => {
@@ -378,7 +431,15 @@ export default function MyRentalsPage() {
                           <div className="mb-4">
                             <h3 className="text-xl font-bold mb-1 text-white">{item.toolName}</h3>
                             <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              From <span className="font-medium">{item.ownerName}</span> • {item.location}
+                              From <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/profile/${encodeURIComponent(item.ownerEmail)}`);
+                                }}
+                                className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                              >
+                                {item.ownerName}
+                              </button> • {item.location}
                             </p>
                           </div>
 
@@ -443,6 +504,16 @@ export default function MyRentalsPage() {
                               <span>Extend Rental</span>
                             </button>
                           )}
+
+                          {item.status === 'completed' && (
+                            <button
+                              onClick={() => handleWriteReview(item)}
+                              className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                            >
+                              <Star className="w-4 h-4" />
+                              <span>Write Review</span>
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -478,7 +549,15 @@ export default function MyRentalsPage() {
                           <div className="mb-4">
                             <h3 className="text-xl font-bold mb-1 text-white">{item.toolName}</h3>
                             <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              From <span className="font-medium">{item.ownerName}</span> • {item.location}
+                              From <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/profile/${encodeURIComponent(item.ownerEmail)}`);
+                                }}
+                                className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                              >
+                                {item.ownerName}
+                              </button> • {item.location}
                             </p>
                           </div>
 
@@ -707,7 +786,15 @@ export default function MyRentalsPage() {
                         <div className="mb-4">
                           <h3 className="text-xl font-bold mb-1 text-white">{request.toolName}</h3>
                           <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Request from <span className="font-medium">{request.renterName}</span> • {request.renterEmail}
+                            Request from <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/profile/${encodeURIComponent(request.renterEmail)}`);
+                              }}
+                              className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                            >
+                              {request.renterName}
+                            </button> • {request.renterEmail}
                           </p>
                         </div>
 
@@ -1002,6 +1089,118 @@ export default function MyRentalsPage() {
         </div>
       )}
 
+      {/* Review Modal */}
+      {showReviewModal && selectedRentalForReview && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`rounded-2xl p-6 max-w-lg w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Write a Review</h3>
+              <button
+                onClick={closeReviewModal}
+                className={`p-2 rounded-lg transition-colors ${
+                  theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                }`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tool Info */}
+            <div className="flex items-center space-x-4 mb-6">
+              {selectedRentalForReview.toolImage && selectedRentalForReview.toolImage.startsWith('data:image/') ? (
+                <img
+                  src={selectedRentalForReview.toolImage}
+                  alt={selectedRentalForReview.toolName}
+                  className="w-16 h-16 object-cover rounded-xl"
+                />
+              ) : (
+                <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl text-4xl">
+                  {selectedRentalForReview.toolImage}
+                </div>
+              )}
+              <div>
+                <h4 className="font-semibold text-lg">{selectedRentalForReview.toolName}</h4>
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  by <button
+                    onClick={() => navigate(`/profile/${encodeURIComponent(selectedRentalForReview.ownerEmail)}`)}
+                    className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                  >
+                    {selectedRentalForReview.ownerName}
+                  </button>
+                </p>
+              </div>
+            </div>
+
+            {/* Rating Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-3">Rating</label>
+              <div className="flex items-center space-x-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setReviewData({ ...reviewData, rating: star })}
+                    className="focus:outline-none"
+                  >
+                    <Star
+                      className={`w-8 h-8 transition-colors ${
+                        star <= reviewData.rating
+                          ? 'text-yellow-400 fill-current'
+                          : theme === 'dark' ? 'text-gray-600 hover:text-gray-500' : 'text-gray-300 hover:text-gray-400'
+                      }`}
+                    />
+                  </button>
+                ))}
+                <span className="ml-2 text-sm font-medium">
+                  {reviewData.rating} star{reviewData.rating !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+
+            {/* Comment */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-3">Your Review (Optional)</label>
+              <textarea
+                value={reviewData.comment}
+                onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
+                placeholder="Share your experience with this tool... (optional)"
+                rows={4}
+                className={`w-full px-3 py-2 rounded-lg border resize-none ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
+              />
+            </div>
+
+            {/* Submit Buttons */}
+            <div className="flex space-x-3">
+              <button
+                onClick={closeReviewModal}
+                disabled={submittingReview}
+                className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                } disabled:opacity-50`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                disabled={submittingReview}
+                className="flex-1 py-2 px-4 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors flex items-center justify-center"
+              >
+                {submittingReview ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                ) : (
+                  'Submit Review'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Success Message */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 z-50">
@@ -1015,6 +1214,7 @@ export default function MyRentalsPage() {
               <p className="font-medium text-gray-900 dark:text-white">
                 {successMessage.includes('approved') ? 'Request Approved' :
                  successMessage.includes('declined') ? 'Request Declined' :
+                 successMessage.includes('Review') ? 'Review Submitted' :
                  'Request Cancelled'}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">{successMessage}</p>

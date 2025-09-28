@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ListingsProvider } from './contexts/ListingsContext'
 import { RentalsProvider } from './contexts/RentalsContext'
+import { FavoritesProvider } from './contexts/FavoritesContext'
 import AuthenticatedRedirect from './components/AuthenticatedRedirect'
 import AuthPage from './components/AuthPage'
 import HomePage from './components/HomePage'
@@ -14,6 +15,7 @@ import MyRentalsPage from './components/MyRentalsPage'
 import FavoritesPage from './components/FavoritesPage'
 import ChatPage from './components/ChatPage'
 import ProfilePage from './components/ProfilePage'
+import UserProfilePage from './components/UserProfilePage'
 import UserSettingsPage from './components/UserSettingsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import NotFoundPage from './components/NotFoundPage'
@@ -25,9 +27,10 @@ export default function App() {
       <ThemeProvider>
         <ListingsProvider>
           <RentalsProvider>
-            <Router>
-              <ScrollToTop />
-              <Routes>
+            <FavoritesProvider>
+              <Router>
+                <ScrollToTop />
+                <Routes>
                 {/* Landing page with authenticated redirect */}
                 <Route path="/" element={<AuthenticatedRedirect />} />
                 <Route path="/auth" element={<AuthPage />} />
@@ -41,12 +44,14 @@ export default function App() {
                 <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
                 <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/profile/:email" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
 
                 {/* 404 catch-all route */}
                 <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </Router>
+                </Routes>
+              </Router>
+            </FavoritesProvider>
           </RentalsProvider>
         </ListingsProvider>
       </ThemeProvider>

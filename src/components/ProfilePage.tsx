@@ -71,8 +71,7 @@ export default function ProfilePage() {
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'listings', label: 'My Listings' },
-    { id: 'rentals', label: 'My Rentals' },
-    { id: 'settings', label: 'Settings' }
+    { id: 'rentals', label: 'My Rentals' }
   ];
 
   return (
@@ -91,10 +90,22 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
             {/* Avatar */}
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-900 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
-                {currentUser?.displayName?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-              </div>
-              <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-purple-900 text-white rounded-full flex items-center justify-center shadow-lg">
+              {profileData.photoURL ? (
+                <img
+                  src={profileData.photoURL}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-purple-500/20"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-900 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
+                  {currentUser?.displayName?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                </div>
+              )}
+              <button
+                onClick={() => navigate('/settings')}
+                className="absolute -bottom-1 -right-1 w-8 h-8 bg-purple-900 hover:bg-purple-950 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                title="Edit profile picture"
+              >
                 <Edit3 className="w-4 h-4" />
               </button>
             </div>
@@ -442,120 +453,6 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {activeTab === 'settings' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Account Settings</h3>
-                <button
-                  onClick={() => navigate('/settings')}
-                  className="flex items-center space-x-2 px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Open Full Settings</span>
-                  <ExternalLink className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                <div className={`p-4 rounded-lg border ${
-                  theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <User className="w-5 h-5 text-purple-300" />
-                      <div>
-                        <h4 className="font-medium">Profile Settings</h4>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Update your personal information and profile picture
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => navigate('/settings')}
-                      className="text-purple-300 hover:text-purple-300 text-sm font-medium"
-                    >
-                      Configure
-                    </button>
-                  </div>
-                </div>
-                
-                <div className={`p-4 rounded-lg border ${
-                  theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Shield className="w-5 h-5 text-purple-300" />
-                      <div>
-                        <h4 className="font-medium">Privacy & Security</h4>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Manage your privacy settings, security preferences, and change password
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => navigate('/settings')}
-                      className="text-purple-300 hover:text-purple-300 text-sm font-medium"
-                    >
-                      Configure
-                    </button>
-                  </div>
-                </div>
-
-                <div className={`p-4 rounded-lg border ${
-                  theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Settings className="w-5 h-5 text-purple-300" />
-                      <div>
-                        <h4 className="font-medium">Notification Preferences</h4>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Choose how you want to be notified about rentals and messages
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => navigate('/settings')}
-                      className="text-purple-300 hover:text-purple-300 text-sm font-medium"
-                    >
-                      Manage
-                    </button>
-                  </div>
-                </div>
-
-                <div className={`p-4 rounded-lg border border-orange-200 ${
-                  theme === 'dark' ? 'bg-orange-900/10' : 'bg-orange-50'
-                }`}>
-                  <div className="flex items-center space-x-3 mb-3">
-                    <Shield className="w-5 h-5 text-orange-500" />
-                    <h4 className="font-medium text-orange-600">Account Status</h4>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Email Verified:</span>
-                      <span className={currentUser?.emailVerified ? 'text-green-600' : 'text-red-600'}>
-                        {currentUser?.emailVerified ? '✓ Verified' : '✗ Not Verified'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Two-Factor Auth:</span>
-                      <span className="text-gray-500">Not Enabled</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Profile Visibility:</span>
-                      <span className="text-purple-300">Public</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate('/settings')}
-                    className="mt-3 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
-                  >
-                    Manage Account Settings
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

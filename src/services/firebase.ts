@@ -71,6 +71,13 @@ export interface FirebaseReview {
   createdAt: any;
 }
 
+export interface FirebaseFavorite {
+  id?: string;
+  userId: string;
+  listingId: string;
+  createdAt: any;
+}
+
 // Listings Services
 export class ListingsService {
   private collection = collection(db, 'listings');
@@ -109,16 +116,65 @@ export class ListingsService {
   }
 
   async getUserListings(userEmail: string): Promise<FirebaseListing[]> {
-    const q = query(
-      this.collection,
-      where('ownerContact', '==', userEmail),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as FirebaseListing[];
+    try {
+      // Try both ownerContact and userId approaches
+      // First try by ownerContact (for backward compatibility)
+      const emailQuery = query(
+        this.collection,
+        where('ownerContact', '==', userEmail)
+      );
+      const emailSnapshot = await getDocs(emailQuery);
+      
+      let listings = emailSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as FirebaseListing[];
+      
+      // Also try to find by userId if we can find the user's UID
+      try {
+        const usersRef = collection(db, 'users');
+        const userQuery = query(usersRef, where('email', '==', userEmail));
+        const userSnapshot = await getDocs(userQuery);
+        
+        if (!userSnapshot.empty) {
+          const userData = userSnapshot.docs[0];
+          const userId = userData.id; // The document ID is the user's UID
+          
+          const uidQuery = query(
+            this.collection,
+            where('userId', '==', userId)
+          );
+          const uidSnapshot = await getDocs(uidQuery);
+          
+          const uidListings = uidSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as FirebaseListing[];
+          
+          // Combine and deduplicate listings
+          const allListings = [...listings, ...uidListings];
+          const uniqueListings = allListings.filter((listing, index, self) => 
+            index === self.findIndex(l => l.id === listing.id)
+          );
+          
+          listings = uniqueListings;
+        }
+      } catch (userError) {
+        // Fall back to email-based listings only
+      }
+      
+      // Sort in memory by createdAt descending
+      listings.sort((a, b) => {
+        const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bDate.getTime() - aDate.getTime();
+      });
+      
+      return listings;
+    } catch (error) {
+      console.error('Error in getUserListings:', error);
+      throw error;
+    }
   }
 
   async updateListing(id: string, updates: Partial<FirebaseListing>): Promise<void> {
@@ -217,28 +273,48 @@ export class ReviewsService {
   private collection = collection(db, 'reviews');
 
   async createReview(review: Omit<FirebaseReview, 'id' | 'createdAt'>): Promise<string> {
-    const docRef = await addDoc(this.collection, {
-      ...review,
-      createdAt: serverTimestamp()
-    });
+    try {
+      const docRef = await addDoc(this.collection, {
+        ...review,
+        comment: review.comment || '', // Ensure comment is never undefined
+        createdAt: serverTimestamp()
+      });
 
-    // Update listing rating
-    await this.updateListingRating(review.listingId);
+      // Update listing rating
+      await this.updateListingRating(review.listingId);
 
-    return docRef.id;
+      return docRef.id;
+    } catch (error) {
+      console.error('Error in createReview:', error);
+      throw error;
+    }
   }
 
   async getListingReviews(listingId: string): Promise<FirebaseReview[]> {
-    const q = query(
-      this.collection,
-      where('listingId', '==', listingId),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as FirebaseReview[];
+    try {
+      // Use simple query without orderBy to avoid composite index requirement
+      const q = query(
+        this.collection,
+        where('listingId', '==', listingId)
+      );
+      const querySnapshot = await getDocs(q);
+      const reviews = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as FirebaseReview[];
+      
+      // Sort in memory by createdAt descending
+      reviews.sort((a, b) => {
+        const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bDate.getTime() - aDate.getTime();
+      });
+      
+      return reviews;
+    } catch (error) {
+      console.error('Error in getListingReviews:', error);
+      throw error;
+    }
   }
 
   private async updateListingRating(listingId: string): Promise<void> {
@@ -257,7 +333,7 @@ export class ReviewsService {
 
 // Image Upload Services
 export class ImageUploadService {
-  async uploadImages(files: File[], path: string): Promise<string[]> {
+  async uploadImages(files: File[], _path: string): Promise<string[]> {
     if (!files || files.length === 0) {
       throw new Error('No files provided for upload');
     }
@@ -301,7 +377,8 @@ export class ImageUploadService {
 
     } catch (error) {
       console.error('Error converting images:', error);
-      throw new Error(error.message || 'Failed to process images. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(errorMessage || 'Failed to process images. Please try again.');
     }
   }
 
@@ -312,7 +389,108 @@ export class ImageUploadService {
       console.log('Image deleted successfully:', imageUrl);
     } catch (error) {
       console.error('Error deleting image:', error);
-      throw new Error(`Failed to delete image: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Failed to delete image: ${errorMessage}`);
+    }
+  }
+}
+
+// Favorites Services
+export class FavoritesService {
+  private collection = collection(db, 'favorites');
+
+  async addFavorite(userId: string, listingId: string): Promise<string> {
+    try {
+      // Check if already favorited
+      const existingFavorite = await this.getFavorite(userId, listingId);
+      if (existingFavorite) {
+        return existingFavorite.id!;
+      }
+
+      const docRef = await addDoc(this.collection, {
+        userId,
+        listingId,
+        createdAt: serverTimestamp()
+      });
+
+      console.log('Favorite added with ID:', docRef.id);
+      return docRef.id;
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      throw error;
+    }
+  }
+
+  async removeFavorite(userId: string, listingId: string): Promise<void> {
+    try {
+      const favorite = await this.getFavorite(userId, listingId);
+      if (favorite) {
+        const docRef = doc(db, 'favorites', favorite.id!);
+        await deleteDoc(docRef);
+        console.log('Favorite removed');
+      }
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      throw error;
+    }
+  }
+
+  async getFavorite(userId: string, listingId: string): Promise<FirebaseFavorite | null> {
+    try {
+      const q = query(
+        this.collection,
+        where('userId', '==', userId),
+        where('listingId', '==', listingId)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        return {
+          id: doc.id,
+          ...doc.data()
+        } as FirebaseFavorite;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting favorite:', error);
+      throw error;
+    }
+  }
+
+  async getUserFavorites(userId: string): Promise<FirebaseFavorite[]> {
+    try {
+      const q = query(
+        this.collection,
+        where('userId', '==', userId)
+      );
+      const querySnapshot = await getDocs(q);
+      const favorites = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as FirebaseFavorite[];
+
+      // Sort by createdAt descending
+      favorites.sort((a, b) => {
+        const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bDate.getTime() - aDate.getTime();
+      });
+
+      return favorites;
+    } catch (error) {
+      console.error('Error getting user favorites:', error);
+      throw error;
+    }
+  }
+
+  async isFavorited(userId: string, listingId: string): Promise<boolean> {
+    try {
+      const favorite = await this.getFavorite(userId, listingId);
+      return favorite !== null;
+    } catch (error) {
+      console.error('Error checking if favorited:', error);
+      return false;
     }
   }
 }
@@ -321,4 +499,5 @@ export class ImageUploadService {
 export const listingsService = new ListingsService();
 export const rentalRequestsService = new RentalRequestsService();
 export const reviewsService = new ReviewsService();
+export const favoritesService = new FavoritesService();
 export const imageUploadService = new ImageUploadService();

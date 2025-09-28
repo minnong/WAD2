@@ -200,10 +200,23 @@ export default function UserSettingsPage() {
 
     setLoading(true);
     try {
+      // Upload image to Firebase Storage
       const imageRef = ref(storage, `profile-images/${currentUser.uid}`);
       await uploadBytes(imageRef, file);
       const downloadURL = await getDownloadURL(imageRef);
-      
+
+      // Update Firebase Auth profile immediately
+      await updateProfile(currentUser, {
+        photoURL: downloadURL
+      });
+
+      // Update Firestore user document
+      const userRef = doc(db, 'users', currentUser.uid);
+      await setDoc(userRef, {
+        photoURL: downloadURL,
+        updatedAt: new Date()
+      }, { merge: true });
+
       setSettings(prev => ({ ...prev, photoURL: downloadURL }));
       showMessage('success', 'Profile image uploaded successfully!');
     } catch (error: any) {

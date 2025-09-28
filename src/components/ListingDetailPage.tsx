@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import ReviewsSection from './ReviewsSection';
 import { listingsService } from '../services/firebase';
@@ -16,6 +17,7 @@ export default function ListingDetailPage() {
   const { theme } = useTheme();
   const { listings } = useListings();
   const { addRentalRequest } = useRentals();
+  const { isFavorited, toggleFavorite } = useFavorites();
 
   // Helper function to get full condition description
   const getConditionLabel = (condition: string) => {
@@ -41,7 +43,6 @@ export default function ListingDetailPage() {
     endDateTime: '',
     message: ''
   });
-  const [isFavorited, setIsFavorited] = useState(false);
   const [listingData, setListingData] = useState<any>(null);
 
   // Helper function to render tool image (emoji or base64)
@@ -669,24 +670,32 @@ export default function ListingDetailPage() {
           {/* Right Column - Details */}
           <div className="space-y-6">
             {/* Owner Info */}
-            <div className={`p-4 rounded-2xl ${
-              theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
-            }`}>
+            <button
+              onClick={() => navigate(`/profile/${encodeURIComponent(tool.ownerContact)}`)}
+              className={`w-full p-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-left ${
+                theme === 'dark' 
+                  ? 'bg-gray-800/60 hover:bg-gray-800/80' 
+                  : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
+              }`}
+            >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-300 to-purple-400 flex items-center justify-center text-white font-bold">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-300 to-purple-400 flex items-center justify-center text-white font-bold text-lg">
                   {tool.owner.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="font-semibold">{tool.owner}</h3>
+                  <h3 className="font-semibold text-lg">{tool.owner}</h3>
                   <div className="flex items-center space-x-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
                     <span className="text-sm">
                       {listingData?.rating ? `${listingData.rating.toFixed(1)} (${listingData.reviews} reviews)` : `${tool.rating} (${tool.reviews} reviews)`}
                     </span>
                   </div>
+                  <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Click to view profile
+                  </p>
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Tool Details */}
             <div className={`p-6 rounded-2xl ${
@@ -703,16 +712,17 @@ export default function ListingDetailPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setIsFavorited(!isFavorited)}
+                  onClick={() => toggleFavorite(String(tool.id))}
                   className={`p-2 rounded-full transition-colors ${
-                    isFavorited
-                      ? 'bg-red-500 text-white'
+                    isFavorited(String(tool.id))
+                      ? 'bg-pink-500 text-white'
                       : theme === 'dark'
                         ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                         : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
+                  title={isFavorited(String(tool.id)) ? "Remove from favorites" : "Add to favorites"}
                 >
-                  <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
+                  <Heart className={`w-5 h-5 ${isFavorited(String(tool.id)) ? 'fill-current' : ''}`} />
                 </button>
               </div>
 

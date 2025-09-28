@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { reviewsService, type FirebaseReview } from '../services/firebase';
@@ -12,6 +13,7 @@ interface ReviewsSectionProps {
 }
 
 export default function ReviewsSection({ listingId, listingName, ownerEmail, onReviewAdded }: ReviewsSectionProps) {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { theme } = useTheme();
   const [reviews, setReviews] = useState<FirebaseReview[]>([]);
@@ -45,13 +47,15 @@ export default function ReviewsSection({ listingId, listingName, ownerEmail, onR
 
     try {
       setSubmitting(true);
-      await reviewsService.createReview({
+      const reviewPayload = {
         listingId,
         reviewerName: currentUser.displayName || 'Anonymous User',
         reviewerEmail: currentUser.email || '',
         rating: newReview.rating,
         comment: newReview.comment.trim()
-      });
+      };
+      
+      await reviewsService.createReview(reviewPayload);
 
       // Reset form and reload reviews
       setNewReview({ rating: 5, comment: '' });
@@ -59,8 +63,9 @@ export default function ReviewsSection({ listingId, listingName, ownerEmail, onR
       await loadReviews();
       onReviewAdded?.();
     } catch (error) {
-      console.error('Error submitting review:', error);
-      alert('Failed to submit review. Please try again.');
+      console.error('Error submitting review from ReviewsSection:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Failed to submit review: ${errorMessage}`);
     } finally {
       setSubmitting(false);
     }
@@ -241,7 +246,12 @@ export default function ReviewsSection({ listingId, listingName, ownerEmail, onR
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h4 className="font-semibold">{review.reviewerName}</h4>
+                      <button
+                        onClick={() => navigate(`/profile/${encodeURIComponent(review.reviewerEmail)}`)}
+                        className="font-semibold hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-left"
+                      >
+                        {review.reviewerName}
+                      </button>
                       <div className="flex items-center space-x-2">
                         {renderStars(review.rating, 'sm')}
                         <span className="text-sm font-medium">{review.rating}/5</span>

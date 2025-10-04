@@ -39,6 +39,8 @@ export default function ListingDetailPage() {
   const [showRentModal, setShowRentModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<any>(null);
+  const [emailsSent, setEmailsSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [rentRequest, setRentRequest] = useState({
     startDateTime: '',
     endDateTime: '',
@@ -551,77 +553,88 @@ export default function ListingDetailPage() {
     });
   };
 
-  const handleRentRequestSubmit = () => {
-    if (!currentUser) return;
+  const handleRentRequestSubmit = async () => {
+    if (!currentUser || isSubmitting) return;
 
-    // Parse datetime strings
-    const startDateTime = new Date(rentRequest.startDateTime);
-    const endDateTime = new Date(rentRequest.endDateTime);
+    setIsSubmitting(true);
 
-    // Calculate total cost based on duration and pricing period
-    const millisecondsDiff = endDateTime.getTime() - startDateTime.getTime();
+    try {
+      // Parse datetime strings
+      const startDateTime = new Date(rentRequest.startDateTime);
+      const endDateTime = new Date(rentRequest.endDateTime);
 
-    let totalCost: number;
-    if (tool.period.toLowerCase() === 'day') {
-      // For daily pricing, calculate number of days (minimum 1 day)
-      const days = Math.max(1, Math.ceil(millisecondsDiff / (1000 * 60 * 60 * 24)));
-      totalCost = days * tool.price;
-    } else {
-      // For hourly pricing, calculate number of hours
-      const hours = Math.ceil(millisecondsDiff / (1000 * 60 * 60));
-      totalCost = hours * tool.price;
+      // Calculate total cost based on duration and pricing period
+      const millisecondsDiff = endDateTime.getTime() - startDateTime.getTime();
+
+      let totalCost: number;
+      if (tool.period.toLowerCase() === 'day') {
+        // For daily pricing, calculate number of days (minimum 1 day)
+        const days = Math.max(1, Math.ceil(millisecondsDiff / (1000 * 60 * 60 * 24)));
+        totalCost = days * tool.price;
+      } else {
+        // For hourly pricing, calculate number of hours
+        const hours = Math.ceil(millisecondsDiff / (1000 * 60 * 60));
+        totalCost = hours * tool.price;
+      }
+
+      // Ensure 2 decimal places
+      totalCost = Math.round(totalCost * 100) / 100;
+
+      // Extract date and time components for compatibility with existing system
+      const startDate = startDateTime.toISOString().split('T')[0];
+      const endDate = endDateTime.toISOString().split('T')[0];
+      const startTime = startDateTime.toTimeString().slice(0, 5);
+      const endTime = endDateTime.toTimeString().slice(0, 5);
+
+      // Create rental request and add to context
+      const rentalRequestData = {
+        toolId: String(tool.id),
+        toolName: tool.name,
+        toolImage: tool.image,
+        renterName: currentUser.displayName || 'Anonymous',
+        renterEmail: currentUser.email || '',
+        ownerEmail: (tool as any).ownerContact || (tool as any).ownerEmail || tool.ownerContact,
+        ownerName: tool.owner,
+        startDate: startDate,
+        endDate: endDate,
+        startTime: startTime,
+        endTime: endTime,
+        message: rentRequest.message,
+        totalCost: totalCost,
+        status: 'pending' as const,
+        location: tool.location
+      };
+
+      const result = await addRentalRequest(rentalRequestData);
+      setEmailsSent(result.emailsSent);
+
+      console.log('Rental request sent:', rentalRequestData);
+      console.log('Emails sent:', result.emailsSent);
+
+      // Store success data for the modal
+      setSuccessData({
+        tool,
+        startDateTime: startDateTime.toLocaleDateString(),
+        startTime,
+        endDateTime: endDateTime.toLocaleDateString(),
+        endTime,
+        totalCost
+      });
+
+      // Close rent modal and show success modal
+      setShowRentModal(false);
+      setShowSuccessModal(true);
+      setRentRequest({
+        startDateTime: '',
+        endDateTime: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Error submitting rental request:', error);
+      alert('Failed to submit rental request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Ensure 2 decimal places
-    totalCost = Math.round(totalCost * 100) / 100;
-
-    // Extract date and time components for compatibility with existing system
-    const startDate = startDateTime.toISOString().split('T')[0];
-    const endDate = endDateTime.toISOString().split('T')[0];
-    const startTime = startDateTime.toTimeString().slice(0, 5);
-    const endTime = endDateTime.toTimeString().slice(0, 5);
-
-    // Create rental request and add to context
-    const rentalRequestData = {
-      toolId: String(tool.id),
-      toolName: tool.name,
-      toolImage: tool.image,
-      renterName: currentUser.displayName || 'Anonymous',
-      renterEmail: currentUser.email || '',
-      ownerEmail: (tool as any).ownerContact || (tool as any).ownerEmail || tool.ownerContact,
-      ownerName: tool.owner,
-      startDate: startDate,
-      endDate: endDate,
-      startTime: startTime,
-      endTime: endTime,
-      message: rentRequest.message,
-      totalCost: totalCost,
-      status: 'pending' as const,
-      location: tool.location
-    };
-
-    addRentalRequest(rentalRequestData);
-
-    console.log('Rental request sent:', rentalRequestData);
-
-    // Store success data for the modal
-    setSuccessData({
-      tool,
-      startDateTime: startDateTime.toLocaleDateString(),
-      startTime,
-      endDateTime: endDateTime.toLocaleDateString(),
-      endTime,
-      totalCost
-    });
-
-    // Close rent modal and show success modal
-    setShowRentModal(false);
-    setShowSuccessModal(true);
-    setRentRequest({
-      startDateTime: '',
-      endDateTime: '',
-      message: ''
-    });
   };
 
   return (
@@ -946,10 +959,16 @@ export default function ListingDetailPage() {
               </button>
               <button
                 onClick={handleRentRequestSubmit}
-                disabled={!rentRequest.startDateTime || !rentRequest.endDateTime}
-                className="flex-1 py-2 px-4 bg-purple-900 hover:bg-purple-950 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                disabled={!rentRequest.startDateTime || !rentRequest.endDateTime || isSubmitting}
+                className="flex-1 py-2 px-4 bg-purple-900 hover:bg-purple-950 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
-                Send Request
+                {isSubmitting && (
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                {isSubmitting ? 'Sending...' : 'Send Request'}
               </button>
             </div>
           </div>
@@ -1011,8 +1030,7 @@ export default function ListingDetailPage() {
               }`}>
                 <h5 className="font-semibold mb-2 text-blue-800 dark:text-blue-200">What happens next?</h5>
                 <ul className="text-sm space-y-1 text-blue-700 dark:text-blue-300">
-                  <li>• The owner will be notified via email</li>
-                  <li>• They can approve or decline your request</li>
+                  <li>• The owner can approve or decline your request</li>
                   <li>• Track this request in "My Rentals"</li>
                   <li>• You'll receive updates about the status</li>
                 </ul>

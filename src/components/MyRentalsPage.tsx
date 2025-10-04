@@ -512,11 +512,12 @@ export default function MyRentalsPage() {
                       {/* Listing Box - Left 2 Columns Only */}
                       <div
                         onClick={() => handleViewListing(item.toolId)}
-                        className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                        className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
                           theme === 'dark'
-                            ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                            : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                            ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
+                            : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
                         }`}>
+
                         {/* Large Image on Left */}
                         <div className="flex-shrink-0">
                           {renderToolImage(item.toolImage, "large")}
@@ -630,11 +631,12 @@ export default function MyRentalsPage() {
                       {/* Listing Box - Left 2 Columns Only */}
                       <div
                         onClick={() => handleViewListing(item.toolId)}
-                        className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                        className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
                           theme === 'dark'
-                            ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                            : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                            ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
+                            : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
                         }`}>
+
                         {/* Large Image on Left */}
                         <div className="flex-shrink-0">
                           {renderToolImage(item.toolImage, "large")}
@@ -1000,11 +1002,12 @@ export default function MyRentalsPage() {
                     {/* Listing Box - Left 2 Columns Only */}
                     <div
                       onClick={() => handleViewListing(request.toolId)}
-                      className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                      className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
                         theme === 'dark'
-                          ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                          : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                          ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
+                          : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
                       }`}>
+
                       {/* Large Image on Left */}
                       <div className="flex-shrink-0">
                         {renderToolImage(request.toolImage, "large")}

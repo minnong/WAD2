@@ -208,8 +208,9 @@ export default function UserProfilePage() {
     navigate(`/listing/${listing.id}`);
   };
 
-  const renderToolImage = (imageStr: string, size: 'small' | 'medium' = 'small') => {
-    const sizeClasses = size === 'medium' ? "w-20 h-20" : "w-16 h-16";
+  const renderToolImage = (imageStr: string, size: 'small' | 'medium' | 'card' = 'small') => {
+    const sizeClasses = size === 'card' ? "w-full aspect-square" :
+                        size === 'medium' ? "w-20 h-20" : "w-16 h-16";
 
     if (imageStr && imageStr.startsWith('data:image/')) {
       return (
@@ -220,14 +221,18 @@ export default function UserProfilePage() {
         />
       );
     }
-    
+
     return (
       <div className={`${sizeClasses} flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl shadow-md ${
-        size === 'medium' ? 'text-4xl' : 'text-3xl'
+        size === 'card' ? 'text-6xl' : size === 'medium' ? 'text-4xl' : 'text-3xl'
       }`}>
         {imageStr}
       </div>
     );
+  };
+
+  const formatPrice = (price: number) => {
+    return price % 1 === 0 ? price.toString() : price.toFixed(2);
   };
 
   const formatDate = (timestamp: any) => {
@@ -412,72 +417,51 @@ export default function UserProfilePage() {
             </div>
           </div>
         ) : activeTab === 'listings' ? (
-          <div className="space-y-6">
+          <div>
             {userListings.length > 0 ? (
-              userListings.map((listing) => (
-                <div
-                  key={listing.id}
-                  onClick={() => handleListingClick(listing)}
-                  className={`p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${
-                    theme === 'dark'
-                      ? 'bg-gray-800/60 hover:bg-gray-800/80'
-                      : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
-                  }`}
-                >
-                  <div className="flex items-center space-x-6">
-                    {/* Tool Image */}
-                    <div className="flex-shrink-0">
-                      {renderToolImage(listing.image || listing.imageUrls?.[0] || '🔧', 'medium')}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {userListings.map((listing) => (
+                  <div
+                    key={listing.id}
+                    onClick={() => handleListingClick(listing)}
+                    className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                      theme === 'dark'
+                        ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                        : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                    }`}>
+
+                    {/* Image */}
+                    <div className="relative">
+                      {renderToolImage(listing.image || listing.imageUrls?.[0] || '🔧', 'card')}
                     </div>
 
-                    {/* Listing Details */}
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2">{listing.name}</h3>
-                      <p className={`text-sm mb-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {listing.description}
+                    {/* Content */}
+                    <div className="p-3">
+                      <h3 className="text-base font-bold mb-1 text-white truncate">{listing.name}</h3>
+                      <p className="text-lg font-bold text-purple-400 mb-2">
+                        ${formatPrice(listing.price)}<span className="text-xs font-normal text-gray-400">/{listing.period}</span>
                       </p>
-                      
-                      <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-bold text-lg text-purple-500">
-                            ${listing.price.toFixed(2)}
-                          </span>
-                          <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
-                            /{listing.period}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="w-4 h-4 text-gray-500" />
-                          <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {listing.location}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                          <span className="text-sm font-medium">
-                            {listing.rating || 0} ({listing.reviews || 0})
-                          </span>
-                        </div>
-                        
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          theme === 'dark'
-                            ? 'bg-green-900/30 text-green-300'
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {listing.availability || 'Available'}
-                        </span>
+
+                      <div className="flex items-center space-x-1 mb-2">
+                        <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                        <span className="text-xs font-medium">{listing.rating || 0}</span>
+                        <span className="text-xs text-gray-400">({listing.reviews || 0})</span>
+                      </div>
+
+                      <div className="flex items-center space-x-1 mb-2 text-xs text-gray-400">
+                        <MapPin className="w-3 h-3" />
+                        <span className="truncate">{listing.location}</span>
+                      </div>
+
+                      <div className={`text-xs px-2 py-0.5 rounded-lg inline-block ${
+                        theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {listing.category}
                       </div>
                     </div>
-
-                    {/* View Icon */}
-                    <div className="flex-shrink-0">
-                      <Eye className="w-5 h-5 text-gray-400" />
-                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
               <div className={`p-12 rounded-2xl text-center ${
                 theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'

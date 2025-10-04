@@ -809,19 +809,56 @@ export default function BrowsePage() {
 
         // Create simple info window for user location
         const userInfoWindow = new window.google.maps.InfoWindow({
+          disableAutoPan: false,
           content: `
-            <div style="padding: 16px; text-align: center; color: #333;">
-              <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-                <div style="width: 8px; height: 8px; background: #DC2626; border-radius: 50%; margin-right: 8px;"></div>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">You are here</h3>
-              </div>
-              <p style="margin: 0; font-size: 14px; color: #666;">Your current location</p>
+            <style>
+              .gm-style-iw-d {
+                overflow: visible !important;
+                padding: 0 !important;
+                max-height: none !important;
+              }
+              .gm-style-iw {
+                padding: 0 !important;
+                background: transparent !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-c {
+                padding: 0 !important;
+                background: transparent !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-tc {
+                display: none !important;
+              }
+              .gm-ui-hover-effect {
+                display: none !important;
+              }
+            </style>
+            <div
+              style="
+                width: auto;
+                border-radius: 12px;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                padding: 12px 16px;
+              "
+            >
+              <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">You are here!</h3>
             </div>
           `
         });
 
         userMarker.addListener('click', () => {
+          // Close previous info window if exists
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
           userInfoWindow.open(discoverMap, userMarker);
+          currentInfoWindowRef.current = userInfoWindow;
         });
       }
         } catch (error) {
@@ -1079,19 +1116,56 @@ export default function BrowsePage() {
 
         // Create simple info window for user location
         const userInfoWindow = new window.google.maps.InfoWindow({
+          disableAutoPan: false,
           content: `
-            <div style="padding: 16px; text-align: center; color: #333;">
-              <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-                <div style="width: 8px; height: 8px; background: #DC2626; border-radius: 50%; margin-right: 8px;"></div>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">You are here</h3>
-              </div>
-              <p style="margin: 0; font-size: 14px; color: #666;">Your current location</p>
+            <style>
+              .gm-style-iw-d {
+                overflow: visible !important;
+                padding: 0 !important;
+                max-height: none !important;
+              }
+              .gm-style-iw {
+                padding: 0 !important;
+                background: transparent !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-c {
+                padding: 0 !important;
+                background: transparent !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-tc {
+                display: none !important;
+              }
+              .gm-ui-hover-effect {
+                display: none !important;
+              }
+            </style>
+            <div
+              style="
+                width: auto;
+                border-radius: 12px;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                padding: 12px 16px;
+              "
+            >
+              <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">You are here!</h3>
             </div>
           `
         });
 
         userMarker.addListener('click', () => {
+          // Close previous info window if exists
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
           userInfoWindow.open(map, userMarker);
+          currentInfoWindowRef.current = userInfoWindow;
         });
       }
         } catch (error) {

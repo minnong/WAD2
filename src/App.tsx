@@ -41,9 +41,11 @@ export default function App() {
                 <Route path="/list-item" element={<ProtectedRoute><ListItemPage /></ProtectedRoute>} />
                 <Route path="/listing/:id" element={<ProtectedRoute><ListingDetailPage /></ProtectedRoute>} />
                 <Route path="/my-rentals" element={<ProtectedRoute><MyRentalsPage /></ProtectedRoute>} />
+                <Route path="/my-rentals/:tab" element={<ProtectedRoute><MyRentalsPage /></ProtectedRoute>} />
                 <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
                 <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/profile/tab/:tab" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/profile/:email" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
 

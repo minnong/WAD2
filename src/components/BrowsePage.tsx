@@ -38,6 +38,8 @@ export default function BrowsePage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [successData, setSuccessData] = useState<any>(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [rentRequest, setRentRequest] = useState({
     startDate: '',
     endDate: '',
@@ -807,19 +809,56 @@ export default function BrowsePage() {
 
         // Create simple info window for user location
         const userInfoWindow = new window.google.maps.InfoWindow({
+          disableAutoPan: false,
           content: `
-            <div style="padding: 16px; text-align: center; color: #333;">
-              <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-                <div style="width: 8px; height: 8px; background: #DC2626; border-radius: 50%; margin-right: 8px;"></div>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">You are here</h3>
-              </div>
-              <p style="margin: 0; font-size: 14px; color: #666;">Your current location</p>
+            <style>
+              .gm-style-iw-d {
+                overflow: visible !important;
+                padding: 0 !important;
+                max-height: none !important;
+              }
+              .gm-style-iw {
+                padding: 0 !important;
+                background: transparent !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-c {
+                padding: 0 !important;
+                background: transparent !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-tc {
+                display: none !important;
+              }
+              .gm-ui-hover-effect {
+                display: none !important;
+              }
+            </style>
+            <div
+              style="
+                width: auto;
+                border-radius: 12px;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                padding: 12px 16px;
+              "
+            >
+              <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">You are here!</h3>
             </div>
           `
         });
 
         userMarker.addListener('click', () => {
+          // Close previous info window if exists
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
           userInfoWindow.open(discoverMap, userMarker);
+          currentInfoWindowRef.current = userInfoWindow;
         });
       }
         } catch (error) {
@@ -1077,19 +1116,56 @@ export default function BrowsePage() {
 
         // Create simple info window for user location
         const userInfoWindow = new window.google.maps.InfoWindow({
+          disableAutoPan: false,
           content: `
-            <div style="padding: 16px; text-align: center; color: #333;">
-              <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-                <div style="width: 8px; height: 8px; background: #DC2626; border-radius: 50%; margin-right: 8px;"></div>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">You are here</h3>
-              </div>
-              <p style="margin: 0; font-size: 14px; color: #666;">Your current location</p>
+            <style>
+              .gm-style-iw-d {
+                overflow: visible !important;
+                padding: 0 !important;
+                max-height: none !important;
+              }
+              .gm-style-iw {
+                padding: 0 !important;
+                background: transparent !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-c {
+                padding: 0 !important;
+                background: transparent !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-tc {
+                display: none !important;
+              }
+              .gm-ui-hover-effect {
+                display: none !important;
+              }
+            </style>
+            <div
+              style="
+                width: auto;
+                border-radius: 12px;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                padding: 12px 16px;
+              "
+            >
+              <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">You are here!</h3>
             </div>
           `
         });
 
         userMarker.addListener('click', () => {
+          // Close previous info window if exists
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
           userInfoWindow.open(map, userMarker);
+          currentInfoWindowRef.current = userInfoWindow;
         });
       }
         } catch (error) {
@@ -1182,6 +1258,13 @@ export default function BrowsePage() {
   };
 
   const handleRentClick = (tool: any) => {
+    // Prevent users from renting their own listings
+    if (currentUser && tool.ownerContact === currentUser.email) {
+      setErrorMessage('You cannot rent your own listing.');
+      setShowErrorModal(true);
+      return;
+    }
+
     setSelectedTool(tool);
     setShowRentModal(true);
     // Set default dates (today to tomorrow)
@@ -1197,13 +1280,67 @@ export default function BrowsePage() {
   };
 
   const handleRentRequestSubmit = async () => {
-    if (!selectedTool || !currentUser) return;
+    console.log('=== RENT REQUEST SUBMIT CLICKED ===');
+    console.log('Start Date:', rentRequest.startDate);
+    console.log('End Date:', rentRequest.endDate);
+
+    if (!selectedTool || !currentUser) {
+      console.log('No selected tool or current user');
+      return;
+    }
+
+    // Validation checks - MUST be outside try block
+    if (!rentRequest.startDate || !rentRequest.endDate) {
+      console.log('VALIDATION FAILED: Missing dates');
+      setErrorMessage('Please select both start and end dates.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (!rentRequest.startTime || !rentRequest.endTime) {
+      setErrorMessage('Please select both start and end times.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    const startDate = new Date(rentRequest.startDate + 'T00:00:00');
+    const endDate = new Date(rentRequest.endDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    console.log('Date comparison:', {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      today: today.toISOString(),
+      endBeforeStart: endDate < startDate
+    });
+
+    // Check if dates are in the past
+    if (startDate < today) {
+      console.log('VALIDATION FAILED: Start date in past');
+      setErrorMessage('Start date cannot be in the past. Please select a future date.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Check if end date is before start date
+    if (endDate < startDate) {
+      console.log('VALIDATION FAILED: End date before start date');
+      setErrorMessage('End date cannot be before start date. Please check your dates.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Check if same day rental (might want to allow this)
+    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (days === 0) {
+      setErrorMessage('Rental period must be at least 1 day. Please select different dates.');
+      setShowErrorModal(true);
+      return;
+    }
 
     try {
-      // Calculate total cost
-      const startDate = new Date(rentRequest.startDate);
-      const endDate = new Date(rentRequest.endDate);
-      const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      // Calculate total cost (days already calculated above)
       const totalCost = days * selectedTool.price;
 
       // Create rental request and add to context
@@ -1225,14 +1362,19 @@ export default function BrowsePage() {
         location: selectedTool.location
       };
 
+      // This will throw an error if dates conflict
       await addRentalRequest(rentalRequestData);
 
       console.log('Rental request sent:', rentalRequestData);
 
       // Send email notifications
       try {
+        console.log('About to send emails...');
+        console.log('Owner email:', selectedTool.ownerContact);
+        console.log('Renter email:', currentUser?.email);
+
         // Send email to owner about new rental request
-        await emailService.sendRentalRequestToOwner({
+        const ownerEmailResult = await emailService.sendRentalRequestToOwner({
           ownerName: selectedTool.owner,
           ownerEmail: selectedTool.ownerContact,
           renterName: currentUser?.displayName || currentUser?.email || 'User',
@@ -1243,9 +1385,13 @@ export default function BrowsePage() {
           totalCost: totalCost,
           message: rentRequest.message
         });
+        console.log('Owner email result:', ownerEmailResult);
+
+        // Wait 2 seconds between emails to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Send confirmation email to renter
-        await emailService.sendRentalRequestConfirmationToRenter({
+        const renterEmailResult = await emailService.sendRentalRequestConfirmationToRenter({
           ownerName: selectedTool.owner,
           ownerEmail: selectedTool.ownerContact,
           renterName: currentUser?.displayName || currentUser?.email || 'User',
@@ -1255,11 +1401,13 @@ export default function BrowsePage() {
           endDate: rentRequest.endDate,
           totalCost: totalCost
         });
+        console.log('Renter email result:', renterEmailResult);
 
         console.log('Email notifications sent successfully');
       } catch (emailError) {
         console.error('Failed to send email notifications:', emailError);
-        // Continue with the flow even if email fails
+        // Continue with the flow even if email fails - don't alert the user
+        console.warn('Continuing despite email error (might be rate limited)');
       }
 
       // Store success data and show success modal
@@ -1288,9 +1436,16 @@ export default function BrowsePage() {
       });
     } catch (error) {
       console.error('Error sending rental request:', error);
-      // Show error modal instead of alert - for now just close the modal
+
+      // Check if it's a conflict error
+      if (error instanceof Error && error.message.includes('conflict')) {
+        setErrorMessage('This item is already rented during the selected dates. Please choose different dates.');
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred while processing your request. Please try again.');
+      }
+
+      setShowErrorModal(true);
       setShowRentModal(false);
-      // TODO: Add error modal for better UX
     }
   };
 
@@ -2190,6 +2345,49 @@ export default function BrowsePage() {
                 }`}
               >
                 Continue Browsing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${
+            theme === 'dark'
+              ? 'bg-gray-800'
+              : 'bg-white'
+          }`}>
+            {/* Error Header */}
+            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-8 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                  <XCircle className="w-8 h-8 text-red-500" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Unable to Process Request</h2>
+              <p className="text-red-100">Please check the details and try again</p>
+            </div>
+
+            {/* Error Content */}
+            <div className="px-6 py-6">
+              <div className={`p-4 rounded-xl ${
+                theme === 'dark' ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'
+              }`}>
+                <p className={`text-center ${theme === 'dark' ? 'text-red-200' : 'text-red-700'}`}>
+                  {errorMessage}
+                </p>
+              </div>
+            </div>
+
+            {/* Error Footer */}
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors"
+              >
+                Got It
               </button>
             </div>
           </div>

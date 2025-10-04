@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from './AuthContext';
+import { emailService } from '../services/emailService';
 
 interface RentalRequest {
   id: string;
@@ -40,7 +41,7 @@ interface RentalsContextType {
   userRentalRequests: RentalRequest[]; // Requests made BY the current user
   receivedRentalRequests: RentalRequest[]; // Requests received by the current user (for their listings)
   loading: boolean;
-  addRentalRequest: (request: Omit<RentalRequest, 'id' | 'requestDate'>) => Promise<void>;
+  addRentalRequest: (request: Omit<RentalRequest, 'id' | 'requestDate'>) => Promise<{ emailsSent: boolean }>;
   updateRentalStatus: (id: string, status: RentalRequest['status']) => Promise<void>;
   getUserRentals: () => RentalRequest[];
   checkDateConflict: (toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => boolean;
@@ -174,6 +175,29 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       };
 
       await addDoc(collection(db, 'rentalRequests'), newRequest);
+
+      // Send email notifications
+      const emailData = {
+        ownerName: requestData.ownerName,
+        ownerEmail: requestData.ownerEmail,
+        renterName: requestData.renterName,
+        renterEmail: requestData.renterEmail,
+        itemName: requestData.toolName,
+        startDate: requestData.startDate,
+        endDate: requestData.endDate,
+        totalCost: requestData.totalCost,
+        message: requestData.message,
+      };
+
+      // Send emails in parallel
+      const [ownerEmailResult, renterEmailResult] = await Promise.all([
+        emailService.sendRentalRequestToOwner(emailData),
+        emailService.sendRentalRequestConfirmationToRenter(emailData),
+      ]);
+
+      const emailsSent = ownerEmailResult.success && renterEmailResult.success;
+
+      return { emailsSent };
     } catch (error) {
       console.error('Error adding rental request:', error);
       throw error;

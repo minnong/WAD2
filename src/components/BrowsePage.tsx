@@ -6,6 +6,7 @@ import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { loadGoogleMapsScript } from '../utils/googleMaps';
+import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
 import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye, Heart } from 'lucide-react';
@@ -1227,6 +1228,39 @@ export default function BrowsePage() {
       await addRentalRequest(rentalRequestData);
 
       console.log('Rental request sent:', rentalRequestData);
+
+      // Send email notifications
+      try {
+        // Send email to owner about new rental request
+        await emailService.sendRentalRequestToOwner({
+          ownerName: selectedTool.owner,
+          ownerEmail: selectedTool.ownerContact,
+          renterName: currentUser?.displayName || currentUser?.email || 'User',
+          renterEmail: currentUser?.email || '',
+          itemName: selectedTool.name,
+          startDate: rentRequest.startDate,
+          endDate: rentRequest.endDate,
+          totalCost: totalCost,
+          message: rentRequest.message
+        });
+
+        // Send confirmation email to renter
+        await emailService.sendRentalRequestConfirmationToRenter({
+          ownerName: selectedTool.owner,
+          ownerEmail: selectedTool.ownerContact,
+          renterName: currentUser?.displayName || currentUser?.email || 'User',
+          renterEmail: currentUser?.email || '',
+          itemName: selectedTool.name,
+          startDate: rentRequest.startDate,
+          endDate: rentRequest.endDate,
+          totalCost: totalCost
+        });
+
+        console.log('Email notifications sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send email notifications:', emailError);
+        // Continue with the flow even if email fails
+      }
 
       // Store success data and show success modal
       setSuccessData({

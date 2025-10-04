@@ -63,6 +63,8 @@ export default function ProfilePage() {
 
   // Get user stats (filter by userId instead of email for better accuracy)
   const userListings = listings.filter(l => l.userId === currentUser?.uid);
+  const activeListings = userListings.filter(l => l.isActive !== false);
+  const delistedListings = userListings.filter(l => l.isActive === false);
   const userRentals = currentUser ? getUserRentals(currentUser.email || '') : [];
   const completedRentals = userRentals.filter(r => r.status === 'completed');
   const totalEarnings = completedRentals.reduce((sum, r) => sum + r.totalCost, 0);
@@ -474,24 +476,19 @@ export default function ProfilePage() {
 
           {activeTab === 'listings' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold">My Listed Tools</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {userListings.map((listing) => (
-                  <div
-                    key={listing.id}
-                    onClick={() => handleViewListing(listing.id)}
-                    className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
-                      theme === 'dark'
-                        ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                        : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
-                    } ${listing.isActive === false ? 'opacity-60' : ''}`}>
-
-                    {/* Status Badge */}
-                    {listing.isActive === false && (
-                      <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-orange-500/90 text-white">
-                        Delisted
-                      </div>
-                    )}
+              {/* Active Listings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Active Listings</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {activeListings.map((listing) => (
+                    <div
+                      key={listing.id}
+                      onClick={() => handleViewListing(listing.id)}
+                      className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                        theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                      }`}>
 
                     {/* Image */}
                     <div className="relative">
@@ -539,39 +536,129 @@ export default function ProfilePage() {
                           Edit
                         </button>
 
-                        {listing.isActive !== false ? (
-                          <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelistListing(listing.id, listing.name);
+                          }}
+                          className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-orange-900/50 hover:bg-orange-900/70 text-orange-300'
+                              : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                          }`}
+                        >
+                          <XCircle className="w-3 h-3" />
+                          Delist
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteListing(listing.id, listing.name);
+                          }}
+                          className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-red-900/50 hover:bg-red-900/70 text-red-300'
+                              : 'bg-red-100 hover:bg-red-200 text-red-700'
+                          }`}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {activeListings.length === 0 && delistedListings.length === 0 && (
+                  <div className="col-span-full text-center py-8">
+                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                      You haven't listed any tools yet.
+                    </p>
+                    <button
+                      onClick={() => navigate('/list-item')}
+                      className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors">
+                      List Your First Tool
+                    </button>
+                  </div>
+                )}
+                {activeListings.length === 0 && delistedListings.length > 0 && (
+                  <div className="col-span-full text-center py-8">
+                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                      No active listings. All your listings are delisted.
+                    </p>
+                  </div>
+                )}
+                </div>
+              </div>
+
+              {/* Delisted Listings Section */}
+              {delistedListings.length > 0 && (
+                <div className="mt-8 pt-8 border-t border-gray-600/30">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <XCircle className="w-5 h-5 text-orange-400" />
+                    Delisted Items
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {delistedListings.map((listing) => (
+                      <div
+                        key={listing.id}
+                        onClick={() => handleViewListing(listing.id)}
+                        className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden opacity-60 ${
+                          theme === 'dark'
+                            ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                            : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                        }`}>
+
+                        {/* Status Badge */}
+                        <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-orange-500/90 text-white">
+                          Delisted
+                        </div>
+
+                        {/* Image */}
+                        <div className="relative">
+                          {renderToolImage(listing.image, "medium")}
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-3">
+                          <h3 className="text-base font-bold mb-1 text-white truncate">{listing.name}</h3>
+                          <p className="text-lg font-bold text-purple-400 mb-2">
+                            ${formatPrice(listing.price)}<span className="text-xs font-normal text-gray-400">/{listing.period}</span>
+                          </p>
+
+                          <div className="flex items-center space-x-1 mb-2">
+                            <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                            <span className="text-xs font-medium">{listing.rating}</span>
+                            <span className="text-xs text-gray-400">({listing.reviews})</span>
+                          </div>
+
+                          <div className="flex items-center space-x-1 mb-2 text-xs text-gray-400">
+                            <MapPin className="w-3 h-3" />
+                            <span className="truncate">{listing.location}</span>
+                          </div>
+
+                          <div className={`text-xs px-2 py-0.5 rounded-lg inline-block mb-2 ${
+                            theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {listing.category}
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDelistListing(listing.id, listing.name);
+                                handleEditListing(listing.id);
                               }}
                               className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                                 theme === 'dark'
-                                  ? 'bg-orange-900/50 hover:bg-orange-900/70 text-orange-300'
-                                  : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                                  ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                               }`}
                             >
-                              <XCircle className="w-3 h-3" />
-                              Delist
+                              <Edit3 className="w-3 h-3" />
+                              Edit
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteListing(listing.id, listing.name);
-                              }}
-                              className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                theme === 'dark'
-                                  ? 'bg-red-900/50 hover:bg-red-900/70 text-red-300'
-                                  : 'bg-red-100 hover:bg-red-200 text-red-700'
-                              }`}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              Delete
-                            </button>
-                          </>
-                        ) : (
-                          <>
+
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -600,25 +687,13 @@ export default function ProfilePage() {
                               <Trash2 className="w-3 h-3" />
                               Delete
                             </button>
-                          </>
-                        )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-                {userListings.length === 0 && (
-                  <div className="col-span-full text-center py-8">
-                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-                      You haven't listed any tools yet.
-                    </p>
-                    <button
-                      onClick={() => navigate('/list-item')}
-                      className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors">
-                      List Your First Tool
-                    </button>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
 

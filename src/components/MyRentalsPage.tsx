@@ -5,6 +5,7 @@ import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
 import { useAuth } from '../contexts/AuthContext';
 import { reviewsService } from '../services/firebase';
+import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
 import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin } from 'lucide-react';
 
@@ -48,6 +49,8 @@ export default function MyRentalsPage() {
   );
   const userRentals = [...activeRentals, ...pendingRequests]; // Show both active rentals and pending requests
   const userOwnListings = userListings;
+  const activeListings = userListings.filter(l => l.isActive !== false);
+  const delistedListings = userListings.filter(l => l.isActive === false);
   const incomingRequests = receivedRentalRequests.filter(request => request.status === 'pending');
 
   // Helper function to format datetime
@@ -180,7 +183,44 @@ export default function MyRentalsPage() {
     setIsLoading(true);
     try {
       const status = approvalAction === 'approve' ? 'approved' : 'declined';
+
+      // Find the rental request to get details for email
+      const rentalRequest = incomingRequests.find(req => req.id === selectedRequestId);
+
       await updateRentalStatus(selectedRequestId, status);
+
+      // Send email notification to renter
+      if (rentalRequest) {
+        try {
+          if (approvalAction === 'approve') {
+            await emailService.sendRentalAcceptedEmail({
+              ownerName: currentUser?.displayName || currentUser?.email || 'Owner',
+              ownerEmail: currentUser?.email || '',
+              renterName: rentalRequest.renterName,
+              renterEmail: rentalRequest.renterEmail,
+              itemName: rentalRequest.toolName,
+              startDate: rentalRequest.startDate,
+              endDate: rentalRequest.endDate,
+              totalCost: rentalRequest.totalCost
+            });
+          } else {
+            await emailService.sendRentalDeclinedEmail({
+              ownerName: currentUser?.displayName || currentUser?.email || 'Owner',
+              ownerEmail: currentUser?.email || '',
+              renterName: rentalRequest.renterName,
+              renterEmail: rentalRequest.renterEmail,
+              itemName: rentalRequest.toolName,
+              startDate: rentalRequest.startDate,
+              endDate: rentalRequest.endDate
+            });
+          }
+          console.log(`${approvalAction === 'approve' ? 'Acceptance' : 'Decline'} email sent successfully`);
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+          // Continue even if email fails
+        }
+      }
+
       setShowApprovalModal(false);
       setSelectedRequestId(null);
       setApprovalAction(null);
@@ -707,27 +747,22 @@ export default function MyRentalsPage() {
             )}
           </div>
         ) : activeTab === 'listings' ? (
-          <div>
-            <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              My Tool Listings
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {userOwnListings.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => handleViewListing(item.id)}
-                  className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
-                    theme === 'dark'
-                      ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                      : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
-                  } ${item.isActive === false ? 'opacity-60' : ''}`}>
-
-                  {/* Status Badge */}
-                  {item.isActive === false && (
-                    <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-orange-500/90 text-white">
-                      Delisted
-                    </div>
-                  )}
+          <div className="space-y-6">
+            {/* Active Listings */}
+            <div>
+              <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                Active Listings
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {activeListings.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => handleViewListing(item.id)}
+                    className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                      theme === 'dark'
+                        ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                        : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                    }`}>
 
                   {/* Image */}
                   <div className="relative">
@@ -775,39 +810,129 @@ export default function MyRentalsPage() {
                         Edit
                       </button>
 
-                      {item.isActive !== false ? (
-                        <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelistListing(item.id, item.name);
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          theme === 'dark'
+                            ? 'bg-orange-900/50 hover:bg-orange-900/70 text-orange-300'
+                            : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                        }`}
+                      >
+                        <XCircle className="w-3 h-3" />
+                        Delist
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteListing(item.id, item.name);
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          theme === 'dark'
+                            ? 'bg-red-900/50 hover:bg-red-900/70 text-red-300'
+                            : 'bg-red-100 hover:bg-red-200 text-red-700'
+                        }`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {activeListings.length === 0 && delistedListings.length === 0 && (
+                <div className="col-span-full text-center py-8">
+                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                    You haven't listed any tools yet.
+                  </p>
+                  <button
+                    onClick={() => navigate('/list-item')}
+                    className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors">
+                    List Your First Tool
+                  </button>
+                </div>
+              )}
+              {activeListings.length === 0 && delistedListings.length > 0 && (
+                <div className="col-span-full text-center py-8">
+                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                    No active listings. All your listings are delisted.
+                  </p>
+                </div>
+              )}
+              </div>
+            </div>
+
+            {/* Delisted Listings Section */}
+            {delistedListings.length > 0 && (
+              <div className="mt-8 pt-8 border-t border-gray-600/30">
+                <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  <XCircle className="w-6 h-6 text-orange-400" />
+                  Delisted Items
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {delistedListings.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleViewListing(item.id)}
+                      className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden opacity-60 ${
+                        theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                      }`}>
+
+                      {/* Status Badge */}
+                      <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-orange-500/90 text-white">
+                        Delisted
+                      </div>
+
+                      {/* Image */}
+                      <div className="relative">
+                        {renderToolImage(item.image, "medium")}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-3">
+                        <h3 className="text-base font-bold mb-1 text-white truncate">{item.name}</h3>
+                        <p className="text-lg font-bold text-purple-400 mb-2">
+                          ${formatPrice(item.price)}<span className="text-xs font-normal text-gray-400">/{item.period}</span>
+                        </p>
+
+                        <div className="flex items-center space-x-1 mb-2">
+                          <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                          <span className="text-xs font-medium">{item.rating}</span>
+                          <span className="text-xs text-gray-400">({item.reviews})</span>
+                        </div>
+
+                        <div className="flex items-center space-x-1 mb-2 text-xs text-gray-400">
+                          <MapPin className="w-3 h-3" />
+                          <span className="truncate">{item.location}</span>
+                        </div>
+
+                        <div className={`text-xs px-2 py-0.5 rounded-lg inline-block mb-2 ${
+                          theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {item.category}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDelistListing(item.id, item.name);
+                              handleEditListing(item.id);
                             }}
                             className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                               theme === 'dark'
-                                ? 'bg-orange-900/50 hover:bg-orange-900/70 text-orange-300'
-                                : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                             }`}
                           >
-                            <XCircle className="w-3 h-3" />
-                            Delist
+                            <Edit3 className="w-3 h-3" />
+                            Edit
                           </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteListing(item.id, item.name);
-                            }}
-                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                              theme === 'dark'
-                                ? 'bg-red-900/50 hover:bg-red-900/70 text-red-300'
-                                : 'bg-red-100 hover:bg-red-200 text-red-700'
-                            }`}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                            Delete
-                          </button>
-                        </>
-                      ) : (
-                        <>
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -836,13 +961,13 @@ export default function MyRentalsPage() {
                             <Trash2 className="w-3 h-3" />
                             Delete
                           </button>
-                        </>
-                      )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         ) : (
           <div>

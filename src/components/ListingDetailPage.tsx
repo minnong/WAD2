@@ -528,6 +528,12 @@ export default function ListingDetailPage() {
   }
 
   const handleRentClick = () => {
+    // Prevent users from renting their own listings
+    if (currentUser && tool.ownerContact === currentUser.email) {
+      alert('You cannot rent your own listing.');
+      return;
+    }
+
     setShowRentModal(true);
     // Set default dates (today to tomorrow)
     const today = new Date();
@@ -765,12 +771,18 @@ export default function ListingDetailPage() {
                 </div>
 
                 <div className="flex space-x-3">
-                  <button
-                    onClick={handleRentClick}
-                    className="flex-1 bg-purple-900 hover:bg-purple-950 text-white py-3 px-6 rounded-xl font-semibold transition-colors"
-                  >
-                    Rent Now
-                  </button>
+                  {currentUser && tool.ownerContact === currentUser.email ? (
+                    <div className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-xl font-semibold text-center cursor-not-allowed">
+                      This is Your Listing
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleRentClick}
+                      className="flex-1 bg-purple-900 hover:bg-purple-950 text-white py-3 px-6 rounded-xl font-semibold transition-colors"
+                    >
+                      Rent Now
+                    </button>
+                  )}
                   <button className={`px-6 py-3 rounded-xl border transition-colors ${
                     theme === 'dark'
                       ? 'border-gray-600 text-gray-300 hover:bg-gray-700'

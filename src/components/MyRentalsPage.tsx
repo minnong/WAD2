@@ -1,20 +1,33 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
 import { useAuth } from '../contexts/AuthContext';
 import { reviewsService } from '../services/firebase';
+import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
-import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin } from 'lucide-react';
 
 export default function MyRentalsPage() {
   const navigate = useNavigate();
+  const { tab } = useParams<{ tab?: string }>();
   const { theme } = useTheme();
   const { currentUser } = useAuth();
-  const { userListings } = useListings(); // Get user-specific listings
+  const { userListings, deleteListing, delistListing, relistListing } = useListings(); // Get user-specific listings
   const { userRentalRequests, receivedRentalRequests, updateRentalStatus } = useRentals(); // Get user's rental requests directly
-  const [activeTab, setActiveTab] = useState<'rented' | 'listed' | 'requests'>('rented');
+
+  // Validate tab parameter
+  const validTabs = ['rented', 'listings', 'requests'];
+  const initialTab = tab && validTabs.includes(tab) ? tab : 'rented';
+  const [activeTab, setActiveTab] = useState<'rented' | 'listings' | 'requests'>(initialTab as any);
+
+  // Update active tab when URL parameter changes
+  useEffect(() => {
+    if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [tab]);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
@@ -36,6 +49,8 @@ export default function MyRentalsPage() {
   );
   const userRentals = [...activeRentals, ...pendingRequests]; // Show both active rentals and pending requests
   const userOwnListings = userListings;
+  const activeListings = userListings.filter(l => l.isActive !== false);
+  const delistedListings = userListings.filter(l => l.isActive === false);
   const incomingRequests = receivedRentalRequests.filter(request => request.status === 'pending');
 
   // Helper function to format datetime
@@ -56,9 +71,11 @@ export default function MyRentalsPage() {
   };
 
   // Helper function to render tool image (emoji or base64) - enhanced for full height
-  const renderToolImage = (imageStr: string, size: 'small' | 'large' = 'small') => {
+  const renderToolImage = (imageStr: string, size: 'small' | 'medium' | 'large' = 'small') => {
     const sizeClasses = size === 'large'
       ? "w-48 h-48 md:w-56 md:h-56"
+      : size === 'medium'
+      ? "w-full aspect-square"
       : "w-16 h-16";
 
     // Check if image is a base64 data URL
@@ -74,7 +91,7 @@ export default function MyRentalsPage() {
     // Otherwise, treat as emoji
     return (
       <div className={`${sizeClasses} flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl shadow-lg ${
-        size === 'large' ? 'text-8xl md:text-9xl' : 'text-4xl'
+        size === 'large' ? 'text-8xl md:text-9xl' : size === 'medium' ? 'text-6xl' : 'text-4xl'
       }`}>
         {imageStr}
       </div>
@@ -106,8 +123,47 @@ export default function MyRentalsPage() {
   };
 
   const handleEditListing = (listingId: string) => {
-    // Navigate to edit listing page
     navigate(`/list-item?edit=${listingId}`);
+  };
+
+  const handleDeleteListing = async (listingId: string, listingName: string) => {
+    if (window.confirm(`Are you sure you want to permanently delete "${listingName}"? This action cannot be undone.`)) {
+      try {
+        await deleteListing(listingId);
+        setSuccessMessage('Listing deleted successfully!');
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+      } catch (error) {
+        console.error('Error deleting listing:', error);
+        alert('Failed to delete listing. Please try again.');
+      }
+    }
+  };
+
+  const handleDelistListing = async (listingId: string, listingName: string) => {
+    if (window.confirm(`Delist "${listingName}"? The listing will be hidden from other users but you can relist it later.`)) {
+      try {
+        await delistListing(listingId);
+        setSuccessMessage('Listing delisted successfully!');
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+      } catch (error) {
+        console.error('Error delisting listing:', error);
+        alert('Failed to delist listing. Please try again.');
+      }
+    }
+  };
+
+  const handleRelistListing = async (listingId: string) => {
+    try {
+      await relistListing(listingId);
+      setSuccessMessage('Listing relisted successfully!');
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (error) {
+      console.error('Error relisting listing:', error);
+      alert('Failed to relist listing. Please try again.');
+    }
   };
 
   const handleCancelRequest = (requestId: string) => {
@@ -127,7 +183,44 @@ export default function MyRentalsPage() {
     setIsLoading(true);
     try {
       const status = approvalAction === 'approve' ? 'approved' : 'declined';
+
+      // Find the rental request to get details for email
+      const rentalRequest = incomingRequests.find(req => req.id === selectedRequestId);
+
       await updateRentalStatus(selectedRequestId, status);
+
+      // Send email notification to renter
+      if (rentalRequest) {
+        try {
+          if (approvalAction === 'approve') {
+            await emailService.sendRentalAcceptedEmail({
+              ownerName: currentUser?.displayName || currentUser?.email || 'Owner',
+              ownerEmail: currentUser?.email || '',
+              renterName: rentalRequest.renterName,
+              renterEmail: rentalRequest.renterEmail,
+              itemName: rentalRequest.toolName,
+              startDate: rentalRequest.startDate,
+              endDate: rentalRequest.endDate,
+              totalCost: rentalRequest.totalCost
+            });
+          } else {
+            await emailService.sendRentalDeclinedEmail({
+              ownerName: currentUser?.displayName || currentUser?.email || 'Owner',
+              ownerEmail: currentUser?.email || '',
+              renterName: rentalRequest.renterName,
+              renterEmail: rentalRequest.renterEmail,
+              itemName: rentalRequest.toolName,
+              startDate: rentalRequest.startDate,
+              endDate: rentalRequest.endDate
+            });
+          }
+          console.log(`${approvalAction === 'approve' ? 'Acceptance' : 'Decline'} email sent successfully`);
+        } catch (emailError) {
+          console.error('Failed to send email notification:', emailError);
+          // Continue even if email fails
+        }
+      }
+
       setShowApprovalModal(false);
       setSelectedRequestId(null);
       setApprovalAction(null);
@@ -360,7 +453,7 @@ export default function MyRentalsPage() {
            <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
           <div className="grid grid-cols-3 gap-1">
             <button
-              onClick={() => setActiveTab('rented')}
+              onClick={() => navigate('/my-rentals/rented')}
               className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
                 activeTab === 'rented'
                   ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
@@ -373,9 +466,9 @@ export default function MyRentalsPage() {
               <span>Items I'm Renting ({userRentals.length})</span>
             </button>
             <button
-              onClick={() => setActiveTab('listed')}
+              onClick={() => navigate('/my-rentals/listings')}
               className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
-                activeTab === 'listed'
+                activeTab === 'listings'
                   ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
                   : theme === 'dark'
                   ? 'text-gray-300 hover:bg-gray-700/50'
@@ -386,7 +479,7 @@ export default function MyRentalsPage() {
               <span>My Listings ({userOwnListings.length})</span>
             </button>
             <button
-              onClick={() => setActiveTab('requests')}
+              onClick={() => navigate('/my-rentals/requests')}
               className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
                 activeTab === 'requests'
                   ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
@@ -653,111 +746,228 @@ export default function MyRentalsPage() {
               </div>
             )}
           </div>
-        ) : activeTab === 'listed' ? (
-          <div>
-            <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              My Tool Listings
-            </h2>
-            <div className="space-y-6">
-              {userOwnListings.map((item) => (
-                <div key={item.id} className="flex items-center justify-between">
-                  {/* Listing Box - Left 2 Columns Only */}
+        ) : activeTab === 'listings' ? (
+          <div className="space-y-6">
+            {/* Active Listings */}
+            <div>
+              <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                Active Listings
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {activeListings.map((item) => (
                   <div
+                    key={item.id}
                     onClick={() => handleViewListing(item.id)}
-                    className={`flex items-center p-6 gap-6 flex-none w-3/5 group rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                    className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
                       theme === 'dark'
-                        ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                        : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                        ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                        : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
                     }`}>
-                    {/* Large Image on Left */}
-                    <div className="flex-shrink-0">
-                      {renderToolImage(item.image, "large")}
-                    </div>
 
-                    {/* Listing Details in Center */}
-                    <div className="flex-1 min-w-0">
-                      <div className="mb-4">
-                        <h3 className="text-xl font-bold mb-1 text-white">{item.name}</h3>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Listed on <span className="font-medium">
-                            {item.createdAt instanceof Date
-                              ? item.createdAt.toLocaleDateString()
-                              : new Date((item.createdAt as any).toDate()).toLocaleDateString()}
-                          </span>
-                        </p>
-                      </div>
-
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Price:</span>
-                          <span className="font-bold text-lg text-purple-500">${item.price.toFixed(2)} per {item.period}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Category:</span>
-                          <span className="font-semibold text-sm">{item.category}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Condition:</span>
-                          <span className="font-semibold text-sm capitalize">{item.condition}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Location:</span>
-                          <span className="font-semibold text-sm">{item.location}</span>
-                        </div>
-                      </div>
-
-                      {item.description && (
-                        <div className={`p-3 rounded-lg mb-4 max-w-md ${
-                          theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
-                        }`}>
-                          <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>DESCRIPTION</p>
-                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                            {item.description}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                  {/* Image */}
+                  <div className="relative">
+                    {renderToolImage(item.image, "medium")}
                   </div>
 
-                  {/* Status & Actions - Outside Box on Right */}
-                  <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
-                    {/* Status Badge */}
-                    <div className="flex flex-col items-end space-y-2">
-                      <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor('available')}`}>
-                        {getStatusIcon('available')}
-                        <span className="capitalize">Available</span>
-                      </span>
+                  {/* Content */}
+                  <div className="p-3">
+                    <h3 className="text-base font-bold mb-1 text-white truncate">{item.name}</h3>
+                    <p className="text-lg font-bold text-purple-400 mb-2">
+                      ${formatPrice(item.price)}<span className="text-xs font-normal text-gray-400">/{item.period}</span>
+                    </p>
+
+                    <div className="flex items-center space-x-1 mb-2">
+                      <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                      <span className="text-xs font-medium">{item.rating}</span>
+                      <span className="text-xs text-gray-400">({item.reviews})</span>
+                    </div>
+
+                    <div className="flex items-center space-x-1 mb-2 text-xs text-gray-400">
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate">{item.location}</span>
+                    </div>
+
+                    <div className={`text-xs px-2 py-0.5 rounded-lg inline-block mb-2 ${
+                      theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {item.category}
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col space-y-2 w-full">
+                    <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
                       <button
-                        onClick={() => handleEditListing(item.id)}
-                        className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditListing(item.id);
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                           theme === 'dark'
-                            ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                            ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                         }`}
                       >
-                        <Edit className="w-4 h-4" />
-                        <span>Edit Listing</span>
+                        <Edit3 className="w-3 h-3" />
+                        Edit
                       </button>
 
-
-                      {item.availability === 'available' && (
-                        <button
-                          onClick={() => handleBoostListing(item.id)}
-                          className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
-                        >
-                          <TrendingUp className="w-4 h-4" />
-                          <span>Boost Listing</span>
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelistListing(item.id, item.name);
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          theme === 'dark'
+                            ? 'bg-orange-900/50 hover:bg-orange-900/70 text-orange-300'
+                            : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                        }`}
+                      >
+                        <XCircle className="w-3 h-3" />
+                        Delist
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteListing(item.id, item.name);
+                        }}
+                        className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          theme === 'dark'
+                            ? 'bg-red-900/50 hover:bg-red-900/70 text-red-300'
+                            : 'bg-red-100 hover:bg-red-200 text-red-700'
+                        }`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
+              {activeListings.length === 0 && delistedListings.length === 0 && (
+                <div className="col-span-full text-center py-8">
+                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                    You haven't listed any tools yet.
+                  </p>
+                  <button
+                    onClick={() => navigate('/list-item')}
+                    className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors">
+                    List Your First Tool
+                  </button>
+                </div>
+              )}
+              {activeListings.length === 0 && delistedListings.length > 0 && (
+                <div className="col-span-full text-center py-8">
+                  <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                    No active listings. All your listings are delisted.
+                  </p>
+                </div>
+              )}
+              </div>
             </div>
+
+            {/* Delisted Listings Section */}
+            {delistedListings.length > 0 && (
+              <div className="mt-8 pt-8 border-t border-gray-600/30">
+                <h2 className={`text-2xl font-bold mb-6 flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  <XCircle className="w-6 h-6 text-orange-400" />
+                  Delisted Items
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {delistedListings.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleViewListing(item.id)}
+                      className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden opacity-60 ${
+                        theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                      }`}>
+
+                      {/* Status Badge */}
+                      <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-xs font-bold bg-orange-500/90 text-white">
+                        Delisted
+                      </div>
+
+                      {/* Image */}
+                      <div className="relative">
+                        {renderToolImage(item.image, "medium")}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-3">
+                        <h3 className="text-base font-bold mb-1 text-white truncate">{item.name}</h3>
+                        <p className="text-lg font-bold text-purple-400 mb-2">
+                          ${formatPrice(item.price)}<span className="text-xs font-normal text-gray-400">/{item.period}</span>
+                        </p>
+
+                        <div className="flex items-center space-x-1 mb-2">
+                          <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                          <span className="text-xs font-medium">{item.rating}</span>
+                          <span className="text-xs text-gray-400">({item.reviews})</span>
+                        </div>
+
+                        <div className="flex items-center space-x-1 mb-2 text-xs text-gray-400">
+                          <MapPin className="w-3 h-3" />
+                          <span className="truncate">{item.location}</span>
+                        </div>
+
+                        <div className={`text-xs px-2 py-0.5 rounded-lg inline-block mb-2 ${
+                          theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {item.category}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditListing(item.id);
+                            }}
+                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                              theme === 'dark'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                            }`}
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRelistListing(item.id);
+                            }}
+                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                              theme === 'dark'
+                                ? 'bg-green-900/50 hover:bg-green-900/70 text-green-300'
+                                : 'bg-green-100 hover:bg-green-200 text-green-700'
+                            }`}
+                          >
+                            <CheckCircle className="w-3 h-3" />
+                            Relist
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteListing(item.id, item.name);
+                            }}
+                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                              theme === 'dark'
+                                ? 'bg-red-900/50 hover:bg-red-900/70 text-red-300'
+                                : 'bg-red-100 hover:bg-red-200 text-red-700'
+                            }`}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div>
@@ -912,7 +1122,7 @@ export default function MyRentalsPage() {
 
         {/* Enhanced Empty State */}
         {((activeTab === 'rented' && userRentals.length === 0) ||
-          (activeTab === 'listed' && userOwnListings.length === 0) ||
+          (activeTab === 'listings' && userOwnListings.length === 0) ||
           (activeTab === 'requests' && incomingRequests.length === 0)) && (
           <div className={`text-center py-16 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             <div className={`w-24 h-24 mx-auto mb-6 rounded-2xl flex items-center justify-center ${
@@ -923,14 +1133,14 @@ export default function MyRentalsPage() {
             <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
               {activeTab === 'rented'
                 ? 'No Rentals Yet'
-                : activeTab === 'listed'
+                : activeTab === 'listings'
                 ? 'No Listings Yet'
                 : 'No Incoming Requests'}
             </h3>
             <p className="text-lg mb-6 max-w-md mx-auto">
               {activeTab === 'rented'
                 ? 'Discover amazing tools from your community and start your first rental adventure!'
-                : activeTab === 'listed'
+                : activeTab === 'listings'
                 ? 'Share your tools with the community and start earning passive income today!'
                 : 'When people request to rent your items, you\'ll see them here for approval.'}
             </p>
@@ -1223,33 +1433,6 @@ export default function MyRentalsPage() {
         </div>
       )}
 
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <div className="flex flex-col space-y-3">
-          <button
-            onClick={() => navigate('/browse')}
-            className={`w-14 h-14 rounded-full shadow-lg backdrop-blur-sm transition-all hover:scale-110 flex items-center justify-center ${
-              theme === 'dark'
-                ? 'bg-purple-600/90 hover:bg-purple-700'
-                : 'bg-purple-600 hover:bg-purple-700'
-            }`}
-            title="Browse Tools"
-          >
-            <Search className="w-6 h-6 text-white" />
-          </button>
-          <button
-            onClick={() => navigate('/list-item')}
-            className={`w-14 h-14 rounded-full shadow-lg backdrop-blur-sm transition-all hover:scale-110 flex items-center justify-center ${
-              theme === 'dark'
-                ? 'bg-green-600/90 hover:bg-green-700'
-                : 'bg-green-600 hover:bg-green-700'
-            }`}
-            title="List New Tool"
-          >
-            <Plus className="w-6 h-6 text-white" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
@@ -13,6 +13,7 @@ import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart, CheckCircle } 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useAuth();
   const { theme } = useTheme();
   const { listings } = useListings();

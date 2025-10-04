@@ -34,6 +34,7 @@ interface Listing {
   reviews: number;
   createdAt: Timestamp | Date;
   userId: string;
+  isActive?: boolean; // For delisting/relisting
 }
 
 interface ListingsContextType {
@@ -43,6 +44,8 @@ interface ListingsContextType {
   addListing: (listing: Omit<Listing, 'id' | 'rating' | 'reviews' | 'createdAt' | 'userId'>) => Promise<void>;
   updateListing: (id: string, updates: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
+  delistListing: (id: string) => Promise<void>;
+  relistListing: (id: string) => Promise<void>;
 }
 
 const ListingsContext = createContext<ListingsContextType | null>(null);
@@ -125,6 +128,7 @@ export function ListingsProvider({ children }: ListingsProviderProps) {
         reviews: 0,
         createdAt: serverTimestamp(),
         userId: currentUser.uid,
+        isActive: true, // New listings are active by default
       };
 
       await addDoc(collection(db, 'listings'), newListing);
@@ -173,6 +177,46 @@ export function ListingsProvider({ children }: ListingsProviderProps) {
     }
   };
 
+  const delistListing = async (id: string) => {
+    if (!currentUser) {
+      throw new Error('User must be authenticated to delist listings');
+    }
+
+    try {
+      // Verify the listing belongs to the current user
+      const listingToDelist = userListings.find(listing => listing.id === id);
+      if (!listingToDelist) {
+        throw new Error('You can only delist your own listings');
+      }
+
+      const listingRef = doc(db, 'listings', id);
+      await updateDoc(listingRef, { isActive: false });
+    } catch (error) {
+      console.error('Error delisting listing:', error);
+      throw error;
+    }
+  };
+
+  const relistListing = async (id: string) => {
+    if (!currentUser) {
+      throw new Error('User must be authenticated to relist listings');
+    }
+
+    try {
+      // Verify the listing belongs to the current user
+      const listingToRelist = userListings.find(listing => listing.id === id);
+      if (!listingToRelist) {
+        throw new Error('You can only relist your own listings');
+      }
+
+      const listingRef = doc(db, 'listings', id);
+      await updateDoc(listingRef, { isActive: true });
+    } catch (error) {
+      console.error('Error relisting listing:', error);
+      throw error;
+    }
+  };
+
   return (
     <ListingsContext.Provider
       value={{
@@ -182,6 +226,8 @@ export function ListingsProvider({ children }: ListingsProviderProps) {
         addListing,
         updateListing,
         deleteListing,
+        delistListing,
+        relistListing,
       }}
     >
       {children}

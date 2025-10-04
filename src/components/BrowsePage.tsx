@@ -6,6 +6,7 @@ import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { loadGoogleMapsScript } from '../utils/googleMaps';
+import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
 import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye, Heart } from 'lucide-react';
@@ -15,7 +16,7 @@ declare global {
   interface Window {
     google: any;
     rentTool: (toolId: number) => void;
-    viewListing: (toolId: number) => void;
+    viewListing: (toolId: string | number) => void;
   }
 }
 
@@ -53,6 +54,7 @@ export default function BrowsePage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
   const discoverMapRef = useRef<HTMLDivElement>(null);
+  const currentInfoWindowRef = useRef<any>(null);
 
   // Helper function to render tool image (emoji or base64)
   const renderToolImage = (tool: any, className: string = "text-4xl") => {
@@ -492,7 +494,8 @@ export default function BrowsePage() {
     const matchesSearch = tool.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
     const matchesPrice = tool.price >= priceRange.min && tool.price <= priceRange.max;
-    return matchesSearch && matchesCategory && matchesPrice;
+    const isActive = (tool as any).isActive !== false; // Filter out delisted items
+    return matchesSearch && matchesCategory && matchesPrice && isActive;
   }).sort((a, b) => {
     switch (sortBy) {
       case 'price-low':
@@ -510,12 +513,13 @@ export default function BrowsePage() {
 
   // Get top rated tools (rating >= 4.7 and at least 15 reviews)
   const topRatedTools = allTools
-    .filter(tool => tool.rating >= 4.7 && tool.reviews >= 15)
+    .filter(tool => tool.rating >= 4.7 && tool.reviews >= 15 && (tool as any).isActive !== false)
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 6);
 
   // Get trending tools (based on reviews and rating)
   const trendingTools = allTools
+    .filter(tool => (tool as any).isActive !== false)
     .filter(tool => tool.reviews >= 10)
     .sort((a, b) => (b.rating * b.reviews) - (a.rating * a.reviews))
     .slice(0, 6);
@@ -572,7 +576,7 @@ export default function BrowsePage() {
           }
       const discoverMap = new window.google.maps.Map(discoverMapRef.current, {
         center: userLocation,
-        zoom: 11,
+        zoom: 14,
         styles: [
           // Hide all POI markers (shopping malls, restaurants, etc.)
           {
@@ -645,69 +649,141 @@ export default function BrowsePage() {
 
       console.log('Tools with coordinates for discover map:', toolsWithCoordinates.length, 'out of', filteredTools.length);
 
-      toolsWithCoordinates.slice(0, 12).forEach((tool) => {
+      // Set up global function for info window clicks
+      window.viewListing = (toolId: string | number) => {
+        console.log('viewListing called with:', toolId, 'Type:', typeof toolId);
+        const tool = filteredTools.find(t => String(t.id) === String(toolId));
+        console.log('Found tool:', tool);
+        if (tool) {
+          handleCardClick(tool);
+        } else {
+          console.error('Tool not found for ID:', toolId);
+        }
+      };
+
+      toolsWithCoordinates.forEach((tool) => {
+        // Create custom marker icon with image
+        const markerIcon = tool.image && tool.image.startsWith('data:image/')
+          ? {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="48" height="64" viewBox="0 0 48 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <clipPath id="pin-clip-${tool.id}">
+                      <circle cx="24" cy="22" r="18"/>
+                    </clipPath>
+                  </defs>
+                  <path d="M24 0C13.507 0 5 8.507 5 19C5 33.25 24 64 24 64S43 33.25 43 19C43 8.507 34.493 0 24 0Z" fill="#3B82F6"/>
+                  <circle cx="24" cy="22" r="18" fill="white"/>
+                  <image href="${tool.image}" x="6" y="4" width="36" height="36" clip-path="url(#pin-clip-${tool.id})" preserveAspectRatio="xMidYMid slice"/>
+                </svg>
+              `),
+              scaledSize: new window.google.maps.Size(48, 64),
+              anchor: new window.google.maps.Point(24, 64),
+            }
+          : {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="48" height="64" viewBox="0 0 48 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M24 0C13.507 0 5 8.507 5 19C5 33.25 24 64 24 64S43 33.25 43 19C43 8.507 34.493 0 24 0Z" fill="#3B82F6"/>
+                  <circle cx="24" cy="22" r="18" fill="white"/>
+                  <text x="24" y="28" text-anchor="middle" font-size="20" fill="#3B82F6">${getCategoryIcon(tool)}</text>
+                </svg>
+              `),
+              scaledSize: new window.google.maps.Size(48, 64),
+              anchor: new window.google.maps.Point(24, 64),
+            };
+
         const marker = new window.google.maps.Marker({
           position: tool.coordinates,
           map: discoverMap,
           title: tool.name,
-          icon: {
-            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-              <svg width="32" height="48" viewBox="0 0 32 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 48 16 48S32 28 32 16C32 7.16 24.84 0 16 0Z" fill="#3B82F6"/>
-                <circle cx="16" cy="16" r="10" fill="white"/>
-                <text x="16" y="20" text-anchor="middle" font-size="12" fill="#3B82F6">${getCategoryIcon(tool)}</text>
-              </svg>
-            `),
-            scaledSize: new window.google.maps.Size(32, 48),
-            anchor: new window.google.maps.Point(16, 48),
-          }
+          icon: markerIcon
         });
 
         // Create info window with conditional image display
         const imageContent = tool.image && tool.image.startsWith('data:image/')
-          ? `<img src="${tool.image}" alt="${tool.name}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 6px; margin-right: 8px;">`
-          : `<span style="font-size: 24px; margin-right: 8px;">${tool.image}</span>`;
+          ? `<img src="${tool.image}" alt="${tool.name}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; margin-right: 12px;">`
+          : `<span style="font-size: 32px; margin-right: 12px;">${tool.image}</span>`;
 
         const infoWindow = new window.google.maps.InfoWindow({
+          disableAutoPan: false,
           content: `
+            <style>
+              .gm-style-iw-d {
+                overflow: visible !important;
+                padding: 0 !important;
+                max-height: none !important;
+              }
+              .gm-style-iw {
+                padding: 0 !important;
+                background: transparent !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-c {
+                padding: 0 !important;
+                background: transparent !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-tc {
+                display: none !important;
+              }
+              .gm-ui-hover-effect {
+                display: none !important;
+              }
+            </style>
             <div
-              onclick="window.viewListing(${tool.id})"
+              onclick="console.log('Clicked tool ID:', '${tool.id}'); if(window.viewListing) { window.viewListing('${tool.id}'); }"
               style="
-                padding: 12px;
-                min-width: 200px;
-                color: #333;
+                width: 200px;
                 cursor: pointer;
                 border-radius: 12px;
-                transition: all 0.2s;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                transition: all 0.3s;
+                padding: 12px;
               "
-              onmouseover="this.style.background='#f8f9fa'; this.style.transform='scale(1.02)'"
-              onmouseout="this.style.background='white'; this.style.transform='scale(1)'"
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 40px rgba(0, 0, 0, 0.5)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 32px rgba(0, 0, 0, 0.4)'"
             >
-              <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                ${imageContent}
-                <div>
-                  <h3 style="margin: 0; font-size: 16px; font-weight: 600;">${tool.name}</h3>
-                  <p style="margin: 2px 0; font-size: 12px; color: #666;">by ${tool.owner}</p>
-                </div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                ${tool.image && tool.image.startsWith('data:image/')
+                  ? `<img src="${tool.image}" alt="${tool.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2);">`
+                  : `<div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2);">${tool.image}</div>`
+                }
+                <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #fff; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1;">${tool.name}</h3>
               </div>
-              <div style="margin-bottom: 8px;">
-                <span style="font-size: 18px; font-weight: 700; color: #3B82F6;">$${tool.price}</span>
-                <span style="font-size: 14px; color: #666;">/${tool.period}</span>
+              <p style="margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: #60A5FA;">$${tool.price}<span style="font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.8);">/${tool.period}</span></p>
+              <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 6px;">
+                <span style="color: #FBBF24;">⭐</span>
+                <span style="font-size: 13px; font-weight: 600; color: #fff;">${tool.rating}</span>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.6);">(${tool.reviews})</span>
               </div>
-              <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                <span style="color: #F59E0B; margin-right: 4px;">⭐</span>
-                <span style="font-size: 14px; font-weight: 500;">${tool.rating}</span>
-                <span style="font-size: 12px; color: #666; margin-left: 4px;">(${tool.reviews} reviews)</span>
-              </div>
-              <p style="margin: 4px 0; font-size: 12px; color: #666;">📍 ${tool.location}</p>
-              <p style="margin: 8px 0 0 0; font-size: 11px; color: #999; text-align: center;">Click to view details</p>
+              <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 4px;">
+                <span>📍</span><span>${tool.location}</span>
+              </p>
             </div>
           `
         });
 
         marker.addListener('click', () => {
+          // Close previous info window if exists
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
           infoWindow.open(discoverMap, marker);
+          currentInfoWindowRef.current = infoWindow;
         });
+      });
+
+      // Close info window when clicking on the map
+      discoverMap.addListener('click', () => {
+        if (currentInfoWindowRef.current) {
+          currentInfoWindowRef.current.close();
+          currentInfoWindowRef.current = null;
+        }
       });
 
       // Add user location marker if available
@@ -843,69 +919,141 @@ export default function BrowsePage() {
 
       console.log('Tools with coordinates for main map:', toolsWithCoordinates.length, 'out of', toolsToShow.length);
 
+      // Set up global function for info window clicks
+      window.viewListing = (toolId: string | number) => {
+        console.log('viewListing called with:', toolId, 'Type:', typeof toolId);
+        const tool = filteredTools.find(t => String(t.id) === String(toolId));
+        console.log('Found tool:', tool);
+        if (tool) {
+          handleCardClick(tool);
+        } else {
+          console.error('Tool not found for ID:', toolId);
+        }
+      };
+
       toolsWithCoordinates.forEach((tool) => {
+        // Create custom marker icon with image
+        const markerIcon = tool.image && tool.image.startsWith('data:image/')
+          ? {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="48" height="64" viewBox="0 0 48 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <clipPath id="pin-clip-main-${tool.id}">
+                      <circle cx="24" cy="22" r="18"/>
+                    </clipPath>
+                  </defs>
+                  <path d="M24 0C13.507 0 5 8.507 5 19C5 33.25 24 64 24 64S43 33.25 43 19C43 8.507 34.493 0 24 0Z" fill="#3B82F6"/>
+                  <circle cx="24" cy="22" r="18" fill="white"/>
+                  <image href="${tool.image}" x="6" y="4" width="36" height="36" clip-path="url(#pin-clip-main-${tool.id})" preserveAspectRatio="xMidYMid slice"/>
+                </svg>
+              `),
+              scaledSize: new window.google.maps.Size(48, 64),
+              anchor: new window.google.maps.Point(24, 64),
+            }
+          : {
+              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="48" height="64" viewBox="0 0 48 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M24 0C13.507 0 5 8.507 5 19C5 33.25 24 64 24 64S43 33.25 43 19C43 8.507 34.493 0 24 0Z" fill="#3B82F6"/>
+                  <circle cx="24" cy="22" r="18" fill="white"/>
+                  <text x="24" y="28" text-anchor="middle" font-size="20" fill="#3B82F6">${getCategoryIcon(tool)}</text>
+                </svg>
+              `),
+              scaledSize: new window.google.maps.Size(48, 64),
+              anchor: new window.google.maps.Point(24, 64),
+            };
+
         const marker = new window.google.maps.Marker({
           position: tool.coordinates,
           map: map,
           title: tool.name,
-          icon: {
-            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-              <svg width="32" height="48" viewBox="0 0 32 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 48 16 48S32 28 32 16C32 7.16 24.84 0 16 0Z" fill="#3B82F6"/>
-                <circle cx="16" cy="16" r="10" fill="white"/>
-                <text x="16" y="20" text-anchor="middle" font-size="12" fill="#3B82F6">${getCategoryIcon(tool)}</text>
-              </svg>
-            `),
-            scaledSize: new window.google.maps.Size(32, 48),
-            anchor: new window.google.maps.Point(16, 48),
-          }
+          icon: markerIcon
         });
 
         // Create info window with conditional image display
         const imageContent = tool.image && tool.image.startsWith('data:image/')
-          ? `<img src="${tool.image}" alt="${tool.name}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 6px; margin-right: 8px;">`
-          : `<span style="font-size: 24px; margin-right: 8px;">${tool.image}</span>`;
+          ? `<img src="${tool.image}" alt="${tool.name}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; margin-right: 12px;">`
+          : `<span style="font-size: 32px; margin-right: 12px;">${tool.image}</span>`;
 
         const infoWindow = new window.google.maps.InfoWindow({
+          disableAutoPan: false,
           content: `
+            <style>
+              .gm-style-iw-d {
+                overflow: visible !important;
+                padding: 0 !important;
+                max-height: none !important;
+              }
+              .gm-style-iw {
+                padding: 0 !important;
+                background: transparent !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-c {
+                padding: 0 !important;
+                background: transparent !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-tc {
+                display: none !important;
+              }
+              .gm-ui-hover-effect {
+                display: none !important;
+              }
+            </style>
             <div
-              onclick="window.viewListing(${tool.id})"
+              onclick="console.log('Clicked tool ID:', '${tool.id}'); if(window.viewListing) { window.viewListing('${tool.id}'); }"
               style="
-                padding: 12px;
-                min-width: 200px;
-                color: #333;
+                width: 200px;
                 cursor: pointer;
                 border-radius: 12px;
-                transition: all 0.2s;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                transition: all 0.3s;
+                padding: 12px;
               "
-              onmouseover="this.style.background='#f8f9fa'; this.style.transform='scale(1.02)'"
-              onmouseout="this.style.background='white'; this.style.transform='scale(1)'"
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 40px rgba(0, 0, 0, 0.5)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 32px rgba(0, 0, 0, 0.4)'"
             >
-              <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                ${imageContent}
-                <div>
-                  <h3 style="margin: 0; font-size: 16px; font-weight: 600;">${tool.name}</h3>
-                  <p style="margin: 2px 0; font-size: 12px; color: #666;">by ${tool.owner}</p>
-                </div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                ${tool.image && tool.image.startsWith('data:image/')
+                  ? `<img src="${tool.image}" alt="${tool.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2);">`
+                  : `<div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2);">${tool.image}</div>`
+                }
+                <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #fff; line-height: 1.3; text-shadow: 0 2px 4px rgba(0,0,0,0.3); flex: 1;">${tool.name}</h3>
               </div>
-              <div style="margin-bottom: 8px;">
-                <span style="font-size: 18px; font-weight: 700; color: #3B82F6;">$${tool.price}</span>
-                <span style="font-size: 14px; color: #666;">/${tool.period}</span>
+              <p style="margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: #60A5FA;">$${tool.price}<span style="font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.8);">/${tool.period}</span></p>
+              <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 6px;">
+                <span style="color: #FBBF24;">⭐</span>
+                <span style="font-size: 13px; font-weight: 600; color: #fff;">${tool.rating}</span>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.6);">(${tool.reviews})</span>
               </div>
-              <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                <span style="color: #F59E0B; margin-right: 4px;">⭐</span>
-                <span style="font-size: 14px; font-weight: 500;">${tool.rating}</span>
-                <span style="font-size: 12px; color: #666; margin-left: 4px;">(${tool.reviews} reviews)</span>
-              </div>
-              <p style="margin: 4px 0; font-size: 12px; color: #666;">📍 ${tool.location}</p>
-              <p style="margin: 8px 0 0 0; font-size: 11px; color: #999; text-align: center;">Click to view details</p>
+              <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 4px;">
+                <span>📍</span><span>${tool.location}</span>
+              </p>
             </div>
           `
         });
 
         marker.addListener('click', () => {
+          // Close previous info window if exists
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
           infoWindow.open(map, marker);
+          currentInfoWindowRef.current = infoWindow;
         });
+      });
+
+      // Close info window when clicking on the map
+      map.addListener('click', () => {
+        if (currentInfoWindowRef.current) {
+          currentInfoWindowRef.current.close();
+          currentInfoWindowRef.current = null;
+        }
       });
 
       // Add user location marker if available
@@ -962,8 +1110,8 @@ export default function BrowsePage() {
       }
     };
 
-    window.viewListing = (toolId: number) => {
-      const tool = filteredTools.find(t => t.id === toolId);
+    window.viewListing = (toolId: string | number) => {
+      const tool = filteredTools.find(t => String(t.id) === String(toolId));
       if (tool) {
         handleCardClick(tool);
       }
@@ -1080,6 +1228,39 @@ export default function BrowsePage() {
       await addRentalRequest(rentalRequestData);
 
       console.log('Rental request sent:', rentalRequestData);
+
+      // Send email notifications
+      try {
+        // Send email to owner about new rental request
+        await emailService.sendRentalRequestToOwner({
+          ownerName: selectedTool.owner,
+          ownerEmail: selectedTool.ownerContact,
+          renterName: currentUser?.displayName || currentUser?.email || 'User',
+          renterEmail: currentUser?.email || '',
+          itemName: selectedTool.name,
+          startDate: rentRequest.startDate,
+          endDate: rentRequest.endDate,
+          totalCost: totalCost,
+          message: rentRequest.message
+        });
+
+        // Send confirmation email to renter
+        await emailService.sendRentalRequestConfirmationToRenter({
+          ownerName: selectedTool.owner,
+          ownerEmail: selectedTool.ownerContact,
+          renterName: currentUser?.displayName || currentUser?.email || 'User',
+          renterEmail: currentUser?.email || '',
+          itemName: selectedTool.name,
+          startDate: rentRequest.startDate,
+          endDate: rentRequest.endDate,
+          totalCost: totalCost
+        });
+
+        console.log('Email notifications sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send email notifications:', emailError);
+        // Continue with the flow even if email fails
+      }
 
       // Store success data and show success modal
       setSuccessData({

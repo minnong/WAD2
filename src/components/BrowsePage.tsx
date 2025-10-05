@@ -38,6 +38,8 @@ export default function BrowsePage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [successData, setSuccessData] = useState<any>(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [rentRequest, setRentRequest] = useState({
     startDate: '',
     endDate: '',
@@ -130,350 +132,9 @@ export default function BrowsePage() {
     'Other'
   ];
 
-  const mockTools = [
-    {
-      id: 1,
-      name: 'Drill Press',
-      price: 25,
-      period: 'day',
-      location: 'Orchard, Singapore',
-      coordinates: { lat: 1.3048, lng: 103.8318 },
-      rating: 4.8,
-      reviews: 24,
-      image: '🔨',
-      category: 'Power Tools',
-      owner: 'John D.',
-      ownerContact: 'john.doe@email.com'
-    },
-    {
-      id: 2,
-      name: 'Lawn Mower',
-      price: 40,
-      period: 'day',
-      location: 'Tampines, Singapore',
-      coordinates: { lat: 1.3526, lng: 103.9449 },
-      rating: 4.9,
-      reviews: 18,
-      image: '🌱',
-      category: 'Garden Tools',
-      owner: 'Sarah L.',
-      ownerContact: 'sarah.lim@email.com'
-    },
-    {
-      id: 3,
-      name: 'Professional Camera',
-      price: 60,
-      period: 'day',
-      location: 'Jurong, Singapore',
-      coordinates: { lat: 1.3329, lng: 103.7436 },
-      rating: 5.0,
-      reviews: 31,
-      image: '📷',
-      category: 'Electronics',
-      owner: 'Mike R.',
-      ownerContact: 'mike.roberts@email.com'
-    },
-    {
-      id: 4,
-      name: 'Stand Mixer',
-      price: 15,
-      period: 'day',
-      location: 'Woodlands, Singapore',
-      coordinates: { lat: 1.4382, lng: 103.7890 },
-      rating: 4.7,
-      reviews: 12,
-      image: '🍳',
-      category: 'Kitchen Appliances',
-      owner: 'Lisa M.',
-      ownerContact: 'lisa.martin@email.com'
-    },
-    {
-      id: 5,
-      name: 'Tennis Racket Set',
-      price: 20,
-      period: 'day',
-      location: 'Clementi, Singapore',
-      coordinates: { lat: 1.3162, lng: 103.7649 },
-      rating: 4.6,
-      reviews: 8,
-      image: '🎾',
-      category: 'Sports Equipment',
-      owner: 'David K.',
-      ownerContact: 'david.kim@email.com'
-    },
-    {
-      id: 6,
-      name: 'Paint Sprayer',
-      price: 35,
-      period: 'day',
-      location: 'Bishan, Singapore',
-      coordinates: { lat: 1.3519, lng: 103.8486 },
-      rating: 4.8,
-      reviews: 15,
-      image: '🎨',
-      category: 'Home & DIY',
-      owner: 'Emma T.',
-      ownerContact: 'emma.tan@email.com'
-    },
-    {
-      id: 7,
-      name: 'Angle Grinder',
-      price: 30,
-      period: 'day',
-      location: 'Toa Payoh, Singapore',
-      coordinates: { lat: 1.3344, lng: 103.8563 },
-      rating: 4.5,
-      reviews: 19,
-      image: '⚙️',
-      category: 'Power Tools',
-      owner: 'Peter W.',
-      ownerContact: 'peter.wong@email.com'
-    },
-    {
-      id: 8,
-      name: 'Gaming Laptop',
-      price: 45,
-      period: 'day',
-      location: 'Ang Mo Kio, Singapore',
-      coordinates: { lat: 1.3691, lng: 103.8454 },
-      rating: 4.9,
-      reviews: 27,
-      image: '💻',
-      category: 'Electronics',
-      owner: 'Alex C.',
-      ownerContact: 'alex.chen@email.com'
-    },
-    {
-      id: 9,
-      name: 'Garden Hedge Trimmer',
-      price: 25,
-      period: 'day',
-      location: 'Bukit Timah, Singapore',
-      coordinates: { lat: 1.3294, lng: 103.8077 },
-      rating: 4.7,
-      reviews: 14,
-      image: '✂️',
-      category: 'Garden Tools',
-      owner: 'Mary L.',
-      ownerContact: 'mary.lau@email.com'
-    },
-    {
-      id: 10,
-      name: 'Espresso Machine',
-      price: 20,
-      period: 'day',
-      location: 'Marina Bay, Singapore',
-      coordinates: { lat: 1.2845, lng: 103.8607 },
-      rating: 4.8,
-      reviews: 22,
-      image: '☕',
-      category: 'Kitchen Appliances',
-      owner: 'James T.',
-      ownerContact: 'james.tan@email.com'
-    },
-    {
-      id: 11,
-      name: 'Mountain Bike',
-      price: 35,
-      period: 'day',
-      location: 'East Coast, Singapore',
-      coordinates: { lat: 1.3058, lng: 103.9129 },
-      rating: 4.6,
-      reviews: 16,
-      image: '🚴',
-      category: 'Sports Equipment',
-      owner: 'Rachel K.',
-      ownerContact: 'rachel.koh@email.com'
-    },
-    {
-      id: 12,
-      name: 'Projector',
-      price: 40,
-      period: 'day',
-      location: 'Hougang, Singapore',
-      coordinates: { lat: 1.3613, lng: 103.8860 },
-      rating: 4.9,
-      reviews: 33,
-      image: '📽️',
-      category: 'Electronics',
-      owner: 'Daniel S.',
-      ownerContact: 'daniel.sim@email.com'
-    },
-    {
-      id: 13,
-      name: 'Circular Saw',
-      price: 28,
-      period: 'day',
-      location: 'Serangoon, Singapore',
-      coordinates: { lat: 1.3553, lng: 103.8677 },
-      rating: 4.7,
-      reviews: 21,
-      image: '🪚',
-      category: 'Power Tools',
-      owner: 'Kevin L.',
-      ownerContact: 'kevin.lee@email.com'
-    },
-    {
-      id: 14,
-      name: 'Air Fryer',
-      price: 18,
-      period: 'day',
-      location: 'Punggol, Singapore',
-      coordinates: { lat: 1.4043, lng: 103.9021 },
-      rating: 4.5,
-      reviews: 11,
-      image: '🍟',
-      category: 'Kitchen Appliances',
-      owner: 'Sophie N.',
-      ownerContact: 'sophie.ng@email.com'
-    },
-    {
-      id: 15,
-      name: 'Guitar',
-      price: 22,
-      period: 'day',
-      location: 'Novena, Singapore',
-      coordinates: { lat: 1.3208, lng: 103.8434 },
-      rating: 4.8,
-      reviews: 17,
-      image: '🎸',
-      category: 'Musical Instruments',
-      owner: 'Ryan O.',
-      ownerContact: 'ryan.ong@email.com'
-    },
-    {
-      id: 16,
-      name: 'Yoga Mat Set',
-      price: 12,
-      period: 'day',
-      location: 'Bedok, Singapore',
-      coordinates: { lat: 1.3244, lng: 103.9273 },
-      rating: 4.4,
-      reviews: 9,
-      image: '🧘',
-      category: 'Health & Fitness',
-      owner: 'Linda W.',
-      ownerContact: 'linda.wu@email.com'
-    },
-    {
-      id: 17,
-      name: 'Power Washer',
-      price: 32,
-      period: 'day',
-      location: 'Yishun, Singapore',
-      coordinates: { lat: 1.4304, lng: 103.8354 },
-      rating: 4.9,
-      reviews: 25,
-      image: '🚿',
-      category: 'Home & DIY',
-      owner: 'Marcus H.',
-      ownerContact: 'marcus.ho@email.com'
-    },
-    {
-      id: 18,
-      name: 'DSLR Camera Kit',
-      price: 55,
-      period: 'day',
-      location: 'Chinatown, Singapore',
-      coordinates: { lat: 1.2833, lng: 103.8435 },
-      rating: 5.0,
-      reviews: 28,
-      image: '📸',
-      category: 'Photography',
-      owner: 'Grace L.',
-      ownerContact: 'grace.lim@email.com'
-    },
-    // Additional tools for more variety
-    {
-      id: 19,
-      name: 'Electric Scooter',
-      price: 30,
-      period: 'day',
-      location: 'Kallang, Singapore',
-      coordinates: { lat: 1.3116, lng: 103.8636 },
-      rating: 4.6,
-      reviews: 14,
-      image: '🛴',
-      category: 'Sports Equipment',
-      owner: 'Tommy L.',
-      ownerContact: 'tommy.lim@email.com'
-    },
-    {
-      id: 20,
-      name: 'Karaoke Machine',
-      price: 25,
-      period: 'day',
-      location: 'Buona Vista, Singapore',
-      coordinates: { lat: 1.3067, lng: 103.7903 },
-      rating: 4.7,
-      reviews: 19,
-      image: '🎤',
-      category: 'Electronics',
-      owner: 'Jenny C.',
-      ownerContact: 'jenny.choo@email.com'
-    },
-    {
-      id: 21,
-      name: 'Sewing Machine',
-      price: 15,
-      period: 'day',
-      location: 'Tiong Bahru, Singapore',
-      coordinates: { lat: 1.2866, lng: 103.8317 },
-      rating: 4.8,
-      reviews: 12,
-      image: '🧵',
-      category: 'Art & Craft',
-      owner: 'Violet K.',
-      ownerContact: 'violet.koh@email.com'
-    },
-    {
-      id: 22,
-      name: 'Pressure Cooker',
-      price: 12,
-      period: 'day',
-      location: 'Redhill, Singapore',
-      coordinates: { lat: 1.2896, lng: 103.8167 },
-      rating: 4.5,
-      reviews: 8,
-      image: '🍲',
-      category: 'Kitchen Appliances',
-      owner: 'Nancy W.',
-      ownerContact: 'nancy.wong@email.com'
-    },
-    {
-      id: 23,
-      name: 'Electric Wheelchair',
-      price: 20,
-      period: 'day',
-      location: 'Geylang, Singapore',
-      coordinates: { lat: 1.3147, lng: 103.8831 },
-      rating: 4.9,
-      reviews: 15,
-      image: '♿',
-      category: 'Health & Fitness',
-      owner: 'Alan T.',
-      ownerContact: 'alan.tan@email.com'
-    },
-    {
-      id: 24,
-      name: 'Bluetooth Speaker',
-      price: 10,
-      period: 'day',
-      location: 'Little India, Singapore',
-      coordinates: { lat: 1.3067, lng: 103.8518 },
-      rating: 4.4,
-      reviews: 22,
-      image: '🔊',
-      category: 'Electronics',
-      owner: 'Priya S.',
-      ownerContact: 'priya.singh@email.com'
-    }
-  ];
-
-  // Combine mock tools with user listings
+  // Use only real listings from Firebase
   console.log('Firebase listings:', listings);
-  console.log('Mock tools:', mockTools);
-  const allTools = [...mockTools, ...listings];
+  const allTools = [...listings];
   console.log('All tools combined:', allTools);
 
   // Debug coordinates in each listing
@@ -511,18 +172,40 @@ export default function BrowsePage() {
     }
   });
 
-  // Get top rated tools (rating >= 4.7 and at least 15 reviews)
-  const topRatedTools = allTools
-    .filter(tool => tool.rating >= 4.7 && tool.reviews >= 15 && (tool as any).isActive !== false)
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 6);
+  // Get top rated tools - ordered by rating (with minimum reviews for credibility)
+  const topRatedTools = (() => {
+    const activeTools = allTools.filter(tool => (tool as any).isActive !== false);
+    // Sort all tools by rating, then by number of reviews as tiebreaker
+    return activeTools
+      .sort((a, b) => {
+        if (b.rating !== a.rating) {
+          return b.rating - a.rating;
+        }
+        return b.reviews - a.reviews;
+      })
+      .slice(0, 6);
+  })();
 
-  // Get trending tools (based on reviews and rating)
-  const trendingTools = allTools
-    .filter(tool => (tool as any).isActive !== false)
-    .filter(tool => tool.reviews >= 10)
-    .sort((a, b) => (b.rating * b.reviews) - (a.rating * a.reviews))
-    .slice(0, 6);
+  // Get trending tools - based on rental count from completed/active rentals
+  const trendingTools = (() => {
+    const activeTools = allTools.filter(tool => (tool as any).isActive !== false);
+
+    // Calculate rental count for each tool
+    const toolsWithRentals = activeTools.map(tool => {
+      const rentalCount = (tool as any).rentalCount || 0;
+      return { ...tool, rentalCount };
+    });
+
+    // Sort by rental count, then by rating as tiebreaker
+    return toolsWithRentals
+      .sort((a, b) => {
+        if (b.rentalCount !== a.rentalCount) {
+          return b.rentalCount - a.rentalCount;
+        }
+        return b.rating - a.rating;
+      })
+      .slice(0, 6);
+  })();
 
   // Featured categories with tool counts
   const featuredCategories = [
@@ -807,19 +490,56 @@ export default function BrowsePage() {
 
         // Create simple info window for user location
         const userInfoWindow = new window.google.maps.InfoWindow({
+          disableAutoPan: false,
           content: `
-            <div style="padding: 16px; text-align: center; color: #333;">
-              <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-                <div style="width: 8px; height: 8px; background: #DC2626; border-radius: 50%; margin-right: 8px;"></div>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">You are here</h3>
-              </div>
-              <p style="margin: 0; font-size: 14px; color: #666;">Your current location</p>
+            <style>
+              .gm-style-iw-d {
+                overflow: visible !important;
+                padding: 0 !important;
+                max-height: none !important;
+              }
+              .gm-style-iw {
+                padding: 0 !important;
+                background: transparent !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-c {
+                padding: 0 !important;
+                background: transparent !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-tc {
+                display: none !important;
+              }
+              .gm-ui-hover-effect {
+                display: none !important;
+              }
+            </style>
+            <div
+              style="
+                width: auto;
+                border-radius: 12px;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                padding: 12px 16px;
+              "
+            >
+              <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">You are here!</h3>
             </div>
           `
         });
 
         userMarker.addListener('click', () => {
+          // Close previous info window if exists
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
           userInfoWindow.open(discoverMap, userMarker);
+          currentInfoWindowRef.current = userInfoWindow;
         });
       }
         } catch (error) {
@@ -1077,19 +797,56 @@ export default function BrowsePage() {
 
         // Create simple info window for user location
         const userInfoWindow = new window.google.maps.InfoWindow({
+          disableAutoPan: false,
           content: `
-            <div style="padding: 16px; text-align: center; color: #333;">
-              <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-                <div style="width: 8px; height: 8px; background: #DC2626; border-radius: 50%; margin-right: 8px;"></div>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">You are here</h3>
-              </div>
-              <p style="margin: 0; font-size: 14px; color: #666;">Your current location</p>
+            <style>
+              .gm-style-iw-d {
+                overflow: visible !important;
+                padding: 0 !important;
+                max-height: none !important;
+              }
+              .gm-style-iw {
+                padding: 0 !important;
+                background: transparent !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-c {
+                padding: 0 !important;
+                background: transparent !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+                max-height: none !important;
+              }
+              .gm-style-iw-tc {
+                display: none !important;
+              }
+              .gm-ui-hover-effect {
+                display: none !important;
+              }
+            </style>
+            <div
+              style="
+                width: auto;
+                border-radius: 12px;
+                background: rgba(0, 0, 0, 0.75);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                padding: 12px 16px;
+              "
+            >
+              <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">You are here!</h3>
             </div>
           `
         });
 
         userMarker.addListener('click', () => {
+          // Close previous info window if exists
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
           userInfoWindow.open(map, userMarker);
+          currentInfoWindowRef.current = userInfoWindow;
         });
       }
         } catch (error) {
@@ -1182,6 +939,13 @@ export default function BrowsePage() {
   };
 
   const handleRentClick = (tool: any) => {
+    // Prevent users from renting their own listings
+    if (currentUser && tool.ownerContact === currentUser.email) {
+      setErrorMessage('You cannot rent your own listing.');
+      setShowErrorModal(true);
+      return;
+    }
+
     setSelectedTool(tool);
     setShowRentModal(true);
     // Set default dates (today to tomorrow)
@@ -1197,13 +961,67 @@ export default function BrowsePage() {
   };
 
   const handleRentRequestSubmit = async () => {
-    if (!selectedTool || !currentUser) return;
+    console.log('=== RENT REQUEST SUBMIT CLICKED ===');
+    console.log('Start Date:', rentRequest.startDate);
+    console.log('End Date:', rentRequest.endDate);
+
+    if (!selectedTool || !currentUser) {
+      console.log('No selected tool or current user');
+      return;
+    }
+
+    // Validation checks - MUST be outside try block
+    if (!rentRequest.startDate || !rentRequest.endDate) {
+      console.log('VALIDATION FAILED: Missing dates');
+      setErrorMessage('Please select both start and end dates.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (!rentRequest.startTime || !rentRequest.endTime) {
+      setErrorMessage('Please select both start and end times.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    const startDate = new Date(rentRequest.startDate + 'T00:00:00');
+    const endDate = new Date(rentRequest.endDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    console.log('Date comparison:', {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      today: today.toISOString(),
+      endBeforeStart: endDate < startDate
+    });
+
+    // Check if dates are in the past
+    if (startDate < today) {
+      console.log('VALIDATION FAILED: Start date in past');
+      setErrorMessage('Start date cannot be in the past. Please select a future date.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Check if end date is before start date
+    if (endDate < startDate) {
+      console.log('VALIDATION FAILED: End date before start date');
+      setErrorMessage('End date cannot be before start date. Please check your dates.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Check if same day rental (might want to allow this)
+    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (days === 0) {
+      setErrorMessage('Rental period must be at least 1 day. Please select different dates.');
+      setShowErrorModal(true);
+      return;
+    }
 
     try {
-      // Calculate total cost
-      const startDate = new Date(rentRequest.startDate);
-      const endDate = new Date(rentRequest.endDate);
-      const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      // Calculate total cost (days already calculated above)
       const totalCost = days * selectedTool.price;
 
       // Create rental request and add to context
@@ -1225,14 +1043,19 @@ export default function BrowsePage() {
         location: selectedTool.location
       };
 
+      // This will throw an error if dates conflict
       await addRentalRequest(rentalRequestData);
 
       console.log('Rental request sent:', rentalRequestData);
 
       // Send email notifications
       try {
+        console.log('About to send emails...');
+        console.log('Owner email:', selectedTool.ownerContact);
+        console.log('Renter email:', currentUser?.email);
+
         // Send email to owner about new rental request
-        await emailService.sendRentalRequestToOwner({
+        const ownerEmailResult = await emailService.sendRentalRequestToOwner({
           ownerName: selectedTool.owner,
           ownerEmail: selectedTool.ownerContact,
           renterName: currentUser?.displayName || currentUser?.email || 'User',
@@ -1243,9 +1066,13 @@ export default function BrowsePage() {
           totalCost: totalCost,
           message: rentRequest.message
         });
+        console.log('Owner email result:', ownerEmailResult);
+
+        // Wait 2 seconds between emails to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Send confirmation email to renter
-        await emailService.sendRentalRequestConfirmationToRenter({
+        const renterEmailResult = await emailService.sendRentalRequestConfirmationToRenter({
           ownerName: selectedTool.owner,
           ownerEmail: selectedTool.ownerContact,
           renterName: currentUser?.displayName || currentUser?.email || 'User',
@@ -1255,11 +1082,13 @@ export default function BrowsePage() {
           endDate: rentRequest.endDate,
           totalCost: totalCost
         });
+        console.log('Renter email result:', renterEmailResult);
 
         console.log('Email notifications sent successfully');
       } catch (emailError) {
         console.error('Failed to send email notifications:', emailError);
-        // Continue with the flow even if email fails
+        // Continue with the flow even if email fails - don't alert the user
+        console.warn('Continuing despite email error (might be rate limited)');
       }
 
       // Store success data and show success modal
@@ -1288,9 +1117,16 @@ export default function BrowsePage() {
       });
     } catch (error) {
       console.error('Error sending rental request:', error);
-      // Show error modal instead of alert - for now just close the modal
+
+      // Check if it's a conflict error
+      if (error instanceof Error && error.message.includes('conflict')) {
+        setErrorMessage('This item is already rented during the selected dates. Please choose different dates.');
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred while processing your request. Please try again.');
+      }
+
+      setShowErrorModal(true);
       setShowRentModal(false);
-      // TODO: Add error modal for better UX
     }
   };
 
@@ -2190,6 +2026,49 @@ export default function BrowsePage() {
                 }`}
               >
                 Continue Browsing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${
+            theme === 'dark'
+              ? 'bg-gray-800'
+              : 'bg-white'
+          }`}>
+            {/* Error Header */}
+            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-8 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                  <XCircle className="w-8 h-8 text-red-500" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Unable to Process Request</h2>
+              <p className="text-red-100">Please check the details and try again</p>
+            </div>
+
+            {/* Error Content */}
+            <div className="px-6 py-6">
+              <div className={`p-4 rounded-xl ${
+                theme === 'dark' ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'
+              }`}>
+                <p className={`text-center ${theme === 'dark' ? 'text-red-200' : 'text-red-700'}`}>
+                  {errorMessage}
+                </p>
+              </div>
+            </div>
+
+            {/* Error Footer */}
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors"
+              >
+                Got It
               </button>
             </div>
           </div>

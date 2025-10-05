@@ -189,9 +189,12 @@ export default function MyRentalsPage() {
 
       await updateRentalStatus(selectedRequestId, status);
 
-      // Send email notification to renter
+      // Send email notification to renter (with delay to avoid rate limiting)
       if (rentalRequest) {
         try {
+          // Wait 1 second before sending email to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
           if (approvalAction === 'approve') {
             await emailService.sendRentalAcceptedEmail({
               ownerName: currentUser?.displayName || currentUser?.email || 'Owner',
@@ -217,7 +220,7 @@ export default function MyRentalsPage() {
           console.log(`${approvalAction === 'approve' ? 'Acceptance' : 'Decline'} email sent successfully`);
         } catch (emailError) {
           console.error('Failed to send email notification:', emailError);
-          // Continue even if email fails
+          // Continue even if email fails (might be rate limited)
         }
       }
 
@@ -509,11 +512,12 @@ export default function MyRentalsPage() {
                       {/* Listing Box - Left 2 Columns Only */}
                       <div
                         onClick={() => handleViewListing(item.toolId)}
-                        className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                        className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
                           theme === 'dark'
-                            ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                            : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                            ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
+                            : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
                         }`}>
+
                         {/* Large Image on Left */}
                         <div className="flex-shrink-0">
                           {renderToolImage(item.toolImage, "large")}
@@ -627,11 +631,12 @@ export default function MyRentalsPage() {
                       {/* Listing Box - Left 2 Columns Only */}
                       <div
                         onClick={() => handleViewListing(item.toolId)}
-                        className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                        className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
                           theme === 'dark'
-                            ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                            : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                            ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
+                            : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
                         }`}>
+
                         {/* Large Image on Left */}
                         <div className="flex-shrink-0">
                           {renderToolImage(item.toolImage, "large")}
@@ -794,49 +799,57 @@ export default function MyRentalsPage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditListing(item.id);
-                        }}
-                        className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                          theme === 'dark'
-                            ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                            : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                        }`}
-                      >
-                        <Edit3 className="w-3 h-3" />
-                        Edit
-                      </button>
+                    <div className="mt-3 pt-2 border-t border-gray-600/30 space-y-2">
+                      {/* Icon Buttons Row */}
+                      <div className="flex justify-center gap-4">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditListing(item.id);
+                          }}
+                          className="p-1 transition-transform hover:scale-110"
+                          title="Edit"
+                        >
+                          <Edit3 className="w-5 h-5 text-blue-500" />
+                        </button>
 
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelistListing(item.id, item.name);
+                          }}
+                          className="p-1 transition-transform hover:scale-110"
+                          title="Delist"
+                        >
+                          <XCircle className="w-5 h-5 text-orange-500" />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteListing(item.id, item.name);
+                          }}
+                          className="p-1 transition-transform hover:scale-110"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-5 h-5 text-red-500" />
+                        </button>
+                      </div>
+
+                      {/* Analytics Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDelistListing(item.id, item.name);
+                          // TODO: Navigate to analytics page
+                          console.log('Analytics for listing:', item.id);
                         }}
-                        className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        className={`w-full py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
                           theme === 'dark'
-                            ? 'bg-orange-900/50 hover:bg-orange-900/70 text-orange-300'
-                            : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                            ? 'bg-purple-900/50 hover:bg-purple-900/70 text-purple-300'
+                            : 'bg-purple-100 hover:bg-purple-200 text-purple-700'
                         }`}
                       >
-                        <XCircle className="w-3 h-3" />
-                        Delist
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteListing(item.id, item.name);
-                        }}
-                        className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                          theme === 'dark'
-                            ? 'bg-red-900/50 hover:bg-red-900/70 text-red-300'
-                            : 'bg-red-100 hover:bg-red-200 text-red-700'
-                        }`}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        Delete
+                        Analytics
                       </button>
                     </div>
                   </div>
@@ -917,49 +930,57 @@ export default function MyRentalsPage() {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditListing(item.id);
-                            }}
-                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                              theme === 'dark'
-                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                            }`}
-                          >
-                            <Edit3 className="w-3 h-3" />
-                            Edit
-                          </button>
+                        <div className="mt-3 pt-2 border-t border-gray-600/30 space-y-2">
+                          {/* Icon Buttons Row */}
+                          <div className="flex justify-center gap-4">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditListing(item.id);
+                              }}
+                              className="p-1 transition-transform hover:scale-110"
+                              title="Edit"
+                            >
+                              <Edit3 className="w-5 h-5 text-blue-500" />
+                            </button>
 
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRelistListing(item.id);
+                              }}
+                              className="p-1 transition-transform hover:scale-110"
+                              title="Relist"
+                            >
+                              <CheckCircle className="w-5 h-5 text-green-500" />
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteListing(item.id, item.name);
+                              }}
+                              className="p-1 transition-transform hover:scale-110"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-5 h-5 text-red-500" />
+                            </button>
+                          </div>
+
+                          {/* Analytics Button */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleRelistListing(item.id);
+                              // TODO: Navigate to analytics page
+                              console.log('Analytics for listing:', item.id);
                             }}
-                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                            className={`w-full py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
                               theme === 'dark'
-                                ? 'bg-green-900/50 hover:bg-green-900/70 text-green-300'
-                                : 'bg-green-100 hover:bg-green-200 text-green-700'
+                                ? 'bg-purple-900/50 hover:bg-purple-900/70 text-purple-300'
+                                : 'bg-purple-100 hover:bg-purple-200 text-purple-700'
                             }`}
                           >
-                            <CheckCircle className="w-3 h-3" />
-                            Relist
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteListing(item.id, item.name);
-                            }}
-                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                              theme === 'dark'
-                                ? 'bg-red-900/50 hover:bg-red-900/70 text-red-300'
-                                : 'bg-red-100 hover:bg-red-200 text-red-700'
-                            }`}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                            Delete
+                            Analytics
                           </button>
                         </div>
                       </div>
@@ -981,11 +1002,12 @@ export default function MyRentalsPage() {
                     {/* Listing Box - Left 2 Columns Only */}
                     <div
                       onClick={() => handleViewListing(request.toolId)}
-                      className={`flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
+                      className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
                         theme === 'dark'
-                          ? 'bg-gradient-to-r from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                          : 'bg-gradient-to-r from-white/90 to-gray-50/80 backdrop-blur-sm'
+                          ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
+                          : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
                       }`}>
+
                       {/* Large Image on Left */}
                       <div className="flex-shrink-0">
                         {renderToolImage(request.toolImage, "large")}
@@ -1269,7 +1291,7 @@ export default function MyRentalsPage() {
               <button
                 onClick={closeApprovalModal}
                 disabled={isLoading}
-                className={`flex-none w-3/5 py-2 px-4 rounded-xl border transition-colors ${
+                className={`flex-1 py-2 px-4 rounded-xl border transition-colors ${
                   theme === 'dark'
                     ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -1280,7 +1302,7 @@ export default function MyRentalsPage() {
               <button
                 onClick={confirmApprovalAction}
                 disabled={isLoading}
-                className={`flex-none w-3/5 py-2 px-4 text-white rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center ${
+                className={`flex-1 py-2 px-4 text-white rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center ${
                   approvalAction === 'approve'
                     ? 'bg-green-600 hover:bg-green-700'
                     : 'bg-red-600 hover:bg-red-700'

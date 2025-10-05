@@ -1,5 +1,6 @@
 // Gmail API configuration
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+console.log('Email service using backend URL:', BACKEND_URL);
 
 interface RentalRequestEmailData {
   ownerName: string;
@@ -19,6 +20,7 @@ export const emailService = {
    */
   sendRentalRequestToOwner: async (data: RentalRequestEmailData) => {
     try {
+      console.log('Sending email to owner:', data.ownerEmail);
       const response = await fetch(`${BACKEND_URL}/api/send-email`, {
         method: 'POST',
         headers: {
@@ -68,6 +70,7 @@ export const emailService = {
    */
   sendRentalRequestConfirmationToRenter: async (data: RentalRequestEmailData) => {
     try {
+      console.log('Sending confirmation email to renter:', data.renterEmail);
       const response = await fetch(`${BACKEND_URL}/api/send-email`, {
         method: 'POST',
         headers: {

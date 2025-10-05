@@ -41,33 +41,6 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>('listings');
 
-  // Mock user data - in a real app, this would come from a user service
-  const mockUsers: { [key: string]: any } = {
-    'john.doe@email.com': { name: 'John D.', joinDate: '2023-01-15', bio: 'DIY enthusiast and tool collector. Happy to share my tools with the community!' },
-    'sarah.lim@email.com': { name: 'Sarah L.', joinDate: '2023-03-20', bio: 'Gardening lover with a green thumb. Let me help you grow your garden!' },
-    'mike.roberts@email.com': { name: 'Mike R.', joinDate: '2023-02-10', bio: 'Photography and tech enthusiast. Always upgrading my gear!' },
-    'lisa.martin@email.com': { name: 'Lisa M.', joinDate: '2023-04-05', bio: 'Home chef who loves trying new kitchen gadgets.' },
-    'david.kim@email.com': { name: 'David K.', joinDate: '2023-01-30', bio: 'Sports and fitness enthusiast. Staying active is my passion!' },
-    'emma.tan@email.com': { name: 'Emma T.', joinDate: '2023-05-12', bio: 'Interior designer and DIY expert. Making homes beautiful!' },
-    'peter.wong@email.com': { name: 'Peter W.', joinDate: '2023-02-28', bio: 'Professional contractor with quality tools to share.' },
-    'alex.chen@email.com': { name: 'Alex C.', joinDate: '2023-03-15', bio: 'Tech professional and gadget collector.' },
-    'mary.lau@email.com': { name: 'Mary L.', joinDate: '2023-04-20', bio: 'Weekend gardener with a passion for organic growing.' },
-    'james.tan@email.com': { name: 'James T.', joinDate: '2023-01-08', bio: 'Coffee connoisseur and kitchen appliance enthusiast.' },
-    'rachel.koh@email.com': { name: 'Rachel K.', joinDate: '2023-02-14', bio: 'Weekend warrior and sports enthusiast. Love cycling and staying active!' },
-    'daniel.sim@email.com': { name: 'Daniel S.', joinDate: '2023-03-08', bio: 'Film and photography professional. Capturing life\'s beautiful moments!' },
-    'kevin.lee@email.com': { name: 'Kevin L.', joinDate: '2023-01-22', bio: 'Woodworker and craftsman. Creating beautiful things with my hands!' },
-    'sophie.ng@email.com': { name: 'Sophie N.', joinDate: '2023-04-18', bio: 'Culinary enthusiast and food blogger. Always trying new recipes!' },
-    'ryan.ong@email.com': { name: 'Ryan O.', joinDate: '2023-03-25', bio: 'Musician and audio engineer. Making music and sharing the joy!' },
-    'linda.wu@email.com': { name: 'Linda W.', joinDate: '2023-02-03', bio: 'Wellness coach and fitness instructor. Helping others live healthier lives!' },
-    'marcus.ho@email.com': { name: 'Marcus H.', joinDate: '2023-05-01', bio: 'Home renovation expert and interior designer. Transforming spaces!' },
-    'grace.lim@email.com': { name: 'Grace L.', joinDate: '2023-01-28', bio: 'Professional photographer specializing in portraits and events.' },
-    'tommy.lim@email.com': { name: 'Tommy L.', joinDate: '2023-04-12', bio: 'Adventure seeker and outdoor enthusiast. Always ready for the next adventure!' },
-    'jenny.choo@email.com': { name: 'Jenny C.', joinDate: '2023-03-30', bio: 'Content creator and tech reviewer. Sharing the latest in technology!' },
-    'violet.koh@email.com': { name: 'Violet K.', joinDate: '2023-05-15', bio: 'Artist and crafter. Creating beautiful handmade pieces with love!' },
-    'nancy.wong@email.com': { name: 'Nancy W.', joinDate: '2023-02-20', bio: 'Home baker and cooking enthusiast. Spreading joy through delicious food!' },
-    'alan.tan@email.com': { name: 'Alan T.', joinDate: '2023-04-08', bio: 'Physical therapist and health advocate. Helping people move better and feel great!' },
-    'priya.singh@email.com': { name: 'Priya S.', joinDate: '2023-03-12', bio: 'Music lover and event organizer. Bringing people together through great experiences!' }
-  };
 
   // Decode the email parameter in case it's URL encoded
   const decodedEmail = email ? decodeURIComponent(email) : null;
@@ -126,35 +99,19 @@ export default function UserProfilePage() {
           joinDate: 'Recently'
         });
         
-        // First try to find user in mock data
-        let user = mockUsers[decodedEmail];
-        
-        // If not found in mock data, try to load from Firebase
-        if (!user) {
-          user = await loadUserFromFirebase(decodedEmail);
-        }
-        
+        // Load user from Firebase
+        const user = await loadUserFromFirebase(decodedEmail);
+
         setCurrentUser(user);
-        
+
         // Load user's listings from Firebase
         const firebaseListings = await listingsService.getUserListings(decodedEmail);
-        
-        // Also get mock listings for this user (from context)
-        const mockListings = listings.filter(listing => 
-          listing.ownerContact === decodedEmail
-        );
-        
-        // Combine and deduplicate listings
-        const allListings = [...firebaseListings, ...mockListings];
-        const uniqueListings = allListings.filter((listing, index, self) => 
-          index === self.findIndex(l => l.id === listing.id)
-        );
-        
-        setUserListings(uniqueListings);
-        
+
+        setUserListings(firebaseListings);
+
         // Load reviews for user's listings
         const allReviews: UserReview[] = [];
-        for (const listing of uniqueListings) {
+        for (const listing of firebaseListings) {
           try {
             const listingId = listing.id?.toString() || '';
             const listingReviews = await reviewsService.getListingReviews(listingId);
@@ -188,7 +145,7 @@ export default function UserProfilePage() {
           : 0;
         
         setUserStats({
-          totalListings: uniqueListings.length,
+          totalListings: firebaseListings.length,
           averageRating,
           totalReviews,
           joinDate: user?.joinDate || 'Recently'
@@ -208,8 +165,9 @@ export default function UserProfilePage() {
     navigate(`/listing/${listing.id}`);
   };
 
-  const renderToolImage = (imageStr: string, size: 'small' | 'medium' = 'small') => {
-    const sizeClasses = size === 'medium' ? "w-20 h-20" : "w-16 h-16";
+  const renderToolImage = (imageStr: string, size: 'small' | 'medium' | 'card' = 'small') => {
+    const sizeClasses = size === 'card' ? "w-full aspect-square" :
+                        size === 'medium' ? "w-20 h-20" : "w-16 h-16";
 
     if (imageStr && imageStr.startsWith('data:image/')) {
       return (
@@ -220,14 +178,18 @@ export default function UserProfilePage() {
         />
       );
     }
-    
+
     return (
       <div className={`${sizeClasses} flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl shadow-md ${
-        size === 'medium' ? 'text-4xl' : 'text-3xl'
+        size === 'card' ? 'text-6xl' : size === 'medium' ? 'text-4xl' : 'text-3xl'
       }`}>
         {imageStr}
       </div>
     );
+  };
+
+  const formatPrice = (price: number) => {
+    return price % 1 === 0 ? price.toString() : price.toFixed(2);
   };
 
   const formatDate = (timestamp: any) => {
@@ -412,72 +374,51 @@ export default function UserProfilePage() {
             </div>
           </div>
         ) : activeTab === 'listings' ? (
-          <div className="space-y-6">
+          <div>
             {userListings.length > 0 ? (
-              userListings.map((listing) => (
-                <div
-                  key={listing.id}
-                  onClick={() => handleListingClick(listing)}
-                  className={`p-6 rounded-2xl cursor-pointer transition-all duration-300 hover:scale-[1.01] hover:shadow-lg ${
-                    theme === 'dark'
-                      ? 'bg-gray-800/60 hover:bg-gray-800/80'
-                      : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
-                  }`}
-                >
-                  <div className="flex items-center space-x-6">
-                    {/* Tool Image */}
-                    <div className="flex-shrink-0">
-                      {renderToolImage(listing.image || listing.imageUrls?.[0] || '🔧', 'medium')}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {userListings.map((listing) => (
+                  <div
+                    key={listing.id}
+                    onClick={() => handleListingClick(listing)}
+                    className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                      theme === 'dark'
+                        ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                        : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                    }`}>
+
+                    {/* Image */}
+                    <div className="relative">
+                      {renderToolImage(listing.image || listing.imageUrls?.[0] || '🔧', 'card')}
                     </div>
 
-                    {/* Listing Details */}
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-2">{listing.name}</h3>
-                      <p className={`text-sm mb-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {listing.description}
+                    {/* Content */}
+                    <div className="p-3">
+                      <h3 className="text-base font-bold mb-1 text-white truncate">{listing.name}</h3>
+                      <p className="text-lg font-bold text-purple-400 mb-2">
+                        ${formatPrice(listing.price)}<span className="text-xs font-normal text-gray-400">/{listing.period}</span>
                       </p>
-                      
-                      <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-bold text-lg text-purple-500">
-                            ${listing.price.toFixed(2)}
-                          </span>
-                          <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
-                            /{listing.period}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="w-4 h-4 text-gray-500" />
-                          <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {listing.location}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                          <span className="text-sm font-medium">
-                            {listing.rating || 0} ({listing.reviews || 0})
-                          </span>
-                        </div>
-                        
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          theme === 'dark'
-                            ? 'bg-green-900/30 text-green-300'
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {listing.availability || 'Available'}
-                        </span>
+
+                      <div className="flex items-center space-x-1 mb-2">
+                        <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                        <span className="text-xs font-medium">{listing.rating || 0}</span>
+                        <span className="text-xs text-gray-400">({listing.reviews || 0})</span>
+                      </div>
+
+                      <div className="flex items-center space-x-1 mb-2 text-xs text-gray-400">
+                        <MapPin className="w-3 h-3" />
+                        <span className="truncate">{listing.location}</span>
+                      </div>
+
+                      <div className={`text-xs px-2 py-0.5 rounded-lg inline-block ${
+                        theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {listing.category}
                       </div>
                     </div>
-
-                    {/* View Icon */}
-                    <div className="flex-shrink-0">
-                      <Eye className="w-5 h-5 text-gray-400" />
-                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
               <div className={`p-12 rounded-2xl text-center ${
                 theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'

@@ -96,10 +96,36 @@ export class ListingsService {
   async getAllListings(): Promise<FirebaseListing[]> {
     const q = query(this.collection, orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const listings = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     })) as FirebaseListing[];
+
+    // Add rental counts to each listing
+    const listingsWithRentals = await Promise.all(
+      listings.map(async (listing) => {
+        const rentalCount = listing.id ? await this.getRentalCount(listing.id) : 0;
+        return { ...listing, rentalCount };
+      })
+    );
+
+    return listingsWithRentals;
+  }
+
+  async getRentalCount(listingId: string): Promise<number> {
+    try {
+      const rentalsRef = collection(db, 'rentalRequests');
+      const q = query(
+        rentalsRef,
+        where('toolId', '==', listingId),
+        where('status', 'in', ['approved', 'active', 'completed'])
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.size;
+    } catch (error) {
+      console.error('Error getting rental count:', error);
+      return 0;
+    }
   }
 
   async getListingById(id: string): Promise<FirebaseListing | null> {

@@ -132,350 +132,9 @@ export default function BrowsePage() {
     'Other'
   ];
 
-  const mockTools = [
-    {
-      id: 1,
-      name: 'Drill Press',
-      price: 25,
-      period: 'day',
-      location: 'Orchard, Singapore',
-      coordinates: { lat: 1.3048, lng: 103.8318 },
-      rating: 4.8,
-      reviews: 24,
-      image: '🔨',
-      category: 'Power Tools',
-      owner: 'John D.',
-      ownerContact: 'john.doe@email.com'
-    },
-    {
-      id: 2,
-      name: 'Lawn Mower',
-      price: 40,
-      period: 'day',
-      location: 'Tampines, Singapore',
-      coordinates: { lat: 1.3526, lng: 103.9449 },
-      rating: 4.9,
-      reviews: 18,
-      image: '🌱',
-      category: 'Garden Tools',
-      owner: 'Sarah L.',
-      ownerContact: 'sarah.lim@email.com'
-    },
-    {
-      id: 3,
-      name: 'Professional Camera',
-      price: 60,
-      period: 'day',
-      location: 'Jurong, Singapore',
-      coordinates: { lat: 1.3329, lng: 103.7436 },
-      rating: 5.0,
-      reviews: 31,
-      image: '📷',
-      category: 'Electronics',
-      owner: 'Mike R.',
-      ownerContact: 'mike.roberts@email.com'
-    },
-    {
-      id: 4,
-      name: 'Stand Mixer',
-      price: 15,
-      period: 'day',
-      location: 'Woodlands, Singapore',
-      coordinates: { lat: 1.4382, lng: 103.7890 },
-      rating: 4.7,
-      reviews: 12,
-      image: '🍳',
-      category: 'Kitchen Appliances',
-      owner: 'Lisa M.',
-      ownerContact: 'lisa.martin@email.com'
-    },
-    {
-      id: 5,
-      name: 'Tennis Racket Set',
-      price: 20,
-      period: 'day',
-      location: 'Clementi, Singapore',
-      coordinates: { lat: 1.3162, lng: 103.7649 },
-      rating: 4.6,
-      reviews: 8,
-      image: '🎾',
-      category: 'Sports Equipment',
-      owner: 'David K.',
-      ownerContact: 'david.kim@email.com'
-    },
-    {
-      id: 6,
-      name: 'Paint Sprayer',
-      price: 35,
-      period: 'day',
-      location: 'Bishan, Singapore',
-      coordinates: { lat: 1.3519, lng: 103.8486 },
-      rating: 4.8,
-      reviews: 15,
-      image: '🎨',
-      category: 'Home & DIY',
-      owner: 'Emma T.',
-      ownerContact: 'emma.tan@email.com'
-    },
-    {
-      id: 7,
-      name: 'Angle Grinder',
-      price: 30,
-      period: 'day',
-      location: 'Toa Payoh, Singapore',
-      coordinates: { lat: 1.3344, lng: 103.8563 },
-      rating: 4.5,
-      reviews: 19,
-      image: '⚙️',
-      category: 'Power Tools',
-      owner: 'Peter W.',
-      ownerContact: 'peter.wong@email.com'
-    },
-    {
-      id: 8,
-      name: 'Gaming Laptop',
-      price: 45,
-      period: 'day',
-      location: 'Ang Mo Kio, Singapore',
-      coordinates: { lat: 1.3691, lng: 103.8454 },
-      rating: 4.9,
-      reviews: 27,
-      image: '💻',
-      category: 'Electronics',
-      owner: 'Alex C.',
-      ownerContact: 'alex.chen@email.com'
-    },
-    {
-      id: 9,
-      name: 'Garden Hedge Trimmer',
-      price: 25,
-      period: 'day',
-      location: 'Bukit Timah, Singapore',
-      coordinates: { lat: 1.3294, lng: 103.8077 },
-      rating: 4.7,
-      reviews: 14,
-      image: '✂️',
-      category: 'Garden Tools',
-      owner: 'Mary L.',
-      ownerContact: 'mary.lau@email.com'
-    },
-    {
-      id: 10,
-      name: 'Espresso Machine',
-      price: 20,
-      period: 'day',
-      location: 'Marina Bay, Singapore',
-      coordinates: { lat: 1.2845, lng: 103.8607 },
-      rating: 4.8,
-      reviews: 22,
-      image: '☕',
-      category: 'Kitchen Appliances',
-      owner: 'James T.',
-      ownerContact: 'james.tan@email.com'
-    },
-    {
-      id: 11,
-      name: 'Mountain Bike',
-      price: 35,
-      period: 'day',
-      location: 'East Coast, Singapore',
-      coordinates: { lat: 1.3058, lng: 103.9129 },
-      rating: 4.6,
-      reviews: 16,
-      image: '🚴',
-      category: 'Sports Equipment',
-      owner: 'Rachel K.',
-      ownerContact: 'rachel.koh@email.com'
-    },
-    {
-      id: 12,
-      name: 'Projector',
-      price: 40,
-      period: 'day',
-      location: 'Hougang, Singapore',
-      coordinates: { lat: 1.3613, lng: 103.8860 },
-      rating: 4.9,
-      reviews: 33,
-      image: '📽️',
-      category: 'Electronics',
-      owner: 'Daniel S.',
-      ownerContact: 'daniel.sim@email.com'
-    },
-    {
-      id: 13,
-      name: 'Circular Saw',
-      price: 28,
-      period: 'day',
-      location: 'Serangoon, Singapore',
-      coordinates: { lat: 1.3553, lng: 103.8677 },
-      rating: 4.7,
-      reviews: 21,
-      image: '🪚',
-      category: 'Power Tools',
-      owner: 'Kevin L.',
-      ownerContact: 'kevin.lee@email.com'
-    },
-    {
-      id: 14,
-      name: 'Air Fryer',
-      price: 18,
-      period: 'day',
-      location: 'Punggol, Singapore',
-      coordinates: { lat: 1.4043, lng: 103.9021 },
-      rating: 4.5,
-      reviews: 11,
-      image: '🍟',
-      category: 'Kitchen Appliances',
-      owner: 'Sophie N.',
-      ownerContact: 'sophie.ng@email.com'
-    },
-    {
-      id: 15,
-      name: 'Guitar',
-      price: 22,
-      period: 'day',
-      location: 'Novena, Singapore',
-      coordinates: { lat: 1.3208, lng: 103.8434 },
-      rating: 4.8,
-      reviews: 17,
-      image: '🎸',
-      category: 'Musical Instruments',
-      owner: 'Ryan O.',
-      ownerContact: 'ryan.ong@email.com'
-    },
-    {
-      id: 16,
-      name: 'Yoga Mat Set',
-      price: 12,
-      period: 'day',
-      location: 'Bedok, Singapore',
-      coordinates: { lat: 1.3244, lng: 103.9273 },
-      rating: 4.4,
-      reviews: 9,
-      image: '🧘',
-      category: 'Health & Fitness',
-      owner: 'Linda W.',
-      ownerContact: 'linda.wu@email.com'
-    },
-    {
-      id: 17,
-      name: 'Power Washer',
-      price: 32,
-      period: 'day',
-      location: 'Yishun, Singapore',
-      coordinates: { lat: 1.4304, lng: 103.8354 },
-      rating: 4.9,
-      reviews: 25,
-      image: '🚿',
-      category: 'Home & DIY',
-      owner: 'Marcus H.',
-      ownerContact: 'marcus.ho@email.com'
-    },
-    {
-      id: 18,
-      name: 'DSLR Camera Kit',
-      price: 55,
-      period: 'day',
-      location: 'Chinatown, Singapore',
-      coordinates: { lat: 1.2833, lng: 103.8435 },
-      rating: 5.0,
-      reviews: 28,
-      image: '📸',
-      category: 'Photography',
-      owner: 'Grace L.',
-      ownerContact: 'grace.lim@email.com'
-    },
-    // Additional tools for more variety
-    {
-      id: 19,
-      name: 'Electric Scooter',
-      price: 30,
-      period: 'day',
-      location: 'Kallang, Singapore',
-      coordinates: { lat: 1.3116, lng: 103.8636 },
-      rating: 4.6,
-      reviews: 14,
-      image: '🛴',
-      category: 'Sports Equipment',
-      owner: 'Tommy L.',
-      ownerContact: 'tommy.lim@email.com'
-    },
-    {
-      id: 20,
-      name: 'Karaoke Machine',
-      price: 25,
-      period: 'day',
-      location: 'Buona Vista, Singapore',
-      coordinates: { lat: 1.3067, lng: 103.7903 },
-      rating: 4.7,
-      reviews: 19,
-      image: '🎤',
-      category: 'Electronics',
-      owner: 'Jenny C.',
-      ownerContact: 'jenny.choo@email.com'
-    },
-    {
-      id: 21,
-      name: 'Sewing Machine',
-      price: 15,
-      period: 'day',
-      location: 'Tiong Bahru, Singapore',
-      coordinates: { lat: 1.2866, lng: 103.8317 },
-      rating: 4.8,
-      reviews: 12,
-      image: '🧵',
-      category: 'Art & Craft',
-      owner: 'Violet K.',
-      ownerContact: 'violet.koh@email.com'
-    },
-    {
-      id: 22,
-      name: 'Pressure Cooker',
-      price: 12,
-      period: 'day',
-      location: 'Redhill, Singapore',
-      coordinates: { lat: 1.2896, lng: 103.8167 },
-      rating: 4.5,
-      reviews: 8,
-      image: '🍲',
-      category: 'Kitchen Appliances',
-      owner: 'Nancy W.',
-      ownerContact: 'nancy.wong@email.com'
-    },
-    {
-      id: 23,
-      name: 'Electric Wheelchair',
-      price: 20,
-      period: 'day',
-      location: 'Geylang, Singapore',
-      coordinates: { lat: 1.3147, lng: 103.8831 },
-      rating: 4.9,
-      reviews: 15,
-      image: '♿',
-      category: 'Health & Fitness',
-      owner: 'Alan T.',
-      ownerContact: 'alan.tan@email.com'
-    },
-    {
-      id: 24,
-      name: 'Bluetooth Speaker',
-      price: 10,
-      period: 'day',
-      location: 'Little India, Singapore',
-      coordinates: { lat: 1.3067, lng: 103.8518 },
-      rating: 4.4,
-      reviews: 22,
-      image: '🔊',
-      category: 'Electronics',
-      owner: 'Priya S.',
-      ownerContact: 'priya.singh@email.com'
-    }
-  ];
-
-  // Combine mock tools with user listings
+  // Use only real listings from Firebase
   console.log('Firebase listings:', listings);
-  console.log('Mock tools:', mockTools);
-  const allTools = [...mockTools, ...listings];
+  const allTools = [...listings];
   console.log('All tools combined:', allTools);
 
   // Debug coordinates in each listing
@@ -513,18 +172,40 @@ export default function BrowsePage() {
     }
   });
 
-  // Get top rated tools (rating >= 4.7 and at least 15 reviews)
-  const topRatedTools = allTools
-    .filter(tool => tool.rating >= 4.7 && tool.reviews >= 15 && (tool as any).isActive !== false)
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 6);
+  // Get top rated tools - ordered by rating (with minimum reviews for credibility)
+  const topRatedTools = (() => {
+    const activeTools = allTools.filter(tool => (tool as any).isActive !== false);
+    // Sort all tools by rating, then by number of reviews as tiebreaker
+    return activeTools
+      .sort((a, b) => {
+        if (b.rating !== a.rating) {
+          return b.rating - a.rating;
+        }
+        return b.reviews - a.reviews;
+      })
+      .slice(0, 6);
+  })();
 
-  // Get trending tools (based on reviews and rating)
-  const trendingTools = allTools
-    .filter(tool => (tool as any).isActive !== false)
-    .filter(tool => tool.reviews >= 10)
-    .sort((a, b) => (b.rating * b.reviews) - (a.rating * a.reviews))
-    .slice(0, 6);
+  // Get trending tools - based on rental count from completed/active rentals
+  const trendingTools = (() => {
+    const activeTools = allTools.filter(tool => (tool as any).isActive !== false);
+
+    // Calculate rental count for each tool
+    const toolsWithRentals = activeTools.map(tool => {
+      const rentalCount = (tool as any).rentalCount || 0;
+      return { ...tool, rentalCount };
+    });
+
+    // Sort by rental count, then by rating as tiebreaker
+    return toolsWithRentals
+      .sort((a, b) => {
+        if (b.rentalCount !== a.rentalCount) {
+          return b.rentalCount - a.rentalCount;
+        }
+        return b.rating - a.rating;
+      })
+      .slice(0, 6);
+  })();
 
   // Featured categories with tool counts
   const featuredCategories = [

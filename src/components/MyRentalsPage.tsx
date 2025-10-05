@@ -1291,7 +1291,7 @@ export default function MyRentalsPage() {
               <button
                 onClick={closeApprovalModal}
                 disabled={isLoading}
-                className={`flex-none w-3/5 py-2 px-4 rounded-xl border transition-colors ${
+                className={`flex-1 py-2 px-4 rounded-xl border transition-colors ${
                   theme === 'dark'
                     ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -1302,7 +1302,7 @@ export default function MyRentalsPage() {
               <button
                 onClick={confirmApprovalAction}
                 disabled={isLoading}
-                className={`flex-none w-3/5 py-2 px-4 text-white rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center ${
+                className={`flex-1 py-2 px-4 text-white rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center ${
                   approvalAction === 'approve'
                     ? 'bg-green-600 hover:bg-green-700'
                     : 'bg-red-600 hover:bg-red-700'

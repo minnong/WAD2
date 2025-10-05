@@ -8,7 +8,7 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import ReviewsSection from './ReviewsSection';
 import { listingsService } from '../services/firebase';
-import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart, CheckCircle, Calendar } from 'lucide-react';
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +34,31 @@ export default function ListingDetailPage() {
   // Helper function to format price - show decimals only if needed
   const formatPrice = (price: number) => {
     return price % 1 === 0 ? price.toString() : price.toFixed(2);
+  };
+
+  // Helper function to format creation date
+  const formatCreatedDate = (timestamp: any) => {
+    if (!timestamp) return 'Recently';
+    try {
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const now = new Date();
+      const diffInMs = now.getTime() - date.getTime();
+      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+      if (diffInDays === 0) return 'Today';
+      if (diffInDays === 1) return 'Yesterday';
+      if (diffInDays < 7) return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+
+      const weeks = Math.floor(diffInDays / 7);
+      if (diffInDays < 30) return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+
+      const months = Math.floor(diffInDays / 30);
+      if (diffInDays < 365) return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+
+      return date.toLocaleDateString();
+    } catch (error) {
+      return 'Recently';
+    }
   };
 
   const [showRentModal, setShowRentModal] = useState(false);
@@ -74,427 +99,14 @@ export default function ListingDetailPage() {
     );
   };
 
-  // Mock tools data (same as BrowsePage)
-  const mockTools = [
-    {
-      id: 1,
-      name: 'Drill Press',
-      description: 'Professional grade drill press perfect for precision drilling. Features adjustable speed settings and depth control. Ideal for woodworking and metalworking projects.',
-      price: 25,
-      period: 'day',
-      location: 'Orchard, Singapore',
-      coordinates: { lat: 1.3048, lng: 103.8318 },
-      rating: 4.8,
-      reviews: 24,
-      image: '🔨',
-      category: 'Power Tools',
-      owner: 'John D.',
-      ownerContact: 'john.doe@email.com',
-      condition: 'excellent',
-      availability: 'Available weekdays and weekends'
-    },
-    {
-      id: 2,
-      name: 'Lawn Mower',
-      description: 'Gas-powered lawn mower with 21-inch cutting deck. Self-propelled with variable speed control. Perfect for medium to large lawns.',
-      price: 40,
-      period: 'day',
-      location: 'Tampines, Singapore',
-      coordinates: { lat: 1.3526, lng: 103.9449 },
-      rating: 4.9,
-      reviews: 18,
-      image: '🌱',
-      category: 'Garden Tools',
-      owner: 'Sarah L.',
-      ownerContact: 'sarah.lim@email.com',
-      condition: 'good',
-      availability: 'Weekends only'
-    },
-    {
-      id: 3,
-      name: 'Professional Camera',
-      description: 'High-end DSLR camera with multiple lenses. Perfect for professional photography, events, and creative projects.',
-      price: 60,
-      period: 'day',
-      location: 'Jurong, Singapore',
-      coordinates: { lat: 1.3329, lng: 103.7436 },
-      rating: 5.0,
-      reviews: 31,
-      image: '📷',
-      category: 'Electronics',
-      owner: 'Mike R.',
-      ownerContact: 'mike.roberts@email.com',
-      condition: 'excellent',
-      availability: 'Available daily'
-    },
-    {
-      id: 4,
-      name: 'Stand Mixer',
-      description: 'KitchenAid stand mixer with multiple attachments. Perfect for baking, mixing, and food preparation.',
-      price: 15,
-      period: 'day',
-      location: 'Woodlands, Singapore',
-      coordinates: { lat: 1.4382, lng: 103.7890 },
-      rating: 4.7,
-      reviews: 12,
-      image: '🍳',
-      category: 'Kitchen Appliances',
-      owner: 'Lisa M.',
-      ownerContact: 'lisa.martin@email.com',
-      condition: 'good',
-      availability: 'Weekends preferred'
-    },
-    {
-      id: 5,
-      name: 'Tennis Racket Set',
-      description: 'Professional tennis racket set with 2 rackets and balls. Great for recreational and competitive play.',
-      price: 20,
-      period: 'day',
-      location: 'Clementi, Singapore',
-      coordinates: { lat: 1.3162, lng: 103.7649 },
-      rating: 4.6,
-      reviews: 8,
-      image: '🎾',
-      category: 'Sports Equipment',
-      owner: 'David K.',
-      ownerContact: 'david.kim@email.com',
-      condition: 'good',
-      availability: 'Available weekdays'
-    },
-    {
-      id: 6,
-      name: 'Paint Sprayer',
-      description: 'Electric paint sprayer for interior and exterior painting. Includes multiple nozzles and paint cups.',
-      price: 35,
-      period: 'day',
-      location: 'Bishan, Singapore',
-      coordinates: { lat: 1.3519, lng: 103.8486 },
-      rating: 4.8,
-      reviews: 15,
-      image: '🎨',
-      category: 'Home & DIY',
-      owner: 'Emma T.',
-      ownerContact: 'emma.tan@email.com',
-      condition: 'excellent',
-      availability: 'Available weekends'
-    },
-    {
-      id: 7,
-      name: 'Angle Grinder',
-      description: 'Heavy-duty angle grinder for cutting and grinding metal, concrete, and masonry.',
-      price: 30,
-      period: 'day',
-      location: 'Toa Payoh, Singapore',
-      coordinates: { lat: 1.3344, lng: 103.8563 },
-      rating: 4.5,
-      reviews: 19,
-      image: '⚙️',
-      category: 'Power Tools',
-      owner: 'Peter W.',
-      ownerContact: 'peter.wong@email.com',
-      condition: 'good',
-      availability: 'Available daily'
-    },
-    {
-      id: 8,
-      name: 'Gaming Laptop',
-      description: 'High-performance gaming laptop with RTX graphics. Perfect for gaming, streaming, and creative work.',
-      price: 45,
-      period: 'day',
-      location: 'Ang Mo Kio, Singapore',
-      coordinates: { lat: 1.3691, lng: 103.8454 },
-      rating: 4.9,
-      reviews: 27,
-      image: '💻',
-      category: 'Electronics',
-      owner: 'Alex C.',
-      ownerContact: 'alex.chen@email.com',
-      condition: 'excellent',
-      availability: 'Available daily'
-    },
-    {
-      id: 9,
-      name: 'Garden Hedge Trimmer',
-      description: 'Electric hedge trimmer for maintaining garden hedges and shrubs. Lightweight and easy to use.',
-      price: 25,
-      period: 'day',
-      location: 'Bukit Timah, Singapore',
-      coordinates: { lat: 1.3294, lng: 103.8077 },
-      rating: 4.7,
-      reviews: 14,
-      image: '✂️',
-      category: 'Garden Tools',
-      owner: 'Mary L.',
-      ownerContact: 'mary.lau@email.com',
-      condition: 'good',
-      availability: 'Weekends only'
-    },
-    {
-      id: 10,
-      name: 'Espresso Machine',
-      description: 'Professional espresso machine with milk frother. Perfect for coffee enthusiasts and events.',
-      price: 20,
-      period: 'day',
-      location: 'Marina Bay, Singapore',
-      coordinates: { lat: 1.2845, lng: 103.8607 },
-      rating: 4.8,
-      reviews: 22,
-      image: '☕',
-      category: 'Kitchen Appliances',
-      owner: 'James T.',
-      ownerContact: 'james.tan@email.com',
-      condition: 'excellent',
-      availability: 'Available daily'
-    },
-    {
-      id: 11,
-      name: 'Mountain Bike',
-      description: 'High-quality mountain bike suitable for trails and city riding. Includes helmet and safety gear.',
-      price: 35,
-      period: 'day',
-      location: 'East Coast, Singapore',
-      coordinates: { lat: 1.3058, lng: 103.9129 },
-      rating: 4.6,
-      reviews: 16,
-      image: '🚴',
-      category: 'Sports Equipment',
-      owner: 'Rachel K.',
-      ownerContact: 'rachel.koh@email.com',
-      condition: 'good',
-      availability: 'Available weekends'
-    },
-    {
-      id: 12,
-      name: 'Projector',
-      description: 'Full HD projector perfect for presentations, movies, and events. Includes cables and screen.',
-      price: 40,
-      period: 'day',
-      location: 'Hougang, Singapore',
-      coordinates: { lat: 1.3613, lng: 103.8860 },
-      rating: 4.9,
-      reviews: 33,
-      image: '📽️',
-      category: 'Electronics',
-      owner: 'Daniel S.',
-      ownerContact: 'daniel.sim@email.com',
-      condition: 'excellent',
-      availability: 'Available daily'
-    },
-    {
-      id: 13,
-      name: 'Circular Saw',
-      description: 'Professional circular saw for precise wood cutting. Safety features and dust collection included.',
-      price: 28,
-      period: 'day',
-      location: 'Serangoon, Singapore',
-      coordinates: { lat: 1.3553, lng: 103.8677 },
-      rating: 4.7,
-      reviews: 21,
-      image: '🪚',
-      category: 'Power Tools',
-      owner: 'Kevin L.',
-      ownerContact: 'kevin.lee@email.com',
-      condition: 'good',
-      availability: 'Weekdays preferred'
-    },
-    {
-      id: 14,
-      name: 'Air Fryer',
-      description: 'Large capacity air fryer perfect for healthy cooking. Digital controls and multiple presets.',
-      price: 18,
-      period: 'day',
-      location: 'Punggol, Singapore',
-      coordinates: { lat: 1.4043, lng: 103.9021 },
-      rating: 4.5,
-      reviews: 11,
-      image: '🍟',
-      category: 'Kitchen Appliances',
-      owner: 'Sophie N.',
-      ownerContact: 'sophie.ng@email.com',
-      condition: 'excellent',
-      availability: 'Available daily'
-    },
-    {
-      id: 15,
-      name: 'Guitar',
-      description: 'Acoustic guitar perfect for learning or performing. Includes picks, strap, and carrying case.',
-      price: 22,
-      period: 'day',
-      location: 'Novena, Singapore',
-      coordinates: { lat: 1.3208, lng: 103.8434 },
-      rating: 4.8,
-      reviews: 17,
-      image: '🎸',
-      category: 'Musical Instruments',
-      owner: 'Ryan O.',
-      ownerContact: 'ryan.ong@email.com',
-      condition: 'excellent',
-      availability: 'Available weekends'
-    },
-    {
-      id: 16,
-      name: 'Yoga Mat Set',
-      description: 'Premium yoga mat set with blocks, straps, and carrying bag. Perfect for home practice.',
-      price: 12,
-      period: 'day',
-      location: 'Bedok, Singapore',
-      coordinates: { lat: 1.3244, lng: 103.9273 },
-      rating: 4.4,
-      reviews: 9,
-      image: '🧘',
-      category: 'Health & Fitness',
-      owner: 'Linda W.',
-      ownerContact: 'linda.wu@email.com',
-      condition: 'good',
-      availability: 'Available daily'
-    },
-    {
-      id: 17,
-      name: 'Power Washer',
-      description: 'High-pressure washer for cleaning driveways, cars, and outdoor surfaces. Multiple nozzles included.',
-      price: 32,
-      period: 'day',
-      location: 'Yishun, Singapore',
-      coordinates: { lat: 1.4304, lng: 103.8354 },
-      rating: 4.9,
-      reviews: 25,
-      image: '🚿',
-      category: 'Home & DIY',
-      owner: 'Marcus H.',
-      ownerContact: 'marcus.ho@email.com',
-      condition: 'excellent',
-      availability: 'Available weekends'
-    },
-    {
-      id: 18,
-      name: 'DSLR Camera Kit',
-      description: 'Complete DSLR camera kit with multiple lenses, tripod, and lighting equipment. Professional quality.',
-      price: 55,
-      period: 'day',
-      location: 'Chinatown, Singapore',
-      coordinates: { lat: 1.2833, lng: 103.8435 },
-      rating: 5.0,
-      reviews: 28,
-      image: '📸',
-      category: 'Photography',
-      owner: 'Grace L.',
-      ownerContact: 'grace.lim@email.com',
-      condition: 'excellent',
-      availability: 'Available daily'
-    },
-    {
-      id: 19,
-      name: 'Electric Scooter',
-      description: 'Foldable electric scooter with long battery life. Perfect for short commutes and recreation.',
-      price: 30,
-      period: 'day',
-      location: 'Kallang, Singapore',
-      coordinates: { lat: 1.3116, lng: 103.8636 },
-      rating: 4.6,
-      reviews: 14,
-      image: '🛴',
-      category: 'Sports Equipment',
-      owner: 'Tommy L.',
-      ownerContact: 'tommy.lim@email.com',
-      condition: 'good',
-      availability: 'Available daily'
-    },
-    {
-      id: 20,
-      name: 'Karaoke Machine',
-      description: 'Portable karaoke machine with wireless microphones and LED lights. Great for parties.',
-      price: 25,
-      period: 'day',
-      location: 'Buona Vista, Singapore',
-      coordinates: { lat: 1.3067, lng: 103.7903 },
-      rating: 4.7,
-      reviews: 19,
-      image: '🎤',
-      category: 'Electronics',
-      owner: 'Jenny C.',
-      ownerContact: 'jenny.choo@email.com',
-      condition: 'excellent',
-      availability: 'Available weekends'
-    },
-    {
-      id: 21,
-      name: 'Sewing Machine',
-      description: 'Computerized sewing machine with multiple stitches and automatic features. Perfect for crafting.',
-      price: 15,
-      period: 'day',
-      location: 'Tiong Bahru, Singapore',
-      coordinates: { lat: 1.2866, lng: 103.8317 },
-      rating: 4.8,
-      reviews: 12,
-      image: '🧵',
-      category: 'Art & Craft',
-      owner: 'Violet K.',
-      ownerContact: 'violet.koh@email.com',
-      condition: 'excellent',
-      availability: 'Available daily'
-    },
-    {
-      id: 22,
-      name: 'Pressure Cooker',
-      description: 'Large capacity pressure cooker for fast cooking. Multiple safety features and cooking presets.',
-      price: 12,
-      period: 'day',
-      location: 'Redhill, Singapore',
-      coordinates: { lat: 1.2896, lng: 103.8167 },
-      rating: 4.5,
-      reviews: 8,
-      image: '🍲',
-      category: 'Kitchen Appliances',
-      owner: 'Nancy W.',
-      ownerContact: 'nancy.wong@email.com',
-      condition: 'good',
-      availability: 'Weekends only'
-    },
-    {
-      id: 23,
-      name: 'Electric Wheelchair',
-      description: 'Comfortable electric wheelchair with adjustable seat and long battery life. Easy to operate.',
-      price: 20,
-      period: 'day',
-      location: 'Geylang, Singapore',
-      coordinates: { lat: 1.3147, lng: 103.8831 },
-      rating: 4.9,
-      reviews: 15,
-      image: '♿',
-      category: 'Health & Fitness',
-      owner: 'Alan T.',
-      ownerContact: 'alan.tan@email.com',
-      condition: 'excellent',
-      availability: 'Available daily'
-    },
-    {
-      id: 24,
-      name: 'Bluetooth Speaker',
-      description: 'Portable bluetooth speaker with excellent sound quality. Waterproof and long battery life.',
-      price: 10,
-      period: 'day',
-      location: 'Little India, Singapore',
-      coordinates: { lat: 1.3067, lng: 103.8518 },
-      rating: 4.4,
-      reviews: 22,
-      image: '🔊',
-      category: 'Electronics',
-      owner: 'Priya S.',
-      ownerContact: 'priya.singh@email.com',
-      condition: 'good',
-      availability: 'Available daily'
-    }
-  ];
-
-  // Combine mock tools with user listings
-  const allTools = [...mockTools, ...listings];
+  // Use only real listings from Firebase
   // Handle both string and number IDs
-  const tool = allTools.find(t =>
+  const tool = listings.find(t =>
     t.id === id || t.id === parseInt(id || '0') || String(t.id) === id
   );
 
   console.log('ListingDetailPage - ID:', id);
-  console.log('ListingDetailPage - All tools:', allTools.map(t => ({ id: t.id, name: t.name })));
+  console.log('ListingDetailPage - All tools:', listings.map(t => ({ id: t.id, name: t.name })));
   console.log('ListingDetailPage - Found tool:', tool);
 
   const loadListingData = async () => {
@@ -764,6 +376,12 @@ export default function ListingDetailPage() {
                 <div className="flex items-center space-x-2">
                   <Clock className="w-5 h-5 text-gray-400" />
                   <span>{tool.availability || 'Contact owner for availability'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-gray-400" />
+                  <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>
+                    Listed {formatCreatedDate((tool as any).createdAt)}
+                  </span>
                 </div>
               </div>
 

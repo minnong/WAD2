@@ -41,33 +41,6 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>('listings');
 
-  // Mock user data - in a real app, this would come from a user service
-  const mockUsers: { [key: string]: any } = {
-    'john.doe@email.com': { name: 'John D.', joinDate: '2023-01-15', bio: 'DIY enthusiast and tool collector. Happy to share my tools with the community!' },
-    'sarah.lim@email.com': { name: 'Sarah L.', joinDate: '2023-03-20', bio: 'Gardening lover with a green thumb. Let me help you grow your garden!' },
-    'mike.roberts@email.com': { name: 'Mike R.', joinDate: '2023-02-10', bio: 'Photography and tech enthusiast. Always upgrading my gear!' },
-    'lisa.martin@email.com': { name: 'Lisa M.', joinDate: '2023-04-05', bio: 'Home chef who loves trying new kitchen gadgets.' },
-    'david.kim@email.com': { name: 'David K.', joinDate: '2023-01-30', bio: 'Sports and fitness enthusiast. Staying active is my passion!' },
-    'emma.tan@email.com': { name: 'Emma T.', joinDate: '2023-05-12', bio: 'Interior designer and DIY expert. Making homes beautiful!' },
-    'peter.wong@email.com': { name: 'Peter W.', joinDate: '2023-02-28', bio: 'Professional contractor with quality tools to share.' },
-    'alex.chen@email.com': { name: 'Alex C.', joinDate: '2023-03-15', bio: 'Tech professional and gadget collector.' },
-    'mary.lau@email.com': { name: 'Mary L.', joinDate: '2023-04-20', bio: 'Weekend gardener with a passion for organic growing.' },
-    'james.tan@email.com': { name: 'James T.', joinDate: '2023-01-08', bio: 'Coffee connoisseur and kitchen appliance enthusiast.' },
-    'rachel.koh@email.com': { name: 'Rachel K.', joinDate: '2023-02-14', bio: 'Weekend warrior and sports enthusiast. Love cycling and staying active!' },
-    'daniel.sim@email.com': { name: 'Daniel S.', joinDate: '2023-03-08', bio: 'Film and photography professional. Capturing life\'s beautiful moments!' },
-    'kevin.lee@email.com': { name: 'Kevin L.', joinDate: '2023-01-22', bio: 'Woodworker and craftsman. Creating beautiful things with my hands!' },
-    'sophie.ng@email.com': { name: 'Sophie N.', joinDate: '2023-04-18', bio: 'Culinary enthusiast and food blogger. Always trying new recipes!' },
-    'ryan.ong@email.com': { name: 'Ryan O.', joinDate: '2023-03-25', bio: 'Musician and audio engineer. Making music and sharing the joy!' },
-    'linda.wu@email.com': { name: 'Linda W.', joinDate: '2023-02-03', bio: 'Wellness coach and fitness instructor. Helping others live healthier lives!' },
-    'marcus.ho@email.com': { name: 'Marcus H.', joinDate: '2023-05-01', bio: 'Home renovation expert and interior designer. Transforming spaces!' },
-    'grace.lim@email.com': { name: 'Grace L.', joinDate: '2023-01-28', bio: 'Professional photographer specializing in portraits and events.' },
-    'tommy.lim@email.com': { name: 'Tommy L.', joinDate: '2023-04-12', bio: 'Adventure seeker and outdoor enthusiast. Always ready for the next adventure!' },
-    'jenny.choo@email.com': { name: 'Jenny C.', joinDate: '2023-03-30', bio: 'Content creator and tech reviewer. Sharing the latest in technology!' },
-    'violet.koh@email.com': { name: 'Violet K.', joinDate: '2023-05-15', bio: 'Artist and crafter. Creating beautiful handmade pieces with love!' },
-    'nancy.wong@email.com': { name: 'Nancy W.', joinDate: '2023-02-20', bio: 'Home baker and cooking enthusiast. Spreading joy through delicious food!' },
-    'alan.tan@email.com': { name: 'Alan T.', joinDate: '2023-04-08', bio: 'Physical therapist and health advocate. Helping people move better and feel great!' },
-    'priya.singh@email.com': { name: 'Priya S.', joinDate: '2023-03-12', bio: 'Music lover and event organizer. Bringing people together through great experiences!' }
-  };
 
   // Decode the email parameter in case it's URL encoded
   const decodedEmail = email ? decodeURIComponent(email) : null;
@@ -126,35 +99,19 @@ export default function UserProfilePage() {
           joinDate: 'Recently'
         });
         
-        // First try to find user in mock data
-        let user = mockUsers[decodedEmail];
-        
-        // If not found in mock data, try to load from Firebase
-        if (!user) {
-          user = await loadUserFromFirebase(decodedEmail);
-        }
-        
+        // Load user from Firebase
+        const user = await loadUserFromFirebase(decodedEmail);
+
         setCurrentUser(user);
-        
+
         // Load user's listings from Firebase
         const firebaseListings = await listingsService.getUserListings(decodedEmail);
-        
-        // Also get mock listings for this user (from context)
-        const mockListings = listings.filter(listing => 
-          listing.ownerContact === decodedEmail
-        );
-        
-        // Combine and deduplicate listings
-        const allListings = [...firebaseListings, ...mockListings];
-        const uniqueListings = allListings.filter((listing, index, self) => 
-          index === self.findIndex(l => l.id === listing.id)
-        );
-        
-        setUserListings(uniqueListings);
-        
+
+        setUserListings(firebaseListings);
+
         // Load reviews for user's listings
         const allReviews: UserReview[] = [];
-        for (const listing of uniqueListings) {
+        for (const listing of firebaseListings) {
           try {
             const listingId = listing.id?.toString() || '';
             const listingReviews = await reviewsService.getListingReviews(listingId);
@@ -188,7 +145,7 @@ export default function UserProfilePage() {
           : 0;
         
         setUserStats({
-          totalListings: uniqueListings.length,
+          totalListings: firebaseListings.length,
           averageRating,
           totalReviews,
           joinDate: user?.joinDate || 'Recently'

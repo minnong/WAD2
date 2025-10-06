@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
-import { Search, Plus, Heart, ShoppingBag, Star, TrendingUp, Users, Award, ChevronLeft, ChevronRight, Hammer, Leaf, Smartphone, ChefHat, Dumbbell, Camera, Music, Baby, Gamepad2, Palette, Briefcase, Wrench, Clock, CheckCircle, XCircle, AlertCircle, DollarSign } from 'lucide-react';
+import { Search, Plus, Heart, ShoppingBag, Star, TrendingUp, Users, Award, ChevronLeft, ChevronRight, Hammer, Leaf, Smartphone, ChefHat, Dumbbell, Camera, Music, Baby, Gamepad2, Palette, Briefcase, Wrench, Clock, CheckCircle, XCircle, AlertCircle, DollarSign, Inbox } from 'lucide-react';
 
 import toolLibrary from '../assets/tool_library.jpg';
 import rentImage from '../assets/rent.jpg';
@@ -22,7 +22,39 @@ export default function HomePage() {
 
   // Get user stats
   const userRentals = currentUser ? getUserRentals() : [];
-  const totalEarnings = userRentals.filter(r => r.status === 'completed').reduce((sum, r) => sum + r.totalCost, 0);
+  const activeRentals = userRentalRequests.filter(r => r.status === 'approved' || r.status === 'active');
+  const completedRentals = userRentalRequests.filter(r => r.status === 'completed');
+  const pendingRequests = userRentalRequests.filter(r => r.status === 'pending');
+
+  // Owner stats
+  const incomingRequests = receivedRentalRequests.filter(r => r.status === 'pending');
+
+  // Only count earnings for rentals marked as completed
+  const completedBookings = receivedRentalRequests.filter(r => r.status === 'completed');
+
+  const totalEarnings = completedBookings.reduce((sum, r) => sum + r.totalCost, 0);
+  const totalSpent = completedRentals.reduce((sum, r) => sum + r.totalCost, 0);
+
+  // Calculate earnings by category - get category from listing
+  const earningsByCategory = completedBookings.reduce((acc: { [key: string]: number }, booking) => {
+    // Find the listing to get its category
+    const listing = userListings.find(l => l.id === booking.toolId);
+    const category = listing?.category || 'Other';
+    acc[category] = (acc[category] || 0) + booking.totalCost;
+    return acc;
+  }, {});
+
+  // Get all categories sorted by earnings
+  const sortedCategories = Object.entries(earningsByCategory)
+    .sort(([, a], [, b]) => (b as number) - (a as number));
+
+  // Get top 3 categories
+  const topCategories = sortedCategories.slice(0, 3);
+
+  // Calculate "Other" as sum of remaining categories (4th onwards)
+  const otherEarnings = sortedCategories.length > 3
+    ? sortedCategories.slice(3).reduce((sum, [, amount]) => sum + (amount as number), 0)
+    : 0;
 
   // Carousel state and data
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -217,75 +249,183 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* User Stats with Glowing Purple Shadow */}
+        {/* User Stats Dashboard with Glowing Purple Shadow */}
         {userRentals.length > 0 && (
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold mb-8 px-2">Your ShareLah Stats</h2>
-            <div className={`rounded-2xl p-6 shadow-2xl ${
-              theme === 'dark'
-                ? 'bg-gray-900/90 backdrop-blur-sm border border-purple-500/20'
-                : 'bg-white/90 backdrop-blur-sm border border-purple-300/30'
-            }`}
-            style={{
-              boxShadow: `
-                0 0 30px rgba(147, 51, 234, 0.3),
-                0 0 60px rgba(147, 51, 234, 0.2),
-                0 0 90px rgba(147, 51, 234, 0.1),
-                0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                0 10px 10px -5px rgba(0, 0, 0, 0.04)
-              `
-            }}>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div className="flex flex-col items-center text-center p-4">
-                    <TrendingUp className="w-12 h-12 mb-4" style={{
-                      fill: 'none',
-                      stroke: 'url(#purpleBlueGradient)',
-                      strokeWidth: '2'
-                    }} />
-                    <p className="text-2xl font-bold mb-1">{listings.length}</p>
-                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Items Listed</p>
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold mb-16 px-2">Your ShareLah Dashboard</h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              {/* Left Column - Stats */}
+              <div className={`lg:col-span-2 rounded-xl p-4 shadow-2xl ${
+                theme === 'dark'
+                  ? 'bg-gray-900/90 backdrop-blur-sm border border-purple-500/20'
+                  : 'bg-white/90 backdrop-blur-sm border border-purple-300/30'
+              }`}
+              style={{
+                boxShadow: `
+                  0 0 30px rgba(147, 51, 234, 0.3),
+                  0 0 60px rgba(147, 51, 234, 0.2),
+                  0 0 90px rgba(147, 51, 234, 0.1),
+                  0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                  0 10px 10px -5px rgba(0, 0, 0, 0.04)
+                `
+              }}>
+                <h3 className="text-xs font-bold mb-2 flex items-center text-purple-600">
+                  <Users className="w-3 h-3 mr-1" />
+                  Rental Activity
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                  <div className="flex flex-col items-center text-center p-2 rounded-lg bg-gradient-to-br from-blue-500/10 to-cyan-500/10">
+                    <Clock className="w-6 h-6 mb-1 text-blue-500" />
+                    <p className="text-xl font-bold">{activeRentals.length}</p>
+                    <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Active</p>
                   </div>
 
-                  <div className="flex flex-col items-center text-center p-4">
-                    <ShoppingBag className="w-12 h-12 mb-4" style={{
-                      fill: 'none',
-                      stroke: 'url(#purpleBlueGradient)',
-                      strokeWidth: '2'
-                    }} />
-                    <p className="text-2xl font-bold mb-1">{userRentals.length}</p>
-                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Rentals Made</p>
+                  <div className="flex flex-col items-center text-center p-2 rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/10">
+                    <CheckCircle className="w-6 h-6 mb-1 text-green-500" />
+                    <p className="text-xl font-bold">{completedRentals.length}</p>
+                    <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Completed</p>
                   </div>
 
-                  <div className="flex flex-col items-center text-center p-4">
-                    <Award className="w-12 h-12 mb-4" style={{
-                      fill: 'none',
-                      stroke: 'url(#purpleBlueGradient)',
-                      strokeWidth: '2'
-                    }} />
-                    <p className="text-2xl font-bold mb-1">${totalEarnings}</p>
-                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Earned</p>
+                  <div className="flex flex-col items-center text-center p-2 rounded-lg bg-gradient-to-br from-yellow-500/10 to-orange-500/10">
+                    <AlertCircle className="w-6 h-6 mb-1 text-yellow-500" />
+                    <p className="text-xl font-bold">{pendingRequests.length}</p>
+                    <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Pending</p>
                   </div>
 
-                  <div className="flex flex-col items-center text-center p-4">
-                    <Star className="w-12 h-12 mb-4" style={{
-                      fill: 'none',
-                      stroke: 'url(#purpleBlueGradient)',
-                      strokeWidth: '2'
-                    }} />
-                    <p className="text-2xl font-bold mb-1">4.8</p>
-                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Avg Rating</p>
+                  <div className="flex flex-col items-center text-center p-2 rounded-lg bg-gradient-to-br from-purple-500/10 to-pink-500/10">
+                    <DollarSign className="w-6 h-6 mb-1 text-purple-500" />
+                    <p className="text-xl font-bold">${totalSpent.toFixed(0)}</p>
+                    <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Spent</p>
                   </div>
                 </div>
 
-                {/* Single SVG gradient definition for all icons */}
-                <svg width="0" height="0" className="absolute">
-                  <defs>
-                    <linearGradient id="purpleBlueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#8b5cf6" />
-                      <stop offset="100%" stopColor="#3b82f6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <h3 className="text-xs font-bold mb-2 flex items-center text-purple-600">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    Listing Performance
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div className="flex flex-col items-center text-center p-2 rounded-lg bg-gradient-to-br from-indigo-500/10 to-blue-500/10">
+                      <TrendingUp className="w-6 h-6 mb-1 text-indigo-500" />
+                      <p className="text-xl font-bold">{userListings.length}</p>
+                      <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Listings</p>
+                    </div>
+
+                    <div className="flex flex-col items-center text-center p-2 rounded-lg bg-gradient-to-br from-orange-500/10 to-red-500/10">
+                      <Inbox className="w-6 h-6 mb-1 text-orange-500" />
+                      <p className="text-xl font-bold">{incomingRequests.length}</p>
+                      <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Requests</p>
+                    </div>
+
+                    <div className="flex flex-col items-center text-center p-2 rounded-lg bg-gradient-to-br from-green-500/10 to-teal-500/10">
+                      <CheckCircle className="w-6 h-6 mb-1 text-green-500" />
+                      <p className="text-xl font-bold">{completedBookings.length}</p>
+                      <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Done</p>
+                    </div>
+
+                    <div className="flex flex-col items-center text-center p-2 rounded-lg bg-gradient-to-br from-yellow-500/10 to-amber-500/10">
+                      <Award className="w-6 h-6 mb-1 text-yellow-500" />
+                      <p className="text-xl font-bold">${totalEarnings.toFixed(0)}</p>
+                      <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Earned</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Earnings by Category */}
+              <div className={`rounded-xl p-4 shadow-2xl ${
+                theme === 'dark'
+                  ? 'bg-gray-900/90 backdrop-blur-sm border border-purple-500/20'
+                  : 'bg-white/90 backdrop-blur-sm border border-purple-300/30'
+              }`}
+              style={{
+                boxShadow: `
+                  0 0 30px rgba(147, 51, 234, 0.3),
+                  0 0 60px rgba(147, 51, 234, 0.2),
+                  0 0 90px rgba(147, 51, 234, 0.1),
+                  0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                  0 10px 10px -5px rgba(0, 0, 0, 0.04)
+                `
+              }}>
+                <h3 className="text-xs font-bold mb-2 text-center text-purple-600">Earnings by Category</h3>
+
+                {totalEarnings > 0 ? (
+                  <>
+                    {/* SVG Pie Chart */}
+                    <div className="flex items-center justify-center mb-2">
+                      <svg width="120" height="120" viewBox="0 0 200 200" className="transform -rotate-90">
+                        {/* Background circle */}
+                        <circle cx="100" cy="100" r="80" fill="none" stroke={theme === 'dark' ? '#1f2937' : '#f3f4f6'} strokeWidth="40" />
+
+                        {/* Category segments */}
+                        {(() => {
+                          const colors = ['#3b82f6', '#10b981', '#eab308', '#8b5cf6'];
+                          let currentOffset = 0;
+
+                          return [...topCategories, ['Other', otherEarnings] as [string, number]]
+                            .filter(([, amount]) => (amount as number) > 0)
+                            .map(([category, amount], index) => {
+                              const numAmount = amount as number;
+                              const percentage = (numAmount / totalEarnings) * 100;
+                              const dashArray = (percentage / 100) * 502.65;
+                              const segment = (
+                                <circle
+                                  key={category as string}
+                                  cx="100"
+                                  cy="100"
+                                  r="80"
+                                  fill="none"
+                                  stroke={colors[index % colors.length]}
+                                  strokeWidth="40"
+                                  strokeDasharray={`${dashArray} 502.65`}
+                                  strokeDashoffset={`-${currentOffset}`}
+                                />
+                              );
+                              currentOffset += dashArray;
+                              return segment;
+                            });
+                        })()}
+                      </svg>
+                    </div>
+
+                    {/* Legend */}
+                    <div className="space-y-1.5">
+                      {(() => {
+                        const colors = [
+                          { bg: 'bg-blue-500/10', dot: 'bg-blue-500' },
+                          { bg: 'bg-green-500/10', dot: 'bg-green-500' },
+                          { bg: 'bg-yellow-500/10', dot: 'bg-yellow-500' },
+                          { bg: 'bg-purple-500/10', dot: 'bg-purple-500' }
+                        ];
+
+                        return [...topCategories, ['Other', otherEarnings] as [string, number]]
+                          .filter(([, amount]) => (amount as number) > 0)
+                          .map(([category, amount], index) => (
+                            <div key={category as string} className={`flex items-center justify-between p-1.5 rounded-lg ${colors[index % colors.length].bg}`}>
+                              <div className="flex items-center space-x-2 flex-1 min-w-0">
+                                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${colors[index % colors.length].dot}`}></div>
+                                <span className="text-[10px] font-medium break-words">{category}</span>
+                              </div>
+                              <p className="text-xs font-bold ml-2 flex-shrink-0">${(amount as number).toFixed(0)}</p>
+                            </div>
+                          ));
+                      })()}
+                    </div>
+
+                    {/* Total */}
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center">
+                      <p className={`text-[9px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Earnings</p>
+                      <p className="text-xl font-bold mt-0.5 text-green-500">${totalEarnings.toFixed(2)}</p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <Award className={`w-12 h-12 mx-auto mb-2 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>No earnings yet</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

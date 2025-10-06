@@ -6,13 +6,13 @@ import { useRentals } from '../contexts/RentalsContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
-import { Edit3, Star, Award, Clock, MapPin, Mail, Phone, User, Settings, Shield, ExternalLink, Trash2, XCircle, CheckCircle } from 'lucide-react';
+import { Edit3, Star, Award, Clock, MapPin, Mail, Phone, User, Settings, Shield, ExternalLink, Trash2, XCircle, CheckCircle, Package, ShoppingBag } from 'lucide-react';
 
 export default function ProfilePage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
   const { listings, deleteListing, delistListing, relistListing } = useListings();
-  const { getUserRentals } = useRentals();
+  const { getUserRentals, userRentalRequests, receivedRentalRequests } = useRentals();
   const navigate = useNavigate();
   const { tab } = useParams<{ tab?: string }>();
 
@@ -698,76 +698,174 @@ export default function ProfilePage() {
           )}
 
           {activeTab === 'rentals' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold">Rental History</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {userRentals.map((rental, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleViewListing(rental.toolId)}
-                    className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
-                      theme === 'dark'
-                        ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
-                        : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
-                    }`}>
-
-                    {/* Status Badge */}
-                    <div className="absolute top-3 right-3 z-10">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${
-                        rental.status === 'completed' ? 'bg-green-500/90 text-white' :
-                        rental.status === 'pending' ? 'bg-yellow-500/90 text-white' :
-                        rental.status === 'active' ? 'bg-purple-500/90 text-white' :
-                        'bg-gray-500/90 text-white'
+            <div className="space-y-8">
+              {/* Renting History (As Customer) */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-purple-400" />
+                  Renting History (As Customer)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {userRentalRequests.map((rental, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleViewListing(rental.toolId)}
+                      className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                        theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
                       }`}>
-                        {rental.status === 'completed' ? <CheckCircle className="w-3 h-3" /> :
-                         rental.status === 'pending' ? <Clock className="w-3 h-3" /> :
-                         <Clock className="w-3 h-3" />}
-                        <span className="capitalize">{rental.status}</span>
-                      </span>
-                    </div>
 
-                    {/* Image */}
-                    <div className="relative">
-                      {renderToolImage(rental.toolImage, "medium")}
-                    </div>
+                      {/* Status Badge */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${
+                          rental.status === 'completed' ? 'bg-green-500/90 text-white' :
+                          rental.status === 'approved' ? 'bg-blue-500/90 text-white' :
+                          rental.status === 'pending' ? 'bg-yellow-500/90 text-white' :
+                          rental.status === 'active' ? 'bg-purple-500/90 text-white' :
+                          rental.status === 'declined' ? 'bg-red-500/90 text-white' :
+                          'bg-gray-500/90 text-white'
+                        }`}>
+                          {rental.status === 'completed' ? <CheckCircle className="w-3 h-3" /> :
+                           rental.status === 'pending' ? <Clock className="w-3 h-3" /> :
+                           rental.status === 'declined' ? <XCircle className="w-3 h-3" /> :
+                           <Clock className="w-3 h-3" />}
+                          <span className="capitalize">{rental.status}</span>
+                        </span>
+                      </div>
 
-                    {/* Content */}
-                    <div className="p-3">
-                      <h3 className="text-base font-bold mb-1 text-white truncate">{rental.toolName}</h3>
-                      <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                        from <span className="font-medium">{rental.ownerName}</span>
-                      </p>
+                      {/* Image */}
+                      <div className="relative">
+                        {renderToolImage(rental.toolImage, "medium")}
+                      </div>
 
-                      <div className="space-y-1.5 mb-2">
-                        <div className="flex items-center gap-1.5 text-xs">
-                          <Clock className="w-3 h-3 text-gray-400" />
-                          <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} truncate`}>
-                            {rental.startDate} - {rental.endDate}
-                          </span>
+                      {/* Content */}
+                      <div className="p-3">
+                        <h3 className="text-base font-bold mb-1 text-white truncate">{rental.toolName}</h3>
+                        <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          from <span className="font-medium">{rental.ownerName}</span>
+                        </p>
+
+                        <div className="space-y-1.5 mb-2">
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <Clock className="w-3 h-3 text-gray-400" />
+                            <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                              {rental.startDate} - {rental.endDate}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-gray-400">Total:</span>
+                            <span className="text-lg font-bold text-purple-400">
+                              ${formatPrice(rental.totalCost)}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-gray-400">Total:</span>
-                          <span className="text-lg font-bold text-purple-400">
-                            ${formatPrice(rental.totalCost)}
-                          </span>
+                        {/* Category Badge */}
+                        <div className={`text-xs px-2 py-0.5 rounded-lg inline-block ${
+                          theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {rental.category || 'Tool'}
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-                {userRentals.length === 0 && (
-                  <div className="col-span-full text-center py-8">
-                    <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-                      No rental activity yet. Start by browsing available tools!
-                    </p>
-                    <button
-                      onClick={() => navigate('/browse')}
-                      className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors">
-                      Browse Tools
-                    </button>
-                  </div>
-                )}
+                  ))}
+                  {userRentalRequests.length === 0 && (
+                    <div className="col-span-full text-center py-8">
+                      <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                        No rental requests yet. Start by browsing available tools!
+                      </p>
+                      <button
+                        onClick={() => navigate('/browse')}
+                        className="px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors">
+                        Browse Tools
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Listing History (As Owner) */}
+              <div className="pt-8 border-t border-gray-600/30">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-green-400" />
+                  Listing Rental History (As Owner)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {receivedRentalRequests.map((rental, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleViewListing(rental.toolId)}
+                      className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                        theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                      }`}>
+
+                      {/* Status Badge */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${
+                          rental.status === 'completed' ? 'bg-green-500/90 text-white' :
+                          rental.status === 'approved' ? 'bg-blue-500/90 text-white' :
+                          rental.status === 'pending' ? 'bg-yellow-500/90 text-white' :
+                          rental.status === 'active' ? 'bg-purple-500/90 text-white' :
+                          rental.status === 'declined' ? 'bg-red-500/90 text-white' :
+                          'bg-gray-500/90 text-white'
+                        }`}>
+                          {rental.status === 'completed' ? <CheckCircle className="w-3 h-3" /> :
+                           rental.status === 'pending' ? <Clock className="w-3 h-3" /> :
+                           rental.status === 'declined' ? <XCircle className="w-3 h-3" /> :
+                           <Clock className="w-3 h-3" />}
+                          <span className="capitalize">{rental.status}</span>
+                        </span>
+                      </div>
+
+                      {/* Image */}
+                      <div className="relative">
+                        {renderToolImage(rental.toolImage, "medium")}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-3">
+                        <h3 className="text-base font-bold mb-1 text-white truncate">{rental.toolName}</h3>
+                        <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          rented by <span className="font-medium">{rental.renterName}</span>
+                        </p>
+
+                        <div className="space-y-1.5 mb-2">
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <Clock className="w-3 h-3 text-gray-400" />
+                            <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                              {rental.startDate} - {rental.endDate}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-gray-400">Earned:</span>
+                            <span className="text-lg font-bold text-green-400">
+                              ${formatPrice(rental.totalCost)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Category Badge */}
+                        <div className={`text-xs px-2 py-0.5 rounded-lg inline-block ${
+                          theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {rental.category || 'Tool'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {receivedRentalRequests.length === 0 && (
+                    <div className="col-span-full text-center py-8">
+                      <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                        No rental requests for your listings yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

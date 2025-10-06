@@ -34,6 +34,7 @@ interface RentalRequest {
   status: 'pending' | 'approved' | 'declined' | 'active' | 'completed' | 'cancelled';
   requestDate: Timestamp | Date;
   location: string;
+  hasReview?: boolean;
 }
 
 
@@ -43,6 +44,7 @@ interface RentalsContextType {
   loading: boolean;
   addRentalRequest: (request: Omit<RentalRequest, 'id' | 'requestDate'>) => Promise<{ emailsSent: boolean }>;
   updateRentalStatus: (id: string, status: RentalRequest['status']) => Promise<void>;
+  updateRentalData: (id: string, data: Partial<RentalRequest>) => Promise<void>;
   getUserRentals: () => RentalRequest[];
   checkDateConflict: (toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => boolean;
   getUnavailableDates: (toolId: string) => Array<{ start: string; end: string; status: string }>;
@@ -228,6 +230,30 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
     }
   };
 
+  const updateRentalData = async (id: string, data: Partial<RentalRequest>) => {
+    if (!currentUser) {
+      throw new Error('User must be authenticated to update rental data');
+    }
+
+    try {
+      // Verify the user has permission to update this rental
+      const canUpdate = [...userRentalRequests, ...receivedRentalRequests].some(
+        request => request.id === id &&
+        (request.renterEmail === currentUser.email || request.ownerEmail === currentUser.email)
+      );
+
+      if (!canUpdate) {
+        throw new Error('You can only update rentals you are involved in');
+      }
+
+      const rentalRef = doc(db, 'rentalRequests', id);
+      await updateDoc(rentalRef, data);
+    } catch (error) {
+      console.error('Error updating rental data:', error);
+      throw error;
+    }
+  };
+
   const getUserRentals = () => {
     // Return the user's rental requests (already filtered by current user)
     return userRentalRequests;
@@ -241,6 +267,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
         loading,
         addRentalRequest,
         updateRentalStatus,
+        updateRentalData,
         getUserRentals,
         checkDateConflict,
         getUnavailableDates,

@@ -138,19 +138,10 @@ export default function ReviewsSection({ listingId, listingName, ownerEmail, onR
           )}
         </div>
 
-        {canAddReview && (
-          <button
-            onClick={() => setShowAddReview(!showAddReview)}
-                            className="flex items-center space-x-2 px-4 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl font-medium transition-colors"
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span>Add Review</span>
-          </button>
-        )}
       </div>
 
-      {/* Add Review Form */}
-      {showAddReview && (
+      {/* Add Review Form - Removed, reviews can only be added through My Rentals */}
+      {false && showAddReview && (
         <div className={`mb-6 p-4 rounded-xl border-2 border-dashed ${
           theme === 'dark' ? 'border-gray-600 bg-gray-700/30' : 'border-gray-300 bg-gray-50'
         }`}>

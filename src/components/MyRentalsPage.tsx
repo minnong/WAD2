@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
@@ -11,14 +11,11 @@ import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTri
 
 export default function MyRentalsPage() {
   const navigate = useNavigate();
-  const { tab } = useParams<{ tab?: string }>();
+  const location = useLocation();
   const { theme } = useTheme();
   const { currentUser } = useAuth();
   const { userListings, deleteListing, delistListing, relistListing } = useListings(); // Get user-specific listings
   const { userRentalRequests, receivedRentalRequests, updateRentalStatus, updateRentalData } = useRentals(); // Get user's rental requests directly
-
-  // View mode: owner or customer
-  const [viewMode, setViewMode] = useState<'owner' | 'customer'>('customer');
 
   // Owner tabs: my-listings, active-rentals, requests, calendar
   // Customer tabs: active-rentals, pending-requests, calendar
@@ -28,8 +25,31 @@ export default function MyRentalsPage() {
   type OwnerTab = typeof ownerTabs[number];
   type CustomerTab = typeof customerTabs[number];
 
-  const [ownerActiveTab, setOwnerActiveTab] = useState<OwnerTab>('my-listings');
-  const [customerActiveTab, setCustomerActiveTab] = useState<CustomerTab>('active-rentals');
+  // Parse URL to get initial view mode and tab
+  const getInitialState = () => {
+    const params = new URLSearchParams(location.search);
+    const view = params.get('view') as 'owner' | 'customer' | null;
+    const tab = params.get('tab');
+
+    const initialView = view === 'owner' ? 'owner' : 'customer';
+    const initialOwnerTab = (tab && ownerTabs.includes(tab as OwnerTab)) ? tab as OwnerTab : 'my-listings';
+    const initialCustomerTab = (tab && customerTabs.includes(tab as CustomerTab)) ? tab as CustomerTab : 'active-rentals';
+
+    return { initialView, initialOwnerTab, initialCustomerTab };
+  };
+
+  const { initialView, initialOwnerTab, initialCustomerTab } = getInitialState();
+
+  // View mode: owner or customer
+  const [viewMode, setViewMode] = useState<'owner' | 'customer'>(initialView);
+  const [ownerActiveTab, setOwnerActiveTab] = useState<OwnerTab>(initialOwnerTab);
+  const [customerActiveTab, setCustomerActiveTab] = useState<CustomerTab>(initialCustomerTab);
+
+  // Update URL when view mode or tabs change
+  useEffect(() => {
+    const currentTab = viewMode === 'owner' ? ownerActiveTab : customerActiveTab;
+    navigate(`/my-rentals?view=${viewMode}&tab=${currentTab}`, { replace: true });
+  }, [viewMode, ownerActiveTab, customerActiveTab]);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);

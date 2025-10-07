@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
@@ -7,27 +7,49 @@ import { useAuth } from '../contexts/AuthContext';
 import { reviewsService } from '../services/firebase';
 import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
-import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin, Award, DollarSign } from 'lucide-react';
 
 export default function MyRentalsPage() {
   const navigate = useNavigate();
-  const { tab } = useParams<{ tab?: string }>();
+  const location = useLocation();
   const { theme } = useTheme();
   const { currentUser } = useAuth();
   const { userListings, deleteListing, delistListing, relistListing } = useListings(); // Get user-specific listings
-  const { userRentalRequests, receivedRentalRequests, updateRentalStatus } = useRentals(); // Get user's rental requests directly
+  const { userRentalRequests, receivedRentalRequests, updateRentalStatus, updateRentalData } = useRentals(); // Get user's rental requests directly
 
-  // Validate tab parameter
-  const validTabs = ['rented', 'listings', 'requests'];
-  const initialTab = tab && validTabs.includes(tab) ? tab : 'rented';
-  const [activeTab, setActiveTab] = useState<'rented' | 'listings' | 'requests'>(initialTab as any);
+  // Owner tabs: my-listings, active-rentals, requests, calendar
+  // Customer tabs: active-rentals, pending-requests, calendar
+  const ownerTabs = ['my-listings', 'active-rentals', 'requests', 'calendar'] as const;
+  const customerTabs = ['active-rentals', 'pending-requests', 'calendar'] as const;
 
-  // Update active tab when URL parameter changes
+  type OwnerTab = typeof ownerTabs[number];
+  type CustomerTab = typeof customerTabs[number];
+
+  // Parse URL to get initial view mode and tab
+  const getInitialState = () => {
+    const params = new URLSearchParams(location.search);
+    const view = params.get('view') as 'owner' | 'customer' | null;
+    const tab = params.get('tab');
+
+    const initialView = view === 'owner' ? 'owner' : 'customer';
+    const initialOwnerTab = (tab && ownerTabs.includes(tab as OwnerTab)) ? tab as OwnerTab : 'my-listings';
+    const initialCustomerTab = (tab && customerTabs.includes(tab as CustomerTab)) ? tab as CustomerTab : 'active-rentals';
+
+    return { initialView, initialOwnerTab, initialCustomerTab };
+  };
+
+  const { initialView, initialOwnerTab, initialCustomerTab } = getInitialState();
+
+  // View mode: owner or customer
+  const [viewMode, setViewMode] = useState<'owner' | 'customer'>(initialView);
+  const [ownerActiveTab, setOwnerActiveTab] = useState<OwnerTab>(initialOwnerTab);
+  const [customerActiveTab, setCustomerActiveTab] = useState<CustomerTab>(initialCustomerTab);
+
+  // Update URL when view mode or tabs change
   useEffect(() => {
-    if (tab && validTabs.includes(tab)) {
-      setActiveTab(tab as any);
-    }
-  }, [tab]);
+    const currentTab = viewMode === 'owner' ? ownerActiveTab : customerActiveTab;
+    navigate(`/my-rentals?view=${viewMode}&tab=${currentTab}`, { replace: true });
+  }, [viewMode, ownerActiveTab, customerActiveTab]);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
@@ -40,9 +62,12 @@ export default function MyRentalsPage() {
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  // Get user's rental activity - separate active rentals and pending requests
+  // Get user's rental activity - separate active rentals, completed rentals, and pending requests
   const activeRentals = userRentalRequests.filter(request =>
-    request.status === 'approved' || request.status === 'active' || request.status === 'completed'
+    request.status === 'approved' || request.status === 'active'
+  );
+  const completedRentalsCustomer = userRentalRequests.filter(request =>
+    request.status === 'completed'
   );
   const pendingRequests = userRentalRequests.filter(request =>
     request.status === 'pending'
@@ -52,6 +77,15 @@ export default function MyRentalsPage() {
   const activeListings = userListings.filter(l => l.isActive !== false);
   const delistedListings = userListings.filter(l => l.isActive === false);
   const incomingRequests = receivedRentalRequests.filter(request => request.status === 'pending');
+
+  // Customer stats
+  const completedRentals = userRentalRequests.filter(r => r.status === 'completed');
+  const totalSpent = completedRentals.reduce((sum, r) => sum + r.totalCost, 0);
+
+  // Owner stats
+  const approvedBookings = receivedRentalRequests.filter(r => r.status === 'approved' || r.status === 'active');
+  const completedBookings = receivedRentalRequests.filter(r => r.status === 'completed');
+  const totalEarnings = completedBookings.reduce((sum, r) => sum + r.totalCost, 0);
 
   // Helper function to format datetime
   const formatDateTime = (date: string, time: string) => {
@@ -175,6 +209,25 @@ export default function MyRentalsPage() {
     setSelectedRequestId(requestId);
     setApprovalAction(action);
     setShowApprovalModal(true);
+  };
+
+  const handleMarkAsCompleted = async (requestId: string) => {
+    if (window.confirm('Mark this rental as completed? The renter will be notified.')) {
+      try {
+        await updateRentalStatus(requestId, 'completed');
+        setSuccessMessage('Rental marked as completed!');
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+      } catch (error) {
+        console.error('Error marking rental as completed:', error);
+        alert('Failed to mark rental as completed. Please try again.');
+      }
+    }
+  };
+
+  const handleLeaveReview = (rental: any) => {
+    setSelectedRentalForReview(rental);
+    setShowReviewModal(true);
   };
 
   const confirmApprovalAction = async () => {
@@ -301,6 +354,9 @@ export default function MyRentalsPage() {
 
       await reviewsService.createReview(reviewPayload);
 
+      // Mark the rental as reviewed
+      await updateRentalData(selectedRentalForReview.id, { hasReview: true });
+
       setShowReviewModal(false);
       setSelectedRentalForReview(null);
       setReviewData({ rating: 5, comment: '' });
@@ -328,6 +384,8 @@ export default function MyRentalsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'approved':
+        return 'text-green-500 bg-green-500/10';
       case 'active':
       case 'rented':
         return 'text-white bg-purple-300/10';
@@ -378,127 +436,252 @@ export default function MyRentalsPage() {
         {/* Enhanced Header with Stats */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">
-                My Rentals
-              </h1>
-              <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                Manage your rental activity and listings
-              </p>
+            <div className="flex items-center justify-between flex-1">
+              <div>
+                <h1 className="text-4xl font-bold mb-2">
+                  My Rentals
+                </h1>
+                <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Manage your rental activity and listings
+                </p>
+              </div>
+
+              {/* Apple-style Toggle */}
+              <div className="flex items-center space-x-3">
+                <span className={`text-sm font-medium ${viewMode === 'customer' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
+                  Customer
+                </span>
+                <button
+                  onClick={() => setViewMode(viewMode === 'customer' ? 'owner' : 'customer')}
+                  className={`relative w-14 h-8 rounded-full transition-colors duration-300 ease-in-out ${
+                    viewMode === 'owner'
+                      ? 'bg-purple-600'
+                      : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
+                      viewMode === 'owner' ? 'translate-x-6' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm font-medium ${viewMode === 'owner' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
+                  Owner
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <Package className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{userRentals.length}</p>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Active Rentals</p>
+          {viewMode === 'customer' ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Package className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{activeRentals.length}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Active Rentals</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{userOwnListings.length}</p>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>My Listings</p>
+              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{completedRentals.length}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Completed</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{pendingRequests.length}</p>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Pending</p>
+              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{pendingRequests.length}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Pending</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
-                  <Star className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">4.8</p>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Rating</p>
+              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">${totalSpent.toFixed(2)}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Spent</p>
+                  </div>
                 </div>
               </div>
             </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{userOwnListings.length}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>My Listings</p>
+                  </div>
+                </div>
+              </div>
 
-            <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-                  <Inbox className="w-5 h-5 text-white" />
+              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                    <Inbox className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{incomingRequests.length}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Incoming Requests</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{incomingRequests.length}</p>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Incoming Requests</p>
+              </div>
+
+              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Award className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">${totalEarnings.toFixed(2)}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Earnings</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{completedBookings.length}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Completed Bookings</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
-           {/* Enhanced Tabs */}
-           <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-          <div className="grid grid-cols-3 gap-1">
-            <button
-              onClick={() => navigate('/my-rentals/rented')}
-              className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
-                activeTab === 'rented'
-                  ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
-                  : theme === 'dark'
-                  ? 'text-gray-300 hover:bg-gray-700/50'
-                  : 'text-gray-700 hover:bg-gray-100/80'
-              }`}
-            >
-              <Package className="w-5 h-5" />
-              <span>Items I'm Renting ({userRentals.length})</span>
-            </button>
-            <button
-              onClick={() => navigate('/my-rentals/listings')}
-              className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
-                activeTab === 'listings'
-                  ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
-                  : theme === 'dark'
-                  ? 'text-gray-300 hover:bg-gray-700/50'
-                  : 'text-gray-700 hover:bg-gray-100/80'
-              }`}
-            >
-              <TrendingUp className="w-5 h-5" />
-              <span>My Listings ({userOwnListings.length})</span>
-            </button>
-            <button
-              onClick={() => navigate('/my-rentals/requests')}
-              className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
-                activeTab === 'requests'
-                  ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
-                  : theme === 'dark'
-                  ? 'text-gray-300 hover:bg-gray-700/50'
-                  : 'text-gray-700 hover:bg-gray-100/80'
-              }`}
-            >
-              <Inbox className="w-5 h-5" />
-              <span>Requests ({incomingRequests.length})</span>
-            </button>
+        {/* Tabs based on view mode */}
+        {viewMode === 'customer' ? (
+          <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+            <div className="grid grid-cols-3 gap-1">
+              <button
+                onClick={() => setCustomerActiveTab('active-rentals')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  customerActiveTab === 'active-rentals'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <CheckCircle className="w-5 h-5" />
+                <span>Active Rentals ({activeRentals.length})</span>
+              </button>
+              <button
+                onClick={() => setCustomerActiveTab('pending-requests')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  customerActiveTab === 'pending-requests'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <Clock className="w-5 h-5" />
+                <span>Pending ({pendingRequests.length})</span>
+              </button>
+              <button
+                onClick={() => setCustomerActiveTab('calendar')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  customerActiveTab === 'calendar'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <Calendar className="w-5 h-5" />
+                <span>Calendar</span>
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+            <div className="grid grid-cols-4 gap-1">
+              <button
+                onClick={() => setOwnerActiveTab('my-listings')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  ownerActiveTab === 'my-listings'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <TrendingUp className="w-5 h-5" />
+                <span>My Listings ({userOwnListings.length})</span>
+              </button>
+              <button
+                onClick={() => setOwnerActiveTab('active-rentals')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  ownerActiveTab === 'active-rentals'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <CheckCircle className="w-5 h-5" />
+                <span>Active Rentals ({receivedRentalRequests.filter(r => r.status === 'approved' || r.status === 'active').length})</span>
+              </button>
+              <button
+                onClick={() => setOwnerActiveTab('requests')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  ownerActiveTab === 'requests'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <Inbox className="w-5 h-5" />
+                <span>Requests ({incomingRequests.length})</span>
+              </button>
+              <button
+                onClick={() => setOwnerActiveTab('calendar')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  ownerActiveTab === 'calendar'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <Calendar className="w-5 h-5" />
+                <span>Calendar</span>
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* Content */}
-        {activeTab === 'rented' ? (
+        {viewMode === 'customer' && customerActiveTab === 'active-rentals' ? (
           <div className="space-y-6">
             {/* Active Rentals Section */}
             {activeRentals.length > 0 && (
@@ -506,111 +689,102 @@ export default function MyRentalsPage() {
                 <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   Active Rentals
                 </h2>
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {activeRentals.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between">
-                      {/* Listing Box - Left 2 Columns Only */}
-                      <div
-                        onClick={() => handleViewListing(item.toolId)}
-                        className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
-                          theme === 'dark'
-                            ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
-                            : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
-                        }`}>
+                    <div
+                      key={item.id}
+                      onClick={() => handleViewListing(item.toolId)}
+                      className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                        theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                      }`}>
 
-                        {/* Large Image on Left */}
-                        <div className="flex-shrink-0">
-                          {renderToolImage(item.toolImage, "large")}
-                        </div>
-
-                        {/* Listing Details in Center */}
-                        <div className="flex-1 min-w-0">
-                          <div className="mb-4">
-                            <h3 className="text-xl font-bold mb-1 text-white">{item.toolName}</h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              From <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/profile/${encodeURIComponent(item.ownerEmail)}`);
-                                }}
-                                className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
-                              >
-                                {item.ownerName}
-                              </button> • {item.location}
-                            </p>
-                          </div>
-
-                          <div className="space-y-2 mb-4">
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
-                              <span className="font-semibold text-sm">{formatDateTime(item.startDate, item.startTime)}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
-                              <span className="font-semibold text-sm">{formatDateTime(item.endDate, item.endTime)}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                              <span className="font-black text-2xl text-purple-500">${formatPrice(item.totalCost)}</span>
-                            </div>
-                          </div>
-
-                          {item.message && (
-                            <div className={`p-3 rounded-lg border-l-4 border-purple-400 ${
-                              theme === 'dark' ? 'bg-purple-900/20' : 'bg-purple-50'
-                            }`}>
-                              <p className={`text-xs font-medium ${theme === 'dark' ? 'text-white' : 'text-purple-600'}`}>YOUR MESSAGE</p>
-                              <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                                "{item.message}"
-                              </p>
-                            </div>
-                          )}
-                        </div>
+                      {/* Status Badge */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${getStatusColor(item.status)}`}>
+                          {getStatusIcon(item.status)}
+                          <span className="capitalize">{item.status}</span>
+                        </span>
                       </div>
 
-                      {/* Status & Actions - Outside Box on Right */}
-                      <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
-                        {/* Status Badge */}
-                        <div className="flex flex-col items-end space-y-2">
-                          <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(item.status)}`}>
-                            {getStatusIcon(item.status)}
-                            <span className="capitalize">{item.status}</span>
-                          </span>
+                      {/* Image */}
+                      <div className="relative">
+                        {renderToolImage(item.toolImage, "medium")}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-3">
+                        <h3 className="text-base font-bold mb-1 text-white truncate">{item.toolName}</h3>
+                        <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          from <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/profile/${encodeURIComponent(item.ownerEmail)}`);
+                            }}
+                            className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                          >
+                            {item.ownerName}
+                          </button>
+                        </p>
+
+                        <div className="space-y-1 mb-3">
+                          <div className="flex items-center gap-1 text-xs">
+                            <Clock className="w-3 h-3 text-gray-400" />
+                            <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                              {item.startDate} - {item.endDate}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-gray-400">Cost:</span>
+                            <span className="text-lg font-bold text-purple-400">
+                              ${formatPrice(item.totalCost)}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col space-y-2 w-full">
+                        <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
+                          {(item.status === 'active' || item.status === 'approved') && (
+                            <div className="flex justify-center gap-3 mb-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkAsCompleted(item.id);
+                                }}
+                                className="transition-all hover:scale-110"
+                                title="Mark as Completed"
+                              >
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLeaveReview(item);
+                                }}
+                                className="transition-all hover:scale-110"
+                                title="Leave Review"
+                              >
+                                <Star className="w-5 h-5 text-yellow-500" />
+                              </button>
+                            </div>
+                          )}
+
                           <button
-                            onClick={() => handleContactOwner(item)}
-                            className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleContactOwner(item);
+                            }}
+                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                               theme === 'dark'
-                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
-                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                             }`}
                           >
-                            <MessageCircle className="w-4 h-4" />
-                            <span>Contact Owner</span>
+                            <MessageCircle className="w-3 h-3" />
+                            Chat
                           </button>
-
-                          {item.status === 'active' && (
-                            <button
-                              onClick={() => handleExtendRental(item)}
-                              className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
-                            >
-                              <Calendar className="w-4 h-4" />
-                              <span>Extend Rental</span>
-                            </button>
-                          )}
-
-                          {item.status === 'completed' && (
-                            <button
-                              onClick={() => handleWriteReview(item)}
-                              className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
-                            >
-                              <Star className="w-4 h-4" />
-                              <span>Write Review</span>
-                            </button>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -619,6 +793,123 @@ export default function MyRentalsPage() {
               </div>
             )}
 
+            {/* Completed Rentals Section */}
+            {completedRentalsCustomer.length > 0 && (
+              <div className="mt-12">
+                <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  ✅ Completed Rentals
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {completedRentalsCustomer.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleViewListing(item.toolId)}
+                      className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
+                        theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                          : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                      }`}>
+
+                      {/* Status Badge */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${getStatusColor(item.status)}`}>
+                          {item.status}
+                        </span>
+                      </div>
+
+                      {/* Image */}
+                      <div className="relative">
+                        {renderToolImage(item.toolImage, "medium")}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-3">
+                        <h3 className="text-base font-bold mb-1 text-white truncate">{item.toolName}</h3>
+                        <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          from <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/profile/${encodeURIComponent(item.ownerEmail)}`);
+                            }}
+                            className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                          >
+                            {item.ownerName}
+                          </button>
+                        </p>
+
+                        <div className="space-y-1 mb-3">
+                          <div className="flex items-center gap-1 text-xs">
+                            <Clock className="w-3 h-3 text-gray-400" />
+                            <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                              {item.startDate} - {item.endDate}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-gray-400">Cost:</span>
+                            <span className="text-lg font-bold text-purple-400">
+                              ${formatPrice(item.totalCost)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
+                          <div className="flex justify-center mb-2">
+                            {!item.hasReview ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLeaveReview(item);
+                                }}
+                                className="transition-all hover:scale-110"
+                                title="Leave Review"
+                              >
+                                <Star className="w-5 h-5 text-yellow-500" />
+                              </button>
+                            ) : (
+                              <span className="text-xs text-green-500 font-medium flex items-center gap-1">
+                                <CheckCircle className="w-3 h-3" />
+                                Review Left
+                              </span>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleContactOwner(item);
+                            }}
+                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                              theme === 'dark'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                            }`}
+                          >
+                            <MessageCircle className="w-3 h-3" />
+                            Chat
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/listing/${item.toolId}`);
+                            }}
+                            className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <Package className="w-3 h-3" />
+                            Rent Again
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : viewMode === 'customer' && customerActiveTab === 'pending-requests' ? (
+          <div className="space-y-6">
             {/* Pending Requests Section */}
             {pendingRequests.length > 0 && (
               <div>
@@ -751,7 +1042,19 @@ export default function MyRentalsPage() {
               </div>
             )}
           </div>
-        ) : activeTab === 'listings' ? (
+        ) : viewMode === 'customer' && customerActiveTab === 'calendar' ? (
+          <div className="space-y-6">
+            <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              📅 Rental Calendar
+            </h2>
+            <div className={`p-8 rounded-2xl ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm text-center`}>
+              <Calendar className={`w-16 h-16 mx-auto mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                Calendar view coming soon! Track your rental dates and schedules.
+              </p>
+            </div>
+          </div>
+        ) : viewMode === 'owner' && ownerActiveTab === 'my-listings' ? (
           <div className="space-y-6">
             {/* Active Listings */}
             <div>
@@ -990,10 +1293,85 @@ export default function MyRentalsPage() {
               </div>
             )}
           </div>
-        ) : (
-          <div>
+        ) : viewMode === 'owner' && ownerActiveTab === 'active-rentals' ? (
+          <div className="space-y-6">
+            {/* Active Rentals for Owner */}
+            {receivedRentalRequests.filter(r => r.status === 'approved' || r.status === 'active').length > 0 ? (
+              <div>
+                <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  ✅ Active Rentals
+                </h2>
+                <div className="space-y-6 mb-12">
+                  {receivedRentalRequests
+                    .filter(r => r.status === 'approved' || r.status === 'active')
+                    .map((request) => (
+                    <div key={request.id} className="flex items-center justify-between">
+                      {/* Listing Box */}
+                      <div
+                        onClick={() => handleViewListing(request.toolId)}
+                        className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
+                          theme === 'dark'
+                            ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
+                            : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
+                        }`}>
+                        <div className="flex-shrink-0">
+                          {renderToolImage(request.toolImage, "large")}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="mb-4">
+                            <h3 className="text-xl font-bold mb-1 text-white">{request.toolName}</h3>
+                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                              Rented by <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/profile/${encodeURIComponent(request.renterEmail)}`);
+                                }}
+                                className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                              >
+                                {request.renterName}
+                              </button>
+                            </p>
+                          </div>
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(request.startDate, request.startTime)}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                              <span className="font-semibold text-sm">{formatDateTime(request.endDate, request.endTime)}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Earning:</span>
+                              <span className="font-black text-2xl text-green-500">${formatPrice(request.totalCost)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
+                        <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(request.status)}`}>
+                          {getStatusIcon(request.status)}
+                          <span className="capitalize">{request.status}</span>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  No active rentals at the moment.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : viewMode === 'owner' && ownerActiveTab === 'requests' ? (
+          <div className="space-y-6">
             <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              📥 Incoming Rental Requests
+              📬 Pending Requests
             </h2>
             {incomingRequests.length > 0 ? (
               <div className="space-y-6">
@@ -1140,75 +1518,20 @@ export default function MyRentalsPage() {
               </div>
             )}
           </div>
-        )}
-
-        {/* Enhanced Empty State */}
-        {((activeTab === 'rented' && userRentals.length === 0) ||
-          (activeTab === 'listings' && userOwnListings.length === 0) ||
-          (activeTab === 'requests' && incomingRequests.length === 0)) && (
-          <div className={`text-center py-16 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            <div className={`w-24 h-24 mx-auto mb-6 rounded-2xl flex items-center justify-center ${
-              theme === 'dark' ? 'bg-gray-800/60' : 'bg-gray-100'
-            }`}>
-              <Package className="w-12 h-12 opacity-50" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
-              {activeTab === 'rented'
-                ? 'No Rentals Yet'
-                : activeTab === 'listings'
-                ? 'No Listings Yet'
-                : 'No Incoming Requests'}
-            </h3>
-            <p className="text-lg mb-6 max-w-md mx-auto">
-              {activeTab === 'rented'
-                ? 'Discover amazing tools from your community and start your first rental adventure!'
-                : activeTab === 'listings'
-                ? 'Share your tools with the community and start earning passive income today!'
-                : 'When people request to rent your items, you\'ll see them here for approval.'}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {activeTab === 'rented' ? (
-                <>
-                  <button
-                    onClick={() => navigate('/browse')}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl transition-all hover:scale-105 shadow-lg"
-                  >
-                    Browse Tools
-                  </button>
-                  <button
-                    onClick={() => navigate('/list-item')}
-                    className={`px-6 py-3 rounded-xl border transition-all hover:scale-105 ${
-                      theme === 'dark'
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700/50'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    List Your Tools
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate('/list-item')}
-                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl transition-all hover:scale-105 shadow-lg"
-                  >
-                    List Your First Tool
-                  </button>
-                  <button
-                    onClick={() => navigate('/browse')}
-                    className={`px-6 py-3 rounded-xl border transition-all hover:scale-105 ${
-                      theme === 'dark'
-                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700/50'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    Explore Community
-                  </button>
-                </>
-              )}
+        ) : viewMode === 'owner' && ownerActiveTab === 'calendar' ? (
+          <div className="space-y-6">
+            <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              📅 Owner Calendar
+            </h2>
+            <div className={`p-8 rounded-2xl ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm text-center`}>
+              <Calendar className={`w-16 h-16 mx-auto mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                Calendar view coming soon! Track rental requests and availability.
+              </p>
             </div>
           </div>
-        )}
+        ) : null}
+
       </div>
 
       {/* Cancel Confirmation Modal */}

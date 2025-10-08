@@ -28,8 +28,7 @@ import {
 } from 'lucide-react';
 import { updateProfile, updatePassword, updateEmail, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, updateDoc, deleteDoc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '../config/firebase';
+import { db } from '../config/firebase';
 
 interface UserSettings {
   displayName: string;
@@ -198,30 +197,62 @@ export default function UserSettingsPage() {
     const file = event.target.files?.[0];
     if (!file || !currentUser) return;
 
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showMessage('error', 'Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 1MB for base64)
+    if (file.size > 1024 * 1024) {
+      showMessage('error', 'Image size must be less than 1MB');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Upload image to Firebase Storage
-      const imageRef = ref(storage, `profile-images/${currentUser.uid}`);
-      await uploadBytes(imageRef, file);
-      const downloadURL = await getDownloadURL(imageRef);
+      console.log('Starting image upload for user:', currentUser.uid);
 
-      // Update Firebase Auth profile immediately
-      await updateProfile(currentUser, {
-        photoURL: downloadURL
-      });
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const base64String = reader.result as string;
+          console.log('Image converted to base64');
 
-      // Update Firestore user document
-      const userRef = doc(db, 'users', currentUser.uid);
-      await setDoc(userRef, {
-        photoURL: downloadURL,
-        updatedAt: new Date()
-      }, { merge: true });
+          // Update Firebase Auth profile
+          await updateProfile(currentUser, {
+            photoURL: base64String
+          });
+          console.log('Auth profile updated');
 
-      setSettings(prev => ({ ...prev, photoURL: downloadURL }));
-      showMessage('success', 'Profile image uploaded successfully!');
+          // Update Firestore user document
+          const userRef = doc(db, 'users', currentUser.uid);
+          await setDoc(userRef, {
+            photoURL: base64String,
+            updatedAt: new Date()
+          }, { merge: true });
+          console.log('Firestore document updated');
+
+          setSettings(prev => ({ ...prev, photoURL: base64String }));
+          showMessage('success', 'Profile image uploaded successfully!');
+          setLoading(false);
+        } catch (error: any) {
+          console.error('Image upload error:', error);
+          showMessage('error', error.message || 'Failed to upload image');
+          setLoading(false);
+        }
+      };
+
+      reader.onerror = () => {
+        showMessage('error', 'Failed to read image file');
+        setLoading(false);
+      };
+
+      reader.readAsDataURL(file);
     } catch (error: any) {
+      console.error('Image upload error:', error);
       showMessage('error', error.message || 'Failed to upload image');
-    } finally {
       setLoading(false);
     }
   };
@@ -234,20 +265,10 @@ export default function UserSettingsPage() {
       // Delete user data from Firestore
       await deleteDoc(doc(db, 'users', currentUser.uid));
       await deleteDoc(doc(db, 'userSettings', currentUser.uid));
-      
-      // Delete profile image from storage
-      if (settings.photoURL && settings.photoURL.includes('firebase')) {
-        try {
-          const imageRef = ref(storage, `profile-images/${currentUser.uid}`);
-          await deleteObject(imageRef);
-        } catch (error) {
-          console.log('No profile image to delete');
-        }
-      }
 
       // Delete user account
       await deleteUser(currentUser);
-      
+
       navigate('/');
     } catch (error: any) {
       showMessage('error', error.message || 'Failed to delete account');

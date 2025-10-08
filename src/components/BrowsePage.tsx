@@ -60,13 +60,14 @@ export default function BrowsePage() {
 
   // Helper function to render tool image (emoji or base64)
   const renderToolImage = (tool: any, className: string = "text-4xl") => {
-    // Check if image is a base64 data URL
-    if (tool.image && tool.image.startsWith('data:image/')) {
+    // Check if image is a URL (base64 data URL or Firebase Storage URL)
+    if (tool.image && (tool.image.startsWith('data:image/') || tool.image.startsWith('http://') || tool.image.startsWith('https://'))) {
       return (
         <img
           src={tool.image}
           alt={tool.name}
           className={`w-full h-full object-cover rounded-lg ${className.includes('group-hover:scale-110') ? 'group-hover:scale-110 transition-transform' : ''}`}
+          loading="lazy"
         />
       );
     }

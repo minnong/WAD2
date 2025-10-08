@@ -41,7 +41,7 @@ export default function MyRentalsPage() {
   const { initialView, initialOwnerTab, initialCustomerTab } = getInitialState();
 
   // View mode: owner or customer
-  const [viewMode, setViewMode] = useState<'owner' | 'customer'>(initialView);
+  const [viewMode, setViewMode] = useState<'owner' | 'customer'>(initialView as 'owner' | 'customer');
   const [ownerActiveTab, setOwnerActiveTab] = useState<OwnerTab>(initialOwnerTab);
   const [customerActiveTab, setCustomerActiveTab] = useState<CustomerTab>(initialCustomerTab);
 

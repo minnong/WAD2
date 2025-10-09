@@ -73,7 +73,7 @@ export default function ListingDetailPage() {
   });
   const [listingData, setListingData] = useState<any>(null);
 
-  // Helper function to render tool image (emoji or base64)
+  // Helper function to render tool image (emoji, base64, or URL)
   const renderToolImage = (imageStr: string, size: 'small' | 'medium' | 'large' = 'medium') => {
     const sizeClasses = size === 'small'
       ? "w-8 h-8 text-2xl"
@@ -81,13 +81,14 @@ export default function ListingDetailPage() {
       ? "w-16 h-16 text-5xl"
       : "w-12 h-12 text-3xl";
 
-    // Check if image is a base64 data URL
-    if (imageStr && imageStr.startsWith('data:image/')) {
+    // Check if image is a URL (base64 data URL or Firebase Storage URL)
+    if (imageStr && (imageStr.startsWith('data:image/') || imageStr.startsWith('http://') || imageStr.startsWith('https://'))) {
       return (
         <img
           src={imageStr}
           alt="Tool"
           className={`${sizeClasses} object-cover rounded-lg`}
+          loading="lazy"
         />
       );
     }
@@ -284,12 +285,21 @@ export default function ListingDetailPage() {
                   src={(tool as any).imageUrls[0]}
                   alt={tool.name}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               ) : (tool as any).imageUrl ? (
                 <img
                   src={(tool as any).imageUrl}
                   alt={tool.name}
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              ) : tool.image && (tool.image.startsWith('data:image/') || tool.image.startsWith('http://') || tool.image.startsWith('https://')) ? (
+                <img
+                  src={tool.image}
+                  alt={tool.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">

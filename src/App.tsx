@@ -20,6 +20,8 @@ import UserSettingsPage from './components/UserSettingsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import NotFoundPage from './components/NotFoundPage'
 import ScrollToTop from './components/ScrollToTop'
+import FAQPage from './components/FAQPage'
+
 
 export default function App() {
   return (
@@ -48,6 +50,8 @@ export default function App() {
                 <Route path="/profile/tab/:tab" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/profile/:email" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
+                <Route path="/faq" element={<ProtectedRoute><FAQPage /></ProtectedRoute>} />
+
 
                 {/* 404 catch-all route */}
                 <Route path="*" element={<NotFoundPage />} />

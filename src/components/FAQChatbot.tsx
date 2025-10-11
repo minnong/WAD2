@@ -19,29 +19,26 @@ export default function FAQChatbot() {
     setInput('');
 
     try {
-      const response = await fetch('http://localhost:3001/api/faq-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: input }),
-      });
+        const response = await fetch('/api/faq-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: input }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (data.reply) {
+        if (data.reply) {
+            setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+        } else {
+            throw new Error('No reply from API');
+        }
+        } catch (error) {
+        console.error('Chatbot error:', error);
         setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: data.reply },
+            ...prev,
+            { role: 'assistant', content: "Sorry 😅 I couldn't connect to the chatbot server." },
         ]);
-      } else {
-        throw new Error('No reply from API');
-      }
-    } catch (error) {
-      console.error('Chatbot error:', error);
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: "Sorry 😅 I couldn't connect to the chatbot server." },
-      ]);
-    }
+        }
   };
 
   return (

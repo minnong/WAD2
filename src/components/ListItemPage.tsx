@@ -751,14 +751,16 @@ export default function ListItemPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Tool Name</label>
+                <label className="block text-sm font-medium mb-2">
+                  Tool Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="e.g., Cordless Drill, Lawn Mower"
-                  className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm ${
+                  className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm transition-all focus:ring-2 focus:ring-purple-500 ${
                     theme === 'dark'
                       ? 'bg-gray-700/50 text-white placeholder-gray-400'
                       : 'bg-gray-50 text-gray-900 placeholder-gray-500'
@@ -768,14 +770,16 @@ export default function ListItemPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Description</label>
+                <label className="block text-sm font-medium mb-2">
+                  Description <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
                   placeholder="Describe your tool, its condition, and any special features..."
                   rows={4}
-                  className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm resize-none ${
+                  className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm resize-none transition-all focus:ring-2 focus:ring-purple-500 ${
                     theme === 'dark'
                       ? 'bg-gray-700/50 text-white placeholder-gray-400'
                       : 'bg-gray-50 text-gray-900 placeholder-gray-500'
@@ -786,16 +790,25 @@ export default function ListItemPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Category</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Category <span className="text-red-500">*</span>
+                  </label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm ${
+                    className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-purple-500 ${
                       theme === 'dark'
-                        ? 'bg-gray-700/50 text-white'
-                        : 'bg-gray-50 text-gray-900'
+                        ? 'bg-gray-700/50 text-white hover:bg-gray-700/70'
+                        : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
                     }`}
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 0.75rem center',
+                      backgroundSize: '1.5em 1.5em',
+                      paddingRight: '2.5rem'
+                    }}
                     required
                   >
                     <option value="">Select category</option>
@@ -806,16 +819,25 @@ export default function ListItemPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Condition</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Condition
+                  </label>
                   <select
                     name="condition"
                     value={formData.condition}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm ${
+                    className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-purple-500 ${
                       theme === 'dark'
-                        ? 'bg-gray-700/50 text-white'
-                        : 'bg-gray-50 text-gray-900'
+                        ? 'bg-gray-700/50 text-white hover:bg-gray-700/70'
+                        : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
                     }`}
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 0.75rem center',
+                      backgroundSize: '1.5em 1.5em',
+                      paddingRight: '2.5rem'
+                    }}
                   >
                     {conditions.map((condition) => (
                       <option key={condition.value} value={condition.value}>{condition.label}</option>
@@ -840,7 +862,9 @@ export default function ListItemPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Rental Price</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Rental Price <span className="text-red-500">*</span>
+                  </label>
                   <div className="flex">
                     <span className={`px-4 py-3 rounded-l-xl border-0 ${
                       theme === 'dark'
@@ -855,7 +879,7 @@ export default function ListItemPage() {
                       value={formData.price}
                       onChange={handleInputChange}
                       placeholder="25"
-                      className={`flex-1 px-4 py-3 rounded-r-xl border-0 shadow-sm ${
+                      className={`flex-1 px-4 py-3 rounded-r-xl border-0 shadow-sm transition-all focus:ring-2 focus:ring-purple-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                         theme === 'dark'
                           ? 'bg-gray-700/50 text-white placeholder-gray-400'
                           : 'bg-gray-50 text-gray-900 placeholder-gray-500'
@@ -871,11 +895,18 @@ export default function ListItemPage() {
                     name="period"
                     value={formData.period}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm ${
+                    className={`w-full px-4 py-3 rounded-xl border-0 shadow-sm appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-purple-500 ${
                       theme === 'dark'
-                        ? 'bg-gray-700/50 text-white'
-                        : 'bg-gray-50 text-gray-900'
+                        ? 'bg-gray-700/50 text-white hover:bg-gray-700/70'
+                        : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
                     }`}
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 0.75rem center',
+                      backgroundSize: '1.5em 1.5em',
+                      paddingRight: '2.5rem'
+                    }}
                   >
                     <option value="hour">Hour</option>
                     <option value="day">Day</option>
@@ -886,7 +917,9 @@ export default function ListItemPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Location</label>
+                <label className="block text-sm font-medium mb-2">
+                  Location <span className="text-red-500">*</span>
+                </label>
                 <div className="relative" ref={locationInputRef}>
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
                   <input
@@ -895,7 +928,7 @@ export default function ListItemPage() {
                     value={formData.location}
                     onChange={handleInputChange}
                     placeholder="e.g., Orchard, Singapore"
-                    className={`w-full pl-10 pr-24 py-3 rounded-xl border-0 shadow-sm ${
+                    className={`w-full pl-10 pr-24 py-3 rounded-xl border-0 shadow-sm transition-all focus:ring-2 focus:ring-purple-500 ${
                       theme === 'dark'
                         ? 'bg-gray-700/50 text-white placeholder-gray-400'
                         : 'bg-gray-50 text-gray-900 placeholder-gray-500'
@@ -1027,7 +1060,7 @@ export default function ListItemPage() {
           text: "View My Listings",
           onClick: () => {
             setShowSuccessModal(false);
-            navigate('/my-rentals');
+            navigate('/my-rentals?view=owner&tab=my-listings');
           }
         }}
       />

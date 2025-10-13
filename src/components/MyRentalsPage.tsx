@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { reviewsService } from '../services/firebase';
 import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
+import RentalCalendar from './RentalCalendar';
 import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin, Award, DollarSign } from 'lucide-react';
 
 export default function MyRentalsPage() {
@@ -1043,17 +1044,7 @@ export default function MyRentalsPage() {
             )}
           </div>
         ) : viewMode === 'customer' && customerActiveTab === 'calendar' ? (
-          <div className="space-y-6">
-            <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              📅 Rental Calendar
-            </h2>
-            <div className={`p-8 rounded-2xl ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm text-center`}>
-              <Calendar className={`w-16 h-16 mx-auto mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
-                Calendar view coming soon! Track your rental dates and schedules.
-              </p>
-            </div>
-          </div>
+          <RentalCalendar viewMode="customer" />
         ) : viewMode === 'owner' && ownerActiveTab === 'my-listings' ? (
           <div className="space-y-6">
             {/* Active Listings */}
@@ -1519,17 +1510,7 @@ export default function MyRentalsPage() {
             )}
           </div>
         ) : viewMode === 'owner' && ownerActiveTab === 'calendar' ? (
-          <div className="space-y-6">
-            <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              📅 Owner Calendar
-            </h2>
-            <div className={`p-8 rounded-2xl ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm text-center`}>
-              <Calendar className={`w-16 h-16 mx-auto mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
-                Calendar view coming soon! Track rental requests and availability.
-              </p>
-            </div>
-          </div>
+          <RentalCalendar viewMode="owner" />
         ) : null}
 
       </div>

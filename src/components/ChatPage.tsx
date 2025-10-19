@@ -1,151 +1,38 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useChat } from '../contexts/ChatContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocation } from 'react-router-dom';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
-import { Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Image } from 'lucide-react';
-
-interface Message {
-  id: number;
-  senderId: string;
-  senderName: string;
-  content: string;
-  timestamp: Date;
-  type: 'text' | 'image' | 'tool-request';
-  toolData?: {
-    toolName: string;
-    toolImage: string;
-    price: number;
-    period: string;
-  };
-}
-
-interface Chat {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  lastMessage: string;
-  lastMessageTime: Date;
-  unreadCount: number;
-  isOnline: boolean;
-}
+import { Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Image, MessageCircle } from 'lucide-react';
 
 export default function ChatPage() {
   const { currentUser } = useAuth();
+  const { chats, loading, getMessages, sendMessage, markMessagesAsRead } = useChat();
   const { theme } = useTheme();
+  const location = useLocation();
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Mock chat data
-  const [chats] = useState<Chat[]>([
-    {
-      id: '1',
-      userId: 'john_doe',
-      userName: 'John Doe',
-      userAvatar: '👨‍🔧',
-      lastMessage: 'Is the drill still available for tomorrow?',
-      lastMessageTime: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
-      unreadCount: 2,
-      isOnline: true
-    },
-    {
-      id: '2',
-      userId: 'sarah_lim',
-      userName: 'Sarah Lim',
-      userAvatar: '👩‍🌾',
-      lastMessage: 'Thank you for the lawn mower rental!',
-      lastMessageTime: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      unreadCount: 0,
-      isOnline: false
-    },
-    {
-      id: '3',
-      userId: 'mike_roberts',
-      userName: 'Mike Roberts',
-      userAvatar: '📸',
-      lastMessage: 'Camera is ready for pickup',
-      lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      unreadCount: 1,
-      isOnline: true
-    },
-    {
-      id: '4',
-      userId: 'lisa_martin',
-      userName: 'Lisa Martin',
-      userAvatar: '👩‍🍳',
-      lastMessage: 'Stand mixer works perfectly, thanks!',
-      lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      unreadCount: 0,
-      isOnline: false
+  // Handle query parameter for opening a specific chat
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const chatId = params.get('selected');
+    if (chatId && chats.some(chat => chat.id === chatId)) {
+      setSelectedChat(chatId);
     }
-  ]);
+  }, [location.search, chats]);
 
-  // Mock messages data
-  const [messages, setMessages] = useState<Record<string, Message[]>>({
-    '1': [
-      {
-        id: 1,
-        senderId: 'john_doe',
-        senderName: 'John Doe',
-        content: 'Hi! I\'m interested in renting your drill press.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60),
-        type: 'text'
-      },
-      {
-        id: 2,
-        senderId: currentUser?.uid || 'current_user',
-        senderName: currentUser?.displayName || 'You',
-        content: 'Sure! It\'s available. When do you need it?',
-        timestamp: new Date(Date.now() - 1000 * 60 * 55),
-        type: 'text'
-      },
-      {
-        id: 3,
-        senderId: 'john_doe',
-        senderName: 'John Doe',
-        content: 'Is the drill still available for tomorrow?',
-        timestamp: new Date(Date.now() - 1000 * 60 * 5),
-        type: 'text'
-      }
-    ],
-    '2': [
-      {
-        id: 1,
-        senderId: 'sarah_lim',
-        senderName: 'Sarah Lim',
-        content: 'Thank you for the lawn mower rental!',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30),
-        type: 'text'
-      }
-    ],
-    '3': [
-      {
-        id: 1,
-        senderId: 'mike_roberts',
-        senderName: 'Mike Roberts',
-        content: 'Camera is ready for pickup',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-        type: 'text'
-      }
-    ],
-    '4': [
-      {
-        id: 1,
-        senderId: 'lisa_martin',
-        senderName: 'Lisa Martin',
-        content: 'Stand mixer works perfectly, thanks!',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        type: 'text'
-      }
-    ]
+  const filteredChats = chats.filter(chat => {
+    if (!currentUser) return false;
+    const otherUserId = chat.participants.find(id => id !== currentUser.uid);
+    if (!otherUserId) return false;
+    const otherUserName = chat.participantNames[otherUserId] || '';
+    return otherUserName.toLowerCase().includes(searchTerm.toLowerCase());
   });
-
-  const filteredChats = chats.filter(chat =>
-    chat.userName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -153,26 +40,24 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [selectedChat, messages]);
+  }, [selectedChat, getMessages(selectedChat || '')]);
 
-  const handleSendMessage = () => {
+  // Mark messages as read when chat is selected
+  useEffect(() => {
+    if (selectedChat) {
+      markMessagesAsRead(selectedChat);
+    }
+  }, [selectedChat]);
+
+  const handleSendMessage = async () => {
     if (!message.trim() || !selectedChat) return;
 
-    const newMessage: Message = {
-      id: Date.now(),
-      senderId: currentUser?.uid || 'current_user',
-      senderName: currentUser?.displayName || 'You',
-      content: message.trim(),
-      timestamp: new Date(),
-      type: 'text'
-    };
-
-    setMessages(prev => ({
-      ...prev,
-      [selectedChat]: [...(prev[selectedChat] || []), newMessage]
-    }));
-
-    setMessage('');
+    try {
+      await sendMessage(selectedChat, message.trim());
+      setMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   const formatTime = (date: Date) => {
@@ -190,7 +75,43 @@ export default function ChatPage() {
   };
 
   const selectedChatData = chats.find(chat => chat.id === selectedChat);
-  const chatMessages = selectedChat ? messages[selectedChat] || [] : [];
+  const chatMessages = selectedChat ? getMessages(selectedChat) : [];
+
+  // Get other user info for selected chat
+  const getOtherUserInfo = (chat: typeof selectedChatData) => {
+    if (!chat || !currentUser) return null;
+    const otherUserId = chat.participants.find(id => id !== currentUser.uid);
+    if (!otherUserId) return null;
+    return {
+      id: otherUserId,
+      name: chat.participantNames[otherUserId] || 'Unknown User',
+      photo: chat.participantPhotos[otherUserId] || '',
+      isOnline: false, // We can implement presence later
+    };
+  };
+
+  const otherUserInfo = selectedChatData ? getOtherUserInfo(selectedChatData) : null;
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen transition-colors duration-300 ${
+        theme === 'dark'
+          ? 'bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white'
+          : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
+      }`}>
+        <LiquidGlassNav />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-900 mx-auto"></div>
+              <p className="mt-4 text-gray-500">Loading chats...</p>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -229,56 +150,86 @@ export default function ChatPage() {
 
             {/* Chat List */}
             <div className="overflow-y-auto flex-1">
-              {filteredChats.map((chat) => (
-                <button
-                  key={chat.id}
-                  onClick={() => setSelectedChat(chat.id)}
-                  className={`w-full p-4 text-left transition-colors border-b border-gray-200/10 ${
-                    selectedChat === chat.id
-                      ? theme === 'dark'
-                        ? 'bg-purple-900/20'
-                        : 'bg-purple-900/10'
-                      : theme === 'dark'
-                      ? 'hover:bg-gray-800/60'
-                      : 'hover:bg-gray-100/60'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-900 to-purple-600 flex items-center justify-center text-white text-xl">
-                        {chat.userAvatar}
+              {filteredChats.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center">
+                  <MessageCircle className={`w-16 h-16 mb-4 ${
+                    theme === 'dark' ? 'text-gray-700' : 'text-gray-300'
+                  }`} />
+                  <p className={`text-sm ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    {searchTerm ? 'No conversations found' : 'No conversations yet'}
+                  </p>
+                  <p className={`text-xs mt-2 ${
+                    theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                  }`}>
+                    Start a conversation by visiting a user's profile
+                  </p>
+                </div>
+              ) : (
+                filteredChats.map((chat) => {
+                  const otherUserId = currentUser ? chat.participants.find(id => id !== currentUser.uid) : null;
+                  const otherUserName = otherUserId ? chat.participantNames[otherUserId] : 'Unknown User';
+                  const otherUserPhoto = otherUserId ? chat.participantPhotos[otherUserId] : '';
+                  const unreadCount = currentUser ? (chat.unreadCount[currentUser.uid] || 0) : 0;
+
+                  return (
+                    <button
+                      key={chat.id}
+                      onClick={() => setSelectedChat(chat.id)}
+                      className={`w-full p-4 text-left transition-colors border-b border-gray-200/10 ${
+                        selectedChat === chat.id
+                          ? theme === 'dark'
+                            ? 'bg-purple-900/20'
+                            : 'bg-purple-900/10'
+                          : theme === 'dark'
+                          ? 'hover:bg-gray-800/60'
+                          : 'hover:bg-gray-100/60'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="relative">
+                          {otherUserPhoto ? (
+                            <img 
+                              src={otherUserPhoto} 
+                              alt={otherUserName}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-900 to-purple-600 flex items-center justify-center text-white text-xl">
+                              {otherUserName.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium truncate">{otherUserName}</p>
+                            <span className="text-xs text-gray-500">
+                              {formatTime(chat.lastMessageTime)}
+                            </span>
+                          </div>
+                          <p className={`text-sm truncate ${
+                            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
+                            {chat.lastMessage || 'No messages yet'}
+                          </p>
+                        </div>
+                        {unreadCount > 0 && (
+                          <div className="w-5 h-5 bg-purple-900 text-white text-xs rounded-full flex items-center justify-center">
+                            {unreadCount}
+                          </div>
+                        )}
                       </div>
-                      {chat.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium truncate">{chat.userName}</p>
-                        <span className="text-xs text-gray-500">
-                          {formatTime(chat.lastMessageTime)}
-                        </span>
-                      </div>
-                      <p className={`text-sm truncate ${
-                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-                      }`}>
-                        {chat.lastMessage}
-                      </p>
-                    </div>
-                    {chat.unreadCount > 0 && (
-                      <div className="w-5 h-5 bg-purple-900 text-white text-xs rounded-full flex items-center justify-center">
-                        {chat.unreadCount}
-                      </div>
-                    )}
-                  </div>
-                </button>
-              ))}
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
 
           {/* Chat Area */}
           <div className="flex-1 flex flex-col">
-            {selectedChat ? (
+            {selectedChat && otherUserInfo ? (
               <>
                 {/* Chat Header */}
                 <div className={`p-4 border-b flex items-center justify-between ${
@@ -286,21 +237,29 @@ export default function ChatPage() {
                 }`}>
                   <div className="flex items-center space-x-3">
                     <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-900 to-purple-600 flex items-center justify-center text-white">
-                        {selectedChatData?.userAvatar}
-                      </div>
-                      {selectedChatData?.isOnline && (
+                      {otherUserInfo.photo ? (
+                        <img 
+                          src={otherUserInfo.photo} 
+                          alt={otherUserInfo.name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-900 to-purple-600 flex items-center justify-center text-white">
+                          {otherUserInfo.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      {otherUserInfo.isOnline && (
                         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                       )}
                     </div>
                     <div>
-                      <h2 className="font-semibold">{selectedChatData?.userName}</h2>
+                      <h2 className="font-semibold">{otherUserInfo.name}</h2>
                       <p className={`text-xs ${
-                        selectedChatData?.isOnline
+                        otherUserInfo.isOnline
                           ? 'text-green-500'
                           : theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                       }`}>
-                        {selectedChatData?.isOnline ? 'Online' : 'Last seen recently'}
+                        {otherUserInfo.isOnline ? 'Online' : 'Offline'}
                       </p>
                     </div>
                   </div>
@@ -331,34 +290,54 @@ export default function ChatPage() {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {chatMessages.map((msg) => {
-                    const isCurrentUser = msg.senderId === (currentUser?.uid || 'current_user');
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                            isCurrentUser
-                              ? 'bg-purple-900 text-white'
-                              : theme === 'dark'
-                              ? 'bg-gray-800 text-white'
-                              : 'bg-gray-200 text-gray-900'
-                          }`}
-                        >
-                          <p className="text-sm">{msg.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            isCurrentUser
-                              ? 'text-blue-100'
-                              : theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-                          }`}>
-                            {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </div>
+                  {chatMessages.length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${
+                          theme === 'dark' ? 'text-gray-700' : 'text-gray-300'
+                        }`} />
+                        <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          No messages yet. Start the conversation!
+                        </p>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ) : (
+                    chatMessages.map((msg) => {
+                      const isCurrentUser = msg.senderId === currentUser?.uid;
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                              isCurrentUser
+                                ? 'bg-purple-900 text-white'
+                                : theme === 'dark'
+                                ? 'bg-gray-800 text-white'
+                                : 'bg-gray-200 text-gray-900'
+                            }`}
+                          >
+                            {!isCurrentUser && (
+                              <p className={`text-xs font-medium mb-1 ${
+                                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                              }`}>
+                                {msg.senderName}
+                              </p>
+                            )}
+                            <p className="text-sm break-words">{msg.content}</p>
+                            <p className={`text-xs mt-1 ${
+                              isCurrentUser
+                                ? 'text-purple-200'
+                                : theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                            }`}>
+                              {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 

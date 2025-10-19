@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
+import { useChat } from '../contexts/ChatContext';
+import { useAuth } from '../contexts/AuthContext';
 import { reviewsService, listingsService } from '../services/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -29,6 +31,8 @@ export default function UserProfilePage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { listings } = useListings();
+  const { createOrGetChat } = useChat();
+  const { currentUser: authUser } = useAuth();
   
   const [userListings, setUserListings] = useState<any[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({
@@ -40,11 +44,12 @@ export default function UserProfilePage() {
   const [userReviews, setUserReviews] = useState<UserReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>('listings');
-
+  const [creatingChat, setCreatingChat] = useState(false);
 
   // Decode the email parameter in case it's URL encoded
   const decodedEmail = email ? decodeURIComponent(email) : null;
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
 
   const loadUserFromFirebase = async (email: string) => {
     try {
@@ -56,10 +61,12 @@ export default function UserProfilePage() {
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
+        setProfileUserId(userDoc.id); // Store the user ID
         return {
           name: userData.displayName || 'User',
           joinDate: userData.createdAt ? new Date(userData.createdAt.toDate()).toLocaleDateString() : 'Recently',
-          bio: userData.bio || 'ShareLah community member'
+          bio: userData.bio || 'ShareLah community member',
+          photoURL: userData.photoURL || ''
         };
       }
       
@@ -67,7 +74,8 @@ export default function UserProfilePage() {
       return {
         name: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         joinDate: 'Recently',
-        bio: 'ShareLah community member'
+        bio: 'ShareLah community member',
+        photoURL: ''
       };
     } catch (error) {
       console.error('Error loading user from Firebase:', error);
@@ -75,7 +83,8 @@ export default function UserProfilePage() {
       return {
         name: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         joinDate: 'Recently',
-        bio: 'ShareLah community member'
+        bio: 'ShareLah community member',
+        photoURL: ''
       };
     }
   };
@@ -198,6 +207,34 @@ export default function UserProfilePage() {
     return date.toLocaleDateString();
   };
 
+  const handleMessageUser = async () => {
+    if (!profileUserId || !currentUser || !authUser) {
+      console.error('Missing required data to create chat');
+      return;
+    }
+
+    // Don't allow messaging yourself
+    if (profileUserId === authUser.uid) {
+      alert('You cannot message yourself!');
+      return;
+    }
+
+    try {
+      setCreatingChat(true);
+      const chatId = await createOrGetChat(
+        profileUserId,
+        currentUser.name,
+        currentUser.photoURL
+      );
+      navigate(`/chat?selected=${chatId}`);
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      alert('Failed to create chat. Please try again.');
+    } finally {
+      setCreatingChat(false);
+    }
+  };
+
   // Show loading while fetching user data
   if (loading && !currentUser) {
     return (
@@ -286,10 +323,30 @@ export default function UserProfilePage() {
 
             {/* Profile Info */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{currentUser.name}</h1>
-              <p className={`text-lg mb-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                {currentUser.bio}
-              </p>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold mb-2">{currentUser.name}</h1>
+                  <p className={`text-lg mb-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                    {currentUser.bio}
+                  </p>
+                </div>
+                
+                {/* Message Button - only show if not viewing own profile */}
+                {authUser && profileUserId && authUser.uid !== profileUserId && (
+                  <button
+                    onClick={handleMessageUser}
+                    disabled={creatingChat}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                      creatingChat
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                    }`}
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    <span>{creatingChat ? 'Loading...' : 'Message'}</span>
+                  </button>
+                )}
+              </div>
               
               {/* Stats Row */}
               <div className="flex flex-wrap items-center gap-6">

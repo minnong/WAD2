@@ -5,6 +5,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { ListingsProvider } from './contexts/ListingsContext'
 import { RentalsProvider } from './contexts/RentalsContext'
 import { FavoritesProvider } from './contexts/FavoritesContext'
+import { ChatProvider } from './contexts/ChatContext'
 import AuthenticatedRedirect from './components/AuthenticatedRedirect'
 import AuthPage from './components/AuthPage'
 import HomePage from './components/HomePage'
@@ -28,9 +29,10 @@ export default function App() {
         <ListingsProvider>
           <RentalsProvider>
             <FavoritesProvider>
-              <Router>
-                <ScrollToTop />
-                <Routes>
+              <ChatProvider>
+                <Router>
+                  <ScrollToTop />
+                  <Routes>
                 {/* Landing page with authenticated redirect */}
                 <Route path="/" element={<AuthenticatedRedirect />} />
                 <Route path="/auth" element={<AuthPage />} />
@@ -52,7 +54,8 @@ export default function App() {
                 {/* 404 catch-all route */}
                 <Route path="*" element={<NotFoundPage />} />
                 </Routes>
-              </Router>
+                </Router>
+              </ChatProvider>
             </FavoritesProvider>
           </RentalsProvider>
         </ListingsProvider>

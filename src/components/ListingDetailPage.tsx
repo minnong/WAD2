@@ -7,6 +7,7 @@ import { useRentals } from '../contexts/RentalsContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import ReviewsSection from './ReviewsSection';
+import DateTimePicker from './DateTimePicker';
 import { listingsService } from '../services/firebase';
 import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart, CheckCircle, Calendar } from 'lucide-react';
 
@@ -17,7 +18,7 @@ export default function ListingDetailPage() {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
   const { listings } = useListings();
-  const { addRentalRequest } = useRentals();
+  const { addRentalRequest, getUnavailableDates } = useRentals();
   const { isFavorited, toggleFavorite } = useFavorites();
 
   // Helper function to get full condition description
@@ -72,6 +73,7 @@ export default function ListingDetailPage() {
     message: ''
   });
   const [listingData, setListingData] = useState<any>(null);
+  const [unavailableDates, setUnavailableDates] = useState<Array<{ start: string; end: string; status: string }>>([]);
 
   // Helper function to render tool image (emoji, base64, or URL)
   const renderToolImage = (imageStr: string, size: 'small' | 'medium' | 'large' = 'medium') => {
@@ -126,7 +128,14 @@ export default function ListingDetailPage() {
 
   useEffect(() => {
     loadListingData();
-  }, [id]);
+    
+    // Load unavailable dates for this listing
+    if (id) {
+      const unavailable = getUnavailableDates(String(id));
+      setUnavailableDates(unavailable);
+      console.log('Unavailable dates for listing', id, ':', unavailable);
+    }
+  }, [id, getUnavailableDates]);
 
   useEffect(() => {
     if (!tool) {
@@ -486,34 +495,26 @@ export default function ListingDetailPage() {
 
               {/* DateTime Selection */}
               <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Start Date & Time</label>
-                  <input
-                    type="datetime-local"
-                    value={rentRequest.startDateTime}
-                    onChange={(e) => setRentRequest({...rentRequest, startDateTime: e.target.value})}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === 'dark'
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-gray-50 border-gray-300 text-gray-900'
-                    }`}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">End Date & Time</label>
-                  <input
-                    type="datetime-local"
-                    value={rentRequest.endDateTime}
-                    onChange={(e) => setRentRequest({...rentRequest, endDateTime: e.target.value})}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === 'dark'
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-gray-50 border-gray-300 text-gray-900'
-                    }`}
-                    required
-                  />
-                </div>
+                <DateTimePicker
+                  label="Start Date & Time"
+                  value={rentRequest.startDateTime}
+                  onChange={(value) => setRentRequest({...rentRequest, startDateTime: value})}
+                  unavailableDates={unavailableDates}
+                  minDate={new Date()}
+                  required
+                  isStartDate={true}
+                  otherDateTime={rentRequest.endDateTime}
+                />
+                <DateTimePicker
+                  label="End Date & Time"
+                  value={rentRequest.endDateTime}
+                  onChange={(value) => setRentRequest({...rentRequest, endDateTime: value})}
+                  unavailableDates={unavailableDates}
+                  minDate={rentRequest.startDateTime ? new Date(rentRequest.startDateTime) : new Date()}
+                  required
+                  isStartDate={false}
+                  otherDateTime={rentRequest.startDateTime}
+                />
               </div>
 
               {/* Message */}

@@ -155,7 +155,7 @@ export default function FavoritesPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleRemoveFavorite(listing.id!);
+                        handleRemoveFavorite(String(listing.id!));
                       }}
                       className="absolute top-3 left-3 p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all hover:scale-110"
                       title="Remove from favorites"

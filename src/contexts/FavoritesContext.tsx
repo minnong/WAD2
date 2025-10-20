@@ -82,19 +82,26 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
   };
 
   const addFavorite = async (listingId: string) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Please sign in to add favorites');
+      return;
+    }
 
     try {
       await favoritesService.addFavorite(currentUser.uid, listingId);
       await loadFavorites(); // Refresh the list
     } catch (error) {
       console.error('Error adding favorite:', error);
+      alert('Failed to add to favorites. Please try again.');
       throw error;
     }
   };
 
   const removeFavorite = async (listingId: string) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Please sign in to manage favorites');
+      return;
+    }
 
     try {
       await favoritesService.removeFavorite(currentUser.uid, listingId);
@@ -102,6 +109,7 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
       setFavorites(prev => prev.filter(fav => fav.listingId !== listingId));
     } catch (error) {
       console.error('Error removing favorite:', error);
+      alert('Failed to remove from favorites. Please try again.');
       throw error;
     }
   };
@@ -111,10 +119,26 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
   };
 
   const toggleFavorite = async (listingId: string) => {
-    if (isFavorited(listingId)) {
-      await removeFavorite(listingId);
-    } else {
-      await addFavorite(listingId);
+    if (!currentUser) {
+      alert('Please sign in to add favorites');
+      return;
+    }
+
+    console.log('[FavoritesContext] Toggling favorite for listing:', listingId);
+    console.log('[FavoritesContext] Currently favorited:', isFavorited(listingId));
+
+    try {
+      if (isFavorited(listingId)) {
+        console.log('[FavoritesContext] Removing from favorites...');
+        await removeFavorite(listingId);
+        console.log('[FavoritesContext] Successfully removed from favorites');
+      } else {
+        console.log('[FavoritesContext] Adding to favorites...');
+        await addFavorite(listingId);
+        console.log('[FavoritesContext] Successfully added to favorites');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
     }
   };
 

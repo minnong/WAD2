@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, LogOut, Settings, ChevronDown, Search, Plus, Heart, ShoppingBag, Bell, Sun, Moon, MessageCircle } from 'lucide-react';
+import { User, LogOut, Settings, ChevronDown, Search, Plus, Heart, ShoppingBag, Bell, Sun, Moon, MessageCircle, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -10,6 +10,7 @@ const LiquidGlassNav: React.FC = () => {
   const { currentUser, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -32,10 +33,16 @@ const LiquidGlassNav: React.FC = () => {
     try {
       await logout();
       setShowDropdown(false);
+      setShowMobileMenu(false);
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setShowMobileMenu(false);
   };
 
   return (
@@ -47,11 +54,11 @@ const LiquidGlassNav: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer" onClick={() => navigate(currentUser ? '/home' : '/')}>
+          <div className="flex items-center cursor-pointer" onClick={() => handleNavigation(currentUser ? '/home' : '/')}>
             <img src={shareLahLogo} alt="ShareLah Logo" className="w-20 h-20" />
           </div>
 
-          {/* Shopping Navigation - only show if user is logged in */}
+          {/* Desktop Navigation - only show if user is logged in */}
           {currentUser && (
             <div className={`hidden md:flex items-center space-x-6 transition-all duration-300 ${
               scrolled
@@ -63,7 +70,7 @@ const LiquidGlassNav: React.FC = () => {
                 : ''
             }`}>
               <button
-                onClick={() => navigate('/browse')}
+                onClick={() => handleNavigation('/browse')}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
@@ -73,7 +80,7 @@ const LiquidGlassNav: React.FC = () => {
                 <span className="text-sm font-medium">Browse</span>
               </button>
               <button
-                onClick={() => navigate('/list-item')}
+                onClick={() => handleNavigation('/list-item')}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
@@ -83,7 +90,7 @@ const LiquidGlassNav: React.FC = () => {
                 <span className="text-sm font-medium">List Item</span>
               </button>
               <button
-                onClick={() => navigate('/my-rentals')}
+                onClick={() => handleNavigation('/my-rentals')}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
@@ -93,7 +100,7 @@ const LiquidGlassNav: React.FC = () => {
                 <span className="text-sm font-medium">My Rentals</span>
               </button>
               <button
-                onClick={() => navigate('/favorites')}
+                onClick={() => handleNavigation('/favorites')}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
@@ -103,7 +110,7 @@ const LiquidGlassNav: React.FC = () => {
                 <span className="text-sm font-medium">Favorites</span>
               </button>
               <button
-                onClick={() => navigate('/chat')}
+                onClick={() => handleNavigation('/chat')}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
@@ -115,9 +122,24 @@ const LiquidGlassNav: React.FC = () => {
             </div>
           )}
 
-          {/* Auth Section */}
+          {/* Right Side - Desktop Auth + Mobile Menu Button */}
           {currentUser ? (
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              {/* Mobile Menu Button - Only show on mobile when logged in */}
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className={`md:hidden p-2 rounded-xl transition-all ${
+                  theme === 'dark'
+                    ? 'text-white/80 hover:text-white hover:bg-white/10'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+                }`}
+                aria-label="Toggle mobile menu"
+              >
+                {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+
+              {/* Desktop Only - Theme Toggle and Notifications */}
+              <div className="hidden md:flex items-center space-x-4">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -141,7 +163,7 @@ const LiquidGlassNav: React.FC = () => {
               </button>
 
               {/* User Menu */}
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-full transition-all duration-300 border shadow-lg hover:shadow-xl backdrop-blur-sm ${
@@ -169,7 +191,7 @@ const LiquidGlassNav: React.FC = () => {
                 <ChevronDown className="w-4 h-4" />
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Desktop Dropdown Menu */}
               {showDropdown && (
                 <div className={`absolute right-0 mt-2 w-48 rounded-xl border shadow-xl backdrop-blur-sm overflow-hidden ${
                   theme === 'dark'
@@ -180,7 +202,7 @@ const LiquidGlassNav: React.FC = () => {
                     <button
                       onClick={() => {
                         setShowDropdown(false);
-                        navigate('/profile');
+                        handleNavigation('/profile');
                       }}
                       className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                         theme === 'dark'
@@ -194,7 +216,7 @@ const LiquidGlassNav: React.FC = () => {
                     <button
                       onClick={() => {
                         setShowDropdown(false);
-                        navigate('/settings');
+                        handleNavigation('/settings');
                       }}
                       className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                         theme === 'dark'
@@ -221,6 +243,7 @@ const LiquidGlassNav: React.FC = () => {
               )}
               </div>
             </div>
+            </div>
           ) : (
             <button
               onClick={() => navigate('/auth')}
@@ -236,6 +259,129 @@ const LiquidGlassNav: React.FC = () => {
           )}
         </div>
       </div>
+
+              {/* Mobile Menu Dropdown */}
+              {currentUser && showMobileMenu && (
+                <div className={`md:hidden absolute top-full left-0 right-0 mt-2 mx-4 rounded-2xl border shadow-xl backdrop-blur-sm overflow-y-auto max-h-[calc(100vh-120px)] z-40 ${
+                  theme === 'dark'
+                    ? 'bg-black/90 border-white/10'
+                    : 'bg-white/95 border-gray-200/50'
+                }`}>
+                  <div className="py-2">
+            {/* Navigation Links */}
+            <button
+              onClick={() => handleNavigation('/browse')}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}
+            >
+              <Search className="w-5 h-5" />
+              <span className="font-medium">Browse</span>
+            </button>
+            <button
+              onClick={() => handleNavigation('/list-item')}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}
+            >
+              <Plus className="w-5 h-5" />
+              <span className="font-medium">List Item</span>
+            </button>
+            <button
+              onClick={() => handleNavigation('/my-rentals')}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}
+            >
+              <ShoppingBag className="w-5 h-5" />
+              <span className="font-medium">My Rentals</span>
+            </button>
+            <button
+              onClick={() => handleNavigation('/favorites')}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}
+            >
+              <Heart className="w-5 h-5" />
+              <span className="font-medium">Favorites</span>
+            </button>
+            <button
+              onClick={() => handleNavigation('/chat')}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span className="font-medium">Chat</span>
+            </button>
+
+            {/* Divider */}
+            <div className={`my-2 border-t ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`} />
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              <span className="font-medium">
+                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              </span>
+            </button>
+
+            {/* User Profile Section */}
+            <div className={`my-2 border-t ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'}`} />
+            
+            <button
+              onClick={() => handleNavigation('/profile')}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}
+            >
+              <User className="w-5 h-5" />
+              <span className="font-medium">Profile</span>
+            </button>
+            <button
+              onClick={() => handleNavigation('/settings')}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-white/80 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+              }`}
+            >
+              <Settings className="w-5 h-5" />
+              <span className="font-medium">Settings</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+                theme === 'dark'
+                  ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
+                  : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+              }`}
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Sign Out</span>
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

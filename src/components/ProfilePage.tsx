@@ -201,9 +201,9 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile Info */}
-            <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-2xl font-bold">{profileData.displayName || 'Anonymous User'}</h1>
+              <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <h1 className="text-xl md:text-2xl font-bold">{profileData.displayName || 'Anonymous User'}</h1>
                 <div className="flex items-center space-x-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-current" />
                   <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
@@ -360,12 +360,12 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <div className="mb-8">
-          <div className="flex space-x-1 overflow-x-auto">
+          <div className="flex space-x-1 overflow-x-auto pb-2 scrollbar-hide">
             {tabs.map((tabItem) => (
               <button
                 key={tabItem.id}
                 onClick={() => navigate(tabItem.id === 'overview' ? '/profile' : `/profile/tab/${tabItem.id}`)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                   activeTab === tabItem.id
                     ? 'bg-purple-900 text-white shadow-lg'
                     : theme === 'dark'
@@ -439,7 +439,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <h3 className="text-lg font-semibold">Recent Activity</h3>
+              <h3 className="text-base md:text-lg font-semibold">Recent Activity</h3>
               <div className="space-y-4">
                 {userRentals.slice(0, 5).map((rental, index) => (
                   <div key={index} className={`p-4 rounded-lg border ${
@@ -478,7 +478,7 @@ export default function ProfilePage() {
             <div className="space-y-6">
               {/* Active Listings */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">Active Listings</h3>
+                <h3 className="text-base md:text-lg font-semibold mb-4">Active Listings</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {activeListings.map((listing) => (
                     <div
@@ -593,8 +593,8 @@ export default function ProfilePage() {
               {/* Delisted Listings Section */}
               {delistedListings.length > 0 && (
                 <div className="mt-8 pt-8 border-t border-gray-600/30">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <XCircle className="w-5 h-5 text-orange-400" />
+                  <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2">
+                    <XCircle className="w-4 h-4 md:w-5 md:h-5 text-orange-400" />
                     Delisted Items
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -701,8 +701,8 @@ export default function ProfilePage() {
             <div className="space-y-8">
               {/* Renting History (As Customer) */}
               <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-purple-400" />
+                <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
                   Renting History (As Customer)
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -787,8 +787,8 @@ export default function ProfilePage() {
 
               {/* Listing History (As Owner) */}
               <div className="pt-8 border-t border-gray-600/30">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-green-400" />
+                <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Package className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
                   Listing Rental History (As Owner)
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

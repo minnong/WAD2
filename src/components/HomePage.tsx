@@ -139,7 +139,7 @@ export default function HomePage() {
             {banners.map((banner) => (
               <div
                 key={banner.id}
-                className={`w-full flex-shrink-0 ${typeof banner.image === 'string' && banner.image.startsWith('/') ? 'relative' : `bg-gradient-to-r ${banner.color}`} p-12 md:p-20 cursor-pointer min-h-[400px] md:min-h-[450px]`}
+                className={`w-full flex-shrink-0 ${typeof banner.image === 'string' && banner.image.startsWith('/') ? 'relative' : `bg-gradient-to-r ${banner.color}`} p-6 sm:p-12 md:p-20 cursor-pointer min-h-[300px] sm:min-h-[400px] md:min-h-[450px]`}
                 onClick={banner.action}
                 style={typeof banner.image === 'string' && banner.image.startsWith('/') ? {
                   backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${banner.image})`,
@@ -152,14 +152,14 @@ export default function HomePage() {
                   <div className="text-white z-10 relative">
                     {typeof banner.image === 'string' && banner.image.startsWith('/') ? (
                       // For image backgrounds, don't show the small icon
-                      <div className="mb-6"></div>
+                      <div className="mb-3 md:mb-6"></div>
                     ) : (
-                      <div className="text-8xl md:text-9xl mb-6">{banner.image}</div>
+                      <div className="text-6xl sm:text-8xl md:text-9xl mb-3 md:mb-6">{banner.image}</div>
                     )}
-                    <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight drop-shadow-lg">{banner.title}</h1>
-                    <p className="text-xl md:text-2xl opacity-90 mb-6 drop-shadow-md">{banner.subtitle}</p>
+                    <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-2 md:mb-4 leading-tight drop-shadow-lg">{banner.title}</h1>
+                    <p className="text-base sm:text-xl md:text-2xl opacity-90 mb-4 md:mb-6 drop-shadow-md">{banner.subtitle}</p>
                     <div className="flex space-x-4">
-                      <div className="px-6 py-2 bg-white/30 backdrop-blur-sm rounded-full text-sm font-medium shadow-lg">
+                      <div className="px-4 sm:px-6 py-1.5 sm:py-2 bg-white/30 backdrop-blur-sm rounded-full text-xs sm:text-sm font-medium shadow-lg">
                         Click to explore
                       </div>
                     </div>
@@ -182,15 +182,15 @@ export default function HomePage() {
           {/* Navigation Buttons */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-2 text-white transition-colors"
+            className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-1.5 md:p-2 text-white transition-colors z-10"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-2 text-white transition-colors"
+            className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-1.5 md:p-2 text-white transition-colors z-10"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
           </button>
 
           {/* Dots Indicator */}
@@ -209,7 +209,7 @@ export default function HomePage() {
 
         {/* Category Icons Section */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 px-2">Popular Categories</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 px-2">Popular Categories</h2>
           <div className="relative">
             <div className="flex overflow-x-auto scrollbar-hide gap-8 pb-6">
               {[
@@ -252,7 +252,7 @@ export default function HomePage() {
         {/* User Stats Dashboard with Glowing Purple Shadow */}
         {userRentals.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-3xl font-bold mb-16 px-2">Your ShareLah Dashboard</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-16 px-2">Your ShareLah Dashboard</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               {/* Left Column - Stats */}
@@ -507,7 +507,7 @@ export default function HomePage() {
 
         {/* Recent Activity */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 px-2">Recent Activity</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 px-2">Recent Activity</h2>
           <div>
             {(() => {
               // Helper function to get full condition description
@@ -698,8 +698,8 @@ export default function HomePage() {
 
         {/* Quick Tips */}
         <div>
-          <h2 className="text-3xl font-bold mb-8 px-2">Quick Tips</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 px-2">Quick Tips</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
             <div className="flex items-start space-x-8 p-6">
               <div className="flex-shrink-0">
                 <Users className="w-8 h-8 text-purple-600" strokeWidth={2.5} />

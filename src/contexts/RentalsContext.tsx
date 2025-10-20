@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import {
   collection,
@@ -123,7 +123,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
     };
   }, [currentUser]);
 
-  const checkDateConflict = (toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => {
+  const checkDateConflict = useCallback((toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => {
     // Get all approved/active rentals for this tool
     const approvedRentals = [...userRentalRequests, ...receivedRentalRequests].filter(
       rental =>
@@ -143,9 +143,9 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       // Check if dates overlap
       return (newStart <= existingEnd) && (newEnd >= existingStart);
     });
-  };
+  }, [userRentalRequests, receivedRentalRequests]);
 
-  const getUnavailableDates = (toolId: string) => {
+  const getUnavailableDates = useCallback((toolId: string) => {
     // Get all approved/active rentals for this tool
     const approvedRentals = [...userRentalRequests, ...receivedRentalRequests].filter(
       rental =>
@@ -158,7 +158,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       end: rental.endDate,
       status: rental.status
     }));
-  };
+  }, [userRentalRequests, receivedRentalRequests]);
 
   const addRentalRequest = async (requestData: Omit<RentalRequest, 'id' | 'requestDate'>) => {
     if (!currentUser) {

@@ -55,7 +55,7 @@ export interface FirebaseRentalRequest {
   endTime: string;
   message: string;
   totalCost: number;
-  status: 'pending' | 'approved' | 'declined' | 'active' | 'completed' | 'cancelled';
+  status: 'pending' | 'approved' | 'declined' | 'completed' | 'cancelled';
   location: string;
   createdAt: any;
   updatedAt: any;
@@ -118,7 +118,7 @@ export class ListingsService {
       const q = query(
         rentalsRef,
         where('toolId', '==', listingId),
-        where('status', 'in', ['approved', 'active', 'completed'])
+        where('status', 'in', ['approved', 'completed'])
       );
       const snapshot = await getDocs(q);
       return snapshot.size;

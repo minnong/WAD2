@@ -722,7 +722,6 @@ export default function ProfilePage() {
                           rental.status === 'completed' ? 'bg-green-500/90 text-white' :
                           rental.status === 'approved' ? 'bg-blue-500/90 text-white' :
                           rental.status === 'pending' ? 'bg-yellow-500/90 text-white' :
-                          rental.status === 'active' ? 'bg-purple-500/90 text-white' :
                           rental.status === 'declined' ? 'bg-red-500/90 text-white' :
                           'bg-gray-500/90 text-white'
                         }`}>
@@ -809,7 +808,6 @@ export default function ProfilePage() {
                           rental.status === 'completed' ? 'bg-green-500/90 text-white' :
                           rental.status === 'approved' ? 'bg-blue-500/90 text-white' :
                           rental.status === 'pending' ? 'bg-yellow-500/90 text-white' :
-                          rental.status === 'active' ? 'bg-purple-500/90 text-white' :
                           rental.status === 'declined' ? 'bg-red-500/90 text-white' :
                           'bg-gray-500/90 text-white'
                         }`}>

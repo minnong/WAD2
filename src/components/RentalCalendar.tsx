@@ -15,7 +15,6 @@ interface RentalCalendarProps {
 const CALENDAR_COLORS = {
   pending: '#f59e0b',
   approved: '#10b981',
-  active: '#8b5cf6',
   completed: '#6b7280',
   declined: '#ef4444',
   cancelled: '#9ca3af',
@@ -32,7 +31,12 @@ export default function RentalCalendar({ viewMode }: RentalCalendarProps) {
   const events = useMemo(() => {
     const rentals = viewMode === 'customer' ? userRentalRequests : receivedRentalRequests;
     
-    return rentals.map((rental) => {
+    // Filter out cancelled and declined bookings
+    const activeRentals = rentals.filter(
+      rental => rental.status !== 'cancelled' && rental.status !== 'declined'
+    );
+    
+    return activeRentals.map((rental) => {
       const startDateTime = new Date(`${rental.startDate}T${rental.startTime}`);
       const endDateTime = new Date(`${rental.endDate}T${rental.endTime}`);
       
@@ -77,7 +81,6 @@ export default function RentalCalendar({ viewMode }: RentalCalendarProps) {
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'approved':
-      case 'active':
         return 'bg-green-500/20 text-green-500 border-green-500/30';
       case 'pending':
         return 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30';
@@ -122,20 +125,8 @@ export default function RentalCalendar({ viewMode }: RentalCalendarProps) {
             <span className="text-sm">Approved</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 rounded" style={{ backgroundColor: CALENDAR_COLORS.active }}></div>
-            <span className="text-sm">Active</span>
-          </div>
-          <div className="flex items-center space-x-2">
             <div className="w-4 h-4 rounded" style={{ backgroundColor: CALENDAR_COLORS.completed }}></div>
             <span className="text-sm">Completed</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 rounded" style={{ backgroundColor: CALENDAR_COLORS.declined }}></div>
-            <span className="text-sm">Declined</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 rounded" style={{ backgroundColor: CALENDAR_COLORS.cancelled }}></div>
-            <span className="text-sm">Cancelled</span>
           </div>
         </div>
       </div>

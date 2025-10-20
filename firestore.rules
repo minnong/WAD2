@@ -2,9 +2,10 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read and write their own user documents
+    // Users can read any user profile (for chat, profiles, etc.) but only write their own
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;  // Any authenticated user can read profiles
+      allow write: if request.auth != null && request.auth.uid == userId;  // Can only write own profile
     }
 
     // Listings can be read by anyone, but only written by authenticated users

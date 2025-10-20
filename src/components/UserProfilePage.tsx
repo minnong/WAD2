@@ -62,6 +62,7 @@ export default function UserProfilePage() {
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
         setProfileUserId(userDoc.id); // Store the user ID
+        console.log('[UserProfile] Found user in Firestore:', userDoc.id, 'for email:', email);
         return {
           name: userData.displayName || 'User',
           joinDate: userData.createdAt ? new Date(userData.createdAt.toDate()).toLocaleDateString() : 'Recently',
@@ -71,6 +72,7 @@ export default function UserProfilePage() {
       }
       
       // If not found in users collection, create a fallback profile
+      console.warn('[UserProfile] User not found in Firestore for email:', email);
       return {
         name: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         joinDate: 'Recently',
@@ -208,8 +210,18 @@ export default function UserProfilePage() {
   };
 
   const handleMessageUser = async () => {
+    console.log('[UserProfile] handleMessageUser called');
+    console.log('[UserProfile] profileUserId:', profileUserId);
+    console.log('[UserProfile] currentUser:', currentUser);
+    console.log('[UserProfile] authUser:', authUser?.uid);
+    
     if (!profileUserId || !currentUser || !authUser) {
-      console.error('Missing required data to create chat');
+      console.error('[UserProfile] Missing required data to create chat:', {
+        profileUserId,
+        currentUserName: currentUser?.name,
+        authUserId: authUser?.uid
+      });
+      alert('Unable to create chat. Missing user information.');
       return;
     }
 
@@ -221,15 +233,17 @@ export default function UserProfilePage() {
 
     try {
       setCreatingChat(true);
+      console.log('[UserProfile] Creating chat with user:', profileUserId, currentUser.name);
       const chatId = await createOrGetChat(
         profileUserId,
         currentUser.name,
         currentUser.photoURL
       );
+      console.log('[UserProfile] Chat created/retrieved:', chatId);
       navigate(`/chat?selected=${chatId}`);
     } catch (error) {
-      console.error('Error creating chat:', error);
-      alert('Failed to create chat. Please try again.');
+      console.error('[UserProfile] Error creating chat:', error);
+      alert('Failed to create chat. Please try again. Error: ' + (error as Error).message);
     } finally {
       setCreatingChat(false);
     }
@@ -332,7 +346,14 @@ export default function UserProfilePage() {
                 </div>
                 
                 {/* Message Button - only show if not viewing own profile */}
-                {authUser && profileUserId && authUser.uid !== profileUserId && (
+                {(() => {
+                  console.log('[UserProfile] Message button check:', {
+                    authUser: authUser?.uid,
+                    profileUserId,
+                    shouldShow: authUser && profileUserId && authUser.uid !== profileUserId
+                  });
+                  return authUser && profileUserId && authUser.uid !== profileUserId;
+                })() && (
                   <button
                     onClick={handleMessageUser}
                     disabled={creatingChat}

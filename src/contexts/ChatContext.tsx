@@ -78,27 +78,32 @@ export function ChatProvider({ children }: ChatProviderProps) {
   // Subscribe to user's chats
   useEffect(() => {
     if (!currentUser) {
+      console.log('[ChatContext] No current user, clearing chats');
       setChats([]);
       setMessages({});
       setLoading(false);
       return;
     }
 
+    console.log('[ChatContext] Setting up chat listener for user:', currentUser.uid);
     setLoading(true);
 
     const chatsRef = collection(db, 'chats');
+    // Note: Removed orderBy to avoid needing a Firestore index
+    // We'll sort in memory instead
     const q = query(
       chatsRef,
-      where('participants', 'array-contains', currentUser.uid),
-      orderBy('updatedAt', 'desc')
+      where('participants', 'array-contains', currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        console.log('[ChatContext] Received chat snapshot, count:', snapshot.size);
         const chatsList: Chat[] = [];
         snapshot.forEach((doc) => {
           const data = doc.data();
+          console.log('[ChatContext] Chat doc:', doc.id, 'participants:', data.participants);
           chatsList.push({
             id: doc.id,
             participants: data.participants || [],
@@ -112,11 +117,16 @@ export function ChatProvider({ children }: ChatProviderProps) {
             updatedAt: data.updatedAt?.toDate() || new Date(),
           });
         });
+        
+        // Sort by updatedAt in memory (most recent first)
+        chatsList.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+        
+        console.log('[ChatContext] Total chats loaded:', chatsList.length);
         setChats(chatsList);
         setLoading(false);
       },
       (error) => {
-        console.error('Error fetching chats:', error);
+        console.error('[ChatContext] Error fetching chats:', error);
         setLoading(false);
       }
     );
@@ -246,18 +256,20 @@ export function ChatProvider({ children }: ChatProviderProps) {
         });
 
         // Mark all unread messages as read
+        // Simplified query to avoid index requirement - get all messages and filter in memory
         const messagesRef = collection(db, 'chats', chatId, 'messages');
-        const q = query(
-          messagesRef,
-          where('senderId', '!=', currentUser.uid),
-          where('read', '==', false)
-        );
+        const q = query(messagesRef);
         
         const snapshot = await getDocs(q);
         const batch = writeBatch(db);
         
-        snapshot.forEach((doc) => {
-          batch.update(doc.ref, { read: true });
+        // Filter in memory to avoid needing composite index
+        snapshot.forEach((docSnap) => {
+          const msgData = docSnap.data();
+          // Only mark as read if: not sent by current user AND not already read
+          if (msgData.senderId !== currentUser.uid && !msgData.read) {
+            batch.update(docSnap.ref, { read: true });
+          }
         });
         
         await batch.commit();
@@ -275,6 +287,12 @@ export function ChatProvider({ children }: ChatProviderProps) {
   ): Promise<string> => {
     if (!currentUser) throw new Error('User not authenticated');
 
+    console.log('[ChatContext] createOrGetChat called:', {
+      currentUser: currentUser.uid,
+      otherUserId,
+      otherUserName
+    });
+
     try {
       // Check if chat already exists
       const chatsRef = collection(db, 'chats');
@@ -283,6 +301,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
         where('participants', 'array-contains', currentUser.uid)
       );
       
+      console.log('[ChatContext] Checking for existing chat...');
       const snapshot = await getDocs(q);
       let existingChatId: string | null = null;
 
@@ -293,16 +312,19 @@ export function ChatProvider({ children }: ChatProviderProps) {
           data.participants.length === 2
         ) {
           existingChatId = doc.id;
+          console.log('[ChatContext] Found existing chat:', existingChatId);
         }
       });
 
       if (existingChatId) {
+        console.log('[ChatContext] Returning existing chat ID:', existingChatId);
         return existingChatId;
       }
 
       // Create new chat
+      console.log('[ChatContext] Creating new chat...');
       const newChatRef = doc(collection(db, 'chats'));
-      await setDoc(newChatRef, {
+      const chatData = {
         participants: [currentUser.uid, otherUserId],
         participantNames: {
           [currentUser.uid]: currentUser.displayName || 'Anonymous',
@@ -321,11 +343,15 @@ export function ChatProvider({ children }: ChatProviderProps) {
         },
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+      };
+      
+      console.log('[ChatContext] New chat data:', chatData);
+      await setDoc(newChatRef, chatData);
+      console.log('[ChatContext] Chat created with ID:', newChatRef.id);
 
       return newChatRef.id;
     } catch (error) {
-      console.error('Error creating/getting chat:', error);
+      console.error('[ChatContext] Error creating/getting chat:', error);
       throw error;
     }
   };

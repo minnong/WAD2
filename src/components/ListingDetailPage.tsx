@@ -152,18 +152,26 @@ export default function ListingDetailPage() {
   // Load owner user ID
   useEffect(() => {
     const loadOwnerUserId = async () => {
-      if (!tool?.ownerContact) return;
+      if (!tool?.ownerContact) {
+        console.log('[ListingDetail] No owner contact found');
+        return;
+      }
       
       try {
+        console.log('[ListingDetail] Loading owner user ID for email:', tool.ownerContact);
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where('email', '==', tool.ownerContact));
         const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
-          setOwnerUserId(querySnapshot.docs[0].id);
+          const userId = querySnapshot.docs[0].id;
+          setOwnerUserId(userId);
+          console.log('[ListingDetail] Found owner user ID:', userId);
+        } else {
+          console.warn('[ListingDetail] Owner not found in Firestore for email:', tool.ownerContact);
         }
       } catch (error) {
-        console.error('Error loading owner user ID:', error);
+        console.error('[ListingDetail] Error loading owner user ID:', error);
       }
     };
 
@@ -175,8 +183,18 @@ export default function ListingDetailPage() {
   };
 
   const handleMessageOwner = async () => {
+    console.log('[ListingDetail] handleMessageOwner called');
+    console.log('[ListingDetail] ownerUserId:', ownerUserId);
+    console.log('[ListingDetail] tool.owner:', tool?.owner);
+    console.log('[ListingDetail] currentUser:', currentUser?.uid);
+    
     if (!ownerUserId || !tool || !currentUser) {
-      console.error('Missing required data to create chat');
+      console.error('[ListingDetail] Missing required data to create chat:', {
+        ownerUserId,
+        toolName: tool?.name,
+        currentUserId: currentUser?.uid
+      });
+      alert('Unable to create chat. Owner information not found.');
       return;
     }
 
@@ -188,15 +206,17 @@ export default function ListingDetailPage() {
 
     try {
       setCreatingChat(true);
+      console.log('[ListingDetail] Creating chat with owner:', ownerUserId, tool.owner);
       const chatId = await createOrGetChat(
         ownerUserId,
         tool.owner,
         '' // We don't have the owner's photo URL here
       );
+      console.log('[ListingDetail] Chat created/retrieved:', chatId);
       navigate(`/chat?selected=${chatId}`);
     } catch (error) {
-      console.error('Error creating chat:', error);
-      alert('Failed to create chat. Please try again.');
+      console.error('[ListingDetail] Error creating chat:', error);
+      alert('Failed to create chat. Please try again. Error: ' + (error as Error).message);
     } finally {
       setCreatingChat(false);
     }
@@ -400,7 +420,15 @@ export default function ListingDetailPage() {
               </button>
               
               {/* Message Owner Button */}
-              {currentUser && tool.ownerContact !== currentUser.email && ownerUserId && (
+              {(() => {
+                console.log('[ListingDetail] Message button check:', {
+                  currentUser: currentUser?.email,
+                  ownerContact: tool.ownerContact,
+                  ownerUserId,
+                  shouldShow: currentUser && tool.ownerContact !== currentUser.email && ownerUserId
+                });
+                return currentUser && tool.ownerContact !== currentUser.email && ownerUserId;
+              })() && (
                 <button
                   onClick={handleMessageOwner}
                   disabled={creatingChat}

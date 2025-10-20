@@ -21,8 +21,28 @@ export default function ChatPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const chatId = params.get('selected');
-    if (chatId && chats.some(chat => chat.id === chatId)) {
-      setSelectedChat(chatId);
+    console.log('[ChatPage] Query parameter chatId:', chatId);
+    console.log('[ChatPage] Available chats:', chats.length);
+    console.log('[ChatPage] Chat IDs:', chats.map(c => c.id));
+    
+    if (chatId) {
+      const chatExists = chats.some(chat => chat.id === chatId);
+      console.log('[ChatPage] Chat exists:', chatExists);
+      
+      if (chatExists) {
+        console.log('[ChatPage] Setting selected chat to:', chatId);
+        setSelectedChat(chatId);
+      } else {
+        console.warn('[ChatPage] Chat not found in list yet, waiting...');
+        // Try again in a moment (chat might be loading)
+        setTimeout(() => {
+          const stillExists = chats.some(chat => chat.id === chatId);
+          if (stillExists) {
+            console.log('[ChatPage] Chat found after delay, selecting:', chatId);
+            setSelectedChat(chatId);
+          }
+        }, 1000);
+      }
     }
   }, [location.search, chats]);
 
@@ -93,6 +113,7 @@ export default function ChatPage() {
   const otherUserInfo = selectedChatData ? getOtherUserInfo(selectedChatData) : null;
 
   if (loading) {
+    console.log('[ChatPage] Loading state - chats not loaded yet');
     return (
       <div className={`min-h-screen transition-colors duration-300 ${
         theme === 'dark'
@@ -112,6 +133,10 @@ export default function ChatPage() {
       </div>
     );
   }
+
+  console.log('[ChatPage] Render - chats loaded:', chats.length);
+  console.log('[ChatPage] Selected chat:', selectedChat);
+  console.log('[ChatPage] Current user:', currentUser?.uid);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${

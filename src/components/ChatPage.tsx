@@ -55,12 +55,32 @@ export default function ChatPage() {
   });
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      // Scroll within the container only, not the entire page
+      const container = messagesEndRef.current.parentElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   };
 
+  // Track previous message count to detect new messages
+  const prevMessageCountRef = useRef<number>(0);
+  
+  // Only scroll to bottom when new messages arrive (not when chat is initially selected)
   useEffect(() => {
-    scrollToBottom();
-  }, [selectedChat, getMessages(selectedChat || '')]);
+    if (selectedChat) {
+      const messages = getMessages(selectedChat);
+      const currentCount = messages.length;
+      
+      // Only scroll if messages were added (not on initial load)
+      if (prevMessageCountRef.current > 0 && currentCount > prevMessageCountRef.current) {
+        setTimeout(() => scrollToBottom(), 100);
+      }
+      
+      prevMessageCountRef.current = currentCount;
+    }
+  }, [selectedChat, getMessages]);
 
   // Mark messages as read when chat is selected
   useEffect(() => {

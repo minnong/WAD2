@@ -31,7 +31,7 @@ interface RentalRequest {
   endTime: string;
   message: string;
   totalCost: number;
-  status: 'pending' | 'approved' | 'declined' | 'active' | 'completed' | 'cancelled';
+  status: 'pending' | 'approved' | 'declined' | 'completed' | 'cancelled';
   requestDate: Timestamp | Date;
   location: string;
   hasReview?: boolean;
@@ -124,11 +124,11 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
   }, [currentUser]);
 
   const checkDateConflict = useCallback((toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => {
-    // Get all approved/active rentals for this tool
+    // Get all approved rentals for this tool
     const approvedRentals = [...userRentalRequests, ...receivedRentalRequests].filter(
       rental =>
         rental.toolId === toolId &&
-        (rental.status === 'approved' || rental.status === 'active') &&
+        rental.status === 'approved' &&
         rental.id !== excludeRequestId // Exclude the current request when checking
     );
 
@@ -146,11 +146,11 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
   }, [userRentalRequests, receivedRentalRequests]);
 
   const getUnavailableDates = useCallback((toolId: string) => {
-    // Get all approved/active rentals for this tool
+    // Get all approved rentals for this tool
     const approvedRentals = [...userRentalRequests, ...receivedRentalRequests].filter(
       rental =>
         rental.toolId === toolId &&
-        (rental.status === 'approved' || rental.status === 'active')
+        rental.status === 'approved'
     );
 
     return approvedRentals.map(rental => ({

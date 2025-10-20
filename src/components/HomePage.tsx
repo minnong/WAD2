@@ -22,7 +22,7 @@ export default function HomePage() {
 
   // Get user stats
   const userRentals = currentUser ? getUserRentals() : [];
-  const activeRentals = userRentalRequests.filter(r => r.status === 'approved' || r.status === 'active');
+  const activeRentals = userRentalRequests.filter(r => r.status === 'approved');
   const completedRentals = userRentalRequests.filter(r => r.status === 'completed');
   const pendingRequests = userRentalRequests.filter(r => r.status === 'pending');
 

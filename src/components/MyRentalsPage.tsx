@@ -69,7 +69,7 @@ export default function MyRentalsPage() {
 
   // Get user's rental activity - separate active rentals, completed rentals, and pending requests
   const activeRentals = userRentalRequests.filter(request =>
-    request.status === 'approved' || request.status === 'active'
+    request.status === 'approved'
   );
   const completedRentalsCustomer = userRentalRequests.filter(request =>
     request.status === 'completed'
@@ -88,7 +88,7 @@ export default function MyRentalsPage() {
   const totalSpent = completedRentals.reduce((sum, r) => sum + r.totalCost, 0);
 
   // Owner stats
-  const approvedBookings = receivedRentalRequests.filter(r => r.status === 'approved' || r.status === 'active');
+  const approvedBookings = receivedRentalRequests.filter(r => r.status === 'approved');
   const completedBookings = receivedRentalRequests.filter(r => r.status === 'completed');
   const totalEarnings = completedBookings.reduce((sum, r) => sum + r.totalCost, 0);
 
@@ -445,7 +445,6 @@ export default function MyRentalsPage() {
     switch (status) {
       case 'approved':
         return 'text-green-500 bg-green-500/10';
-      case 'active':
       case 'rented':
         return 'text-white bg-purple-300/10';
       case 'completed':
@@ -465,7 +464,8 @@ export default function MyRentalsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active':
+      case 'approved':
+        return <CheckCircle className="w-4 h-4" />;
       case 'rented':
         return <Clock className="w-4 h-4" />;
       case 'completed':
@@ -707,7 +707,7 @@ export default function MyRentalsPage() {
                 }`}
               >
                 <CheckCircle className="w-5 h-5" />
-                <span>Active Rentals ({receivedRentalRequests.filter(r => r.status === 'approved' || r.status === 'active').length})</span>
+                <span>Active Rentals ({receivedRentalRequests.filter(r => r.status === 'approved').length})</span>
               </button>
               <button
                 onClick={() => setOwnerActiveTab('requests')}
@@ -805,7 +805,7 @@ export default function MyRentalsPage() {
 
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
-                          {(item.status === 'active' || item.status === 'approved') && (
+                          {item.status === 'approved' && (
                             <div className="flex justify-center gap-3 mb-2">
                               <button
                                 onClick={(e) => {
@@ -1345,14 +1345,14 @@ export default function MyRentalsPage() {
         ) : viewMode === 'owner' && ownerActiveTab === 'active-rentals' ? (
           <div className="space-y-6">
             {/* Active Rentals for Owner */}
-            {receivedRentalRequests.filter(r => r.status === 'approved' || r.status === 'active').length > 0 ? (
+            {receivedRentalRequests.filter(r => r.status === 'approved').length > 0 ? (
               <div>
                 <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   ✅ Active Rentals
                 </h2>
                 <div className="space-y-6 mb-12">
                   {receivedRentalRequests
-                    .filter(r => r.status === 'approved' || r.status === 'active')
+                    .filter(r => r.status === 'approved')
                     .map((request) => (
                     <div key={request.id} className="flex items-center justify-between">
                       {/* Listing Box */}

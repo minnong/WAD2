@@ -4,8 +4,11 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useChat } from '../contexts/ChatContext';
 import { reviewsService } from '../services/firebase';
 import { emailService } from '../services/emailService';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import LiquidGlassNav from './LiquidGlassNav';
 import RentalCalendar from './RentalCalendar';
 import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin, Award, DollarSign } from 'lucide-react';
@@ -17,6 +20,7 @@ export default function MyRentalsPage() {
   const { currentUser } = useAuth();
   const { userListings, deleteListing, delistListing, relistListing } = useListings(); // Get user-specific listings
   const { userRentalRequests, receivedRentalRequests, updateRentalStatus, updateRentalData } = useRentals(); // Get user's rental requests directly
+  const { createOrGetChat } = useChat();
 
   // Owner tabs: my-listings, active-rentals, requests, calendar
   // Customer tabs: active-rentals, pending-requests, calendar
@@ -142,9 +146,63 @@ export default function MyRentalsPage() {
     navigate(`/listing/${listingId}`);
   };
 
-  const handleContactOwner = (rental: any) => {
-    // Navigate to chat page with owner
-    navigate('/chat', { state: { recipientEmail: rental.ownerEmail, recipientName: rental.ownerName } });
+  const handleContactOwner = async (rental: any) => {
+    console.log('[MyRentals] handleContactOwner called with rental:', rental);
+    
+    if (!currentUser) {
+      alert('Please login to chat');
+      return;
+    }
+
+    try {
+      // Determine if we're contacting owner or renter
+      const isOwner = rental.ownerEmail === currentUser.email;
+      const targetEmail = isOwner ? rental.renterEmail : rental.ownerEmail;
+      const targetName = isOwner ? rental.renterName : rental.ownerName;
+
+      console.log('[MyRentals] Contact info:', {
+        isOwner,
+        targetEmail,
+        targetName,
+        currentUserEmail: currentUser.email
+      });
+
+      if (!targetEmail) {
+        alert('Unable to find contact information. Email is missing.');
+        return;
+      }
+
+      // Find the user ID from email
+      console.log('[MyRentals] Looking up user by email:', targetEmail);
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', targetEmail));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.warn('[MyRentals] User not found in Firestore for email:', targetEmail);
+        alert(`User not found for ${targetEmail}. They may not have logged in yet.`);
+        return;
+      }
+
+      const targetUserId = querySnapshot.docs[0].id;
+      const targetUserData = querySnapshot.docs[0].data();
+      console.log('[MyRentals] Found user:', targetUserId);
+
+      // Create or get chat
+      console.log('[MyRentals] Creating/getting chat...');
+      const chatId = await createOrGetChat(
+        targetUserId,
+        targetName,
+        targetUserData.photoURL || ''
+      );
+      console.log('[MyRentals] Chat created/retrieved:', chatId);
+
+      // Navigate to chat with the conversation open
+      navigate(`/chat?selected=${chatId}`);
+    } catch (error) {
+      console.error('[MyRentals] Error creating chat:', error);
+      alert('Failed to open chat. Error: ' + (error as Error).message);
+    }
   };
 
   const handleExtendRental = (rental: any) => {

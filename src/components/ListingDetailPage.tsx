@@ -5,11 +5,14 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useListings } from '../contexts/ListingsContext';
 import { useRentals } from '../contexts/RentalsContext';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { useChat } from '../contexts/ChatContext';
 import LiquidGlassNav from './LiquidGlassNav';
 import ReviewsSection from './ReviewsSection';
 import DateTimePicker from './DateTimePicker';
 import { listingsService } from '../services/firebase';
-import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart, CheckCircle, Calendar } from 'lucide-react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../config/firebase';
+import { ArrowLeft, Star, MapPin, Clock, MessageSquare, X, Heart, CheckCircle, Calendar, MessageCircle } from 'lucide-react';
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +23,7 @@ export default function ListingDetailPage() {
   const { listings } = useListings();
   const { addRentalRequest, getUnavailableDates } = useRentals();
   const { isFavorited, toggleFavorite } = useFavorites();
+  const { createOrGetChat } = useChat();
 
   // Helper function to get full condition description
   const getConditionLabel = (condition: string) => {
@@ -74,6 +78,8 @@ export default function ListingDetailPage() {
   });
   const [listingData, setListingData] = useState<any>(null);
   const [unavailableDates, setUnavailableDates] = useState<Array<{ start: string; end: string; status: string }>>([]);
+  const [creatingChat, setCreatingChat] = useState(false);
+  const [ownerUserId, setOwnerUserId] = useState<string | null>(null);
 
   // Helper function to render tool image (emoji, base64, or URL)
   const renderToolImage = (imageStr: string, size: 'small' | 'medium' | 'large' = 'medium') => {
@@ -143,8 +149,77 @@ export default function ListingDetailPage() {
     }
   }, [tool, navigate]);
 
+  // Load owner user ID
+  useEffect(() => {
+    const loadOwnerUserId = async () => {
+      if (!tool?.ownerContact) {
+        console.log('[ListingDetail] No owner contact found');
+        return;
+      }
+      
+      try {
+        console.log('[ListingDetail] Loading owner user ID for email:', tool.ownerContact);
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', tool.ownerContact));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const userId = querySnapshot.docs[0].id;
+          setOwnerUserId(userId);
+          console.log('[ListingDetail] Found owner user ID:', userId);
+        } else {
+          console.warn('[ListingDetail] Owner not found in Firestore for email:', tool.ownerContact);
+        }
+      } catch (error) {
+        console.error('[ListingDetail] Error loading owner user ID:', error);
+      }
+    };
+
+    loadOwnerUserId();
+  }, [tool?.ownerContact]);
+
   const handleReviewAdded = () => {
     loadListingData(); // Refresh listing data when a review is added
+  };
+
+  const handleMessageOwner = async () => {
+    console.log('[ListingDetail] handleMessageOwner called');
+    console.log('[ListingDetail] ownerUserId:', ownerUserId);
+    console.log('[ListingDetail] tool.owner:', tool?.owner);
+    console.log('[ListingDetail] currentUser:', currentUser?.uid);
+    
+    if (!ownerUserId || !tool || !currentUser) {
+      console.error('[ListingDetail] Missing required data to create chat:', {
+        ownerUserId,
+        toolName: tool?.name,
+        currentUserId: currentUser?.uid
+      });
+      alert('Unable to create chat. Owner information not found.');
+      return;
+    }
+
+    // Don't allow messaging yourself
+    if (ownerUserId === currentUser.uid) {
+      alert('This is your own listing!');
+      return;
+    }
+
+    try {
+      setCreatingChat(true);
+      console.log('[ListingDetail] Creating chat with owner:', ownerUserId, tool.owner);
+      const chatId = await createOrGetChat(
+        ownerUserId,
+        tool.owner,
+        '' // We don't have the owner's photo URL here
+      );
+      console.log('[ListingDetail] Chat created/retrieved:', chatId);
+      navigate(`/chat?selected=${chatId}`);
+    } catch (error) {
+      console.error('[ListingDetail] Error creating chat:', error);
+      alert('Failed to create chat. Please try again. Error: ' + (error as Error).message);
+    } finally {
+      setCreatingChat(false);
+    }
   };
 
   if (!tool) {
@@ -321,32 +396,53 @@ export default function ListingDetailPage() {
           {/* Right Column - Details */}
           <div className="space-y-6">
             {/* Owner Info */}
-            <button
-              onClick={() => navigate(`/profile/${encodeURIComponent(tool.ownerContact)}`)}
-              className={`w-full p-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-left ${
-                theme === 'dark' 
-                  ? 'bg-gray-800/60 hover:bg-gray-800/80' 
-                  : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-300 to-purple-400 flex items-center justify-center text-white font-bold text-lg">
-                  {tool.owner.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{tool.owner}</h3>
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm">
-                      {listingData?.rating ? `${listingData.rating.toFixed(1)} (${listingData.reviews} reviews)` : `${tool.rating} (${tool.reviews} reviews)`}
-                    </span>
+            <div className={`p-4 rounded-2xl ${
+              theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
+            }`}>
+              <button
+                onClick={() => navigate(`/profile/${encodeURIComponent(tool.ownerContact)}`)}
+                className="w-full text-left transition-all duration-300 hover:opacity-80"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-300 to-purple-400 flex items-center justify-center text-white font-bold text-lg">
+                    {tool.owner.charAt(0)}
                   </div>
-                  <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Click to view profile
-                  </p>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">{tool.owner}</h3>
+                    <div className="flex items-center space-x-1">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span className="text-sm">
+                        {listingData?.rating ? `${listingData.rating.toFixed(1)} (${listingData.reviews} reviews)` : `${tool.rating} (${tool.reviews} reviews)`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+              
+              {/* Message Owner Button */}
+              {(() => {
+                console.log('[ListingDetail] Message button check:', {
+                  currentUser: currentUser?.email,
+                  ownerContact: tool.ownerContact,
+                  ownerUserId,
+                  shouldShow: currentUser && tool.ownerContact !== currentUser.email && ownerUserId
+                });
+                return currentUser && tool.ownerContact !== currentUser.email && ownerUserId;
+              })() && (
+                <button
+                  onClick={handleMessageOwner}
+                  disabled={creatingChat}
+                  className={`mt-3 w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
+                    creatingChat
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-800 to-purple-900 hover:from-purple-700 hover:to-purple-800 text-white shadow-md hover:shadow-lg transform hover:scale-[1.02]'
+                  }`}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>{creatingChat ? 'Loading...' : 'Message Owner'}</span>
+                </button>
+              )}
+            </div>
 
             {/* Tool Details */}
             <div className={`p-6 rounded-2xl ${

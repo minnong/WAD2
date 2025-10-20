@@ -1509,14 +1509,14 @@ export default function BrowsePage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleFavorite(tool.id);
+                        toggleFavorite(String(tool.id));
                       }}
                       className="absolute top-2 left-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all hover:scale-110"
-                      title={isFavorited(tool.id) ? "Remove from favorites" : "Add to favorites"}
+                      title={isFavorited(String(tool.id)) ? "Remove from favorites" : "Add to favorites"}
                     >
                       <Heart
                         className={`w-3 h-3 transition-colors ${
-                          isFavorited(tool.id)
+                          isFavorited(String(tool.id))
                             ? 'text-pink-500 fill-current'
                             : 'text-gray-400 hover:text-pink-500'
                         }`}
@@ -1583,14 +1583,14 @@ export default function BrowsePage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleFavorite(tool.id);
+                        toggleFavorite(String(tool.id));
                       }}
                       className="absolute top-2 left-2 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all hover:scale-110"
-                      title={isFavorited(tool.id) ? "Remove from favorites" : "Add to favorites"}
+                      title={isFavorited(String(tool.id)) ? "Remove from favorites" : "Add to favorites"}
                     >
                       <Heart
                         className={`w-3 h-3 transition-colors ${
-                          isFavorited(tool.id)
+                          isFavorited(String(tool.id))
                             ? 'text-pink-500 fill-current'
                             : 'text-gray-400 hover:text-pink-500'
                         }`}
@@ -1685,14 +1685,14 @@ export default function BrowsePage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              toggleFavorite(tool.id);
+                              toggleFavorite(String(tool.id));
                             }}
                             className="absolute top-3 left-3 p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all hover:scale-110"
-                            title={isFavorited(tool.id) ? "Remove from favorites" : "Add to favorites"}
+                            title={isFavorited(String(tool.id)) ? "Remove from favorites" : "Add to favorites"}
                           >
                             <Heart
                               className={`w-4 h-4 transition-colors ${
-                                isFavorited(tool.id)
+                                isFavorited(String(tool.id))
                                   ? 'text-pink-500 fill-current'
                                   : 'text-gray-400 hover:text-pink-500'
                               }`}

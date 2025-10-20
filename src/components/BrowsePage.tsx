@@ -1142,8 +1142,8 @@ export default function BrowsePage() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Browse Tools</h1>
-          <p className={`text-base ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Browse Tools</h1>
+          <p className={`text-sm md:text-base ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             Find the perfect tool for your project
           </p>
         </div>
@@ -1412,8 +1412,8 @@ export default function BrowsePage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <MapIcon className="w-5 h-5 text-purple-300" />
-                <h2 className="text-xl font-semibold">Discover tools near you!</h2>
+                <MapIcon className="w-4 h-4 md:w-5 md:h-5 text-purple-300" />
+                <h2 className="text-lg md:text-xl font-semibold">Discover tools near you!</h2>
               </div>
               <button
                 onClick={() => setViewMode('map')}
@@ -1435,7 +1435,7 @@ export default function BrowsePage() {
         {!searchSubmitted && !loading && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Popular Categories</h2>
+              <h2 className="text-lg md:text-xl font-semibold">Popular Categories</h2>
               {viewMode === 'map' && (
                 <button
                   onClick={() => setViewMode('list')}
@@ -1475,8 +1475,8 @@ export default function BrowsePage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <Award className="w-5 h-5 text-yellow-500" />
-                <h2 className="text-xl font-semibold">Top Rated Tools</h2>
+                <Award className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+                <h2 className="text-lg md:text-xl font-semibold">Top Rated Tools</h2>
               </div>
               <button
                 onClick={() => {
@@ -1549,8 +1549,8 @@ export default function BrowsePage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-green-500" />
-                <h2 className="text-xl font-semibold">Trending Now</h2>
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
+                <h2 className="text-lg md:text-xl font-semibold">Trending Now</h2>
               </div>
               <button
                 onClick={() => {
@@ -1624,9 +1624,9 @@ export default function BrowsePage() {
           <div className="mb-8">
             {/* Header for filtered results */}
             {(searchSubmitted || selectedCategory !== 'All') && (
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold">
+                  <h2 className="text-lg md:text-xl font-semibold">
                     {searchTerm ? `Search Results for "${searchTerm}"` : `${selectedCategory} Tools`}
                   </h2>
                   <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>

@@ -5,7 +5,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLocation } from 'react-router-dom';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
-import { Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Image, MessageCircle } from 'lucide-react';
+import { Send, Search, Phone, Video, MoreVertical, Paperclip, Smile, Image, MessageCircle, ArrowLeft } from 'lucide-react';
 
 export default function ChatPage() {
   const { currentUser } = useAuth();
@@ -15,6 +15,7 @@ export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showChatList, setShowChatList] = useState(true); // For mobile view toggle
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Handle query parameter for opening a specific chat
@@ -53,6 +54,18 @@ export default function ChatPage() {
     const otherUserName = chat.participantNames[otherUserId] || '';
     return otherUserName.toLowerCase().includes(searchTerm.toLowerCase());
   });
+
+  // Handle chat selection - hide chat list on mobile
+  const handleChatSelect = (chatId: string) => {
+    setSelectedChat(chatId);
+    setShowChatList(false); // Hide chat list on mobile when chat is selected
+  };
+
+  // Handle back to chat list on mobile
+  const handleBackToList = () => {
+    setShowChatList(true);
+    setSelectedChat(null);
+  };
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -168,8 +181,10 @@ export default function ChatPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
         <div className="flex h-[calc(100vh-200px)]">
-          {/* Chat List Sidebar */}
-          <div className={`w-80 border-r ${
+          {/* Chat List Sidebar - Hidden on mobile when chat is selected */}
+          <div className={`${
+            showChatList ? 'block' : 'hidden'
+          } md:block w-full md:w-80 border-r ${
             theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
           }`}>
             {/* Header */}
@@ -221,7 +236,7 @@ export default function ChatPage() {
                   return (
                     <button
                       key={chat.id}
-                      onClick={() => setSelectedChat(chat.id)}
+                      onClick={() => handleChatSelect(chat.id)}
                       className={`w-full p-4 text-left transition-colors border-b border-gray-200/10 ${
                         selectedChat === chat.id
                           ? theme === 'dark'
@@ -272,8 +287,10 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* Chat Area */}
-          <div className="flex-1 flex flex-col">
+          {/* Chat Area - Hidden on mobile when chat list is shown */}
+          <div className={`${
+            !showChatList ? 'block' : 'hidden'
+          } md:block flex-1 flex flex-col w-full`}>
             {selectedChat && otherUserInfo ? (
               <>
                 {/* Chat Header */}
@@ -281,6 +298,17 @@ export default function ChatPage() {
                   theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
                 }`}>
                   <div className="flex items-center space-x-3">
+                    {/* Back button for mobile */}
+                    <button
+                      onClick={handleBackToList}
+                      className={`md:hidden p-2 rounded-lg transition-colors ${
+                        theme === 'dark'
+                          ? 'hover:bg-gray-800'
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
                     <div className="relative">
                       {otherUserInfo.photo ? (
                         <img 

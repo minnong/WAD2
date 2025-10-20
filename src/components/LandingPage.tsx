@@ -107,7 +107,7 @@ export default function LandingPage() {
       <section className="min-h-screen flex items-center justify-center px-4 pt-20">
         <div className="max-w-6xl mx-auto text-center">
           <div className="animate-fadeInUp">
-            <h1 className="text-hero font-sf-pro-display text-white mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-hero font-sf-pro-display text-white mb-6">
               <TextType
                 text="Rent Lah. Save Lah."
                 speed={300}
@@ -118,7 +118,7 @@ export default function LandingPage() {
                 Share Lah.
               </span>
             </h1>
-            <p className="text-body-large font-sf-pro-text text-white/80 max-w-3xl mx-auto mb-10 animate-fadeInUp delay-1000">
+            <p className="text-sm sm:text-base md:text-lg lg:text-body-large font-sf-pro-text text-white/80 max-w-3xl mx-auto mb-8 md:mb-10 animate-fadeInUp delay-1000 px-4">
               Access thousands of tools, appliances, and equipment in Singapore without the cost of ownership.
               Connect with neighbors, save money, and reduce waste through our trusted sharing platform.
             </p>
@@ -142,12 +142,12 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 px-4">
+      <section className="py-12 md:py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center animate-fadeInUp" style={{animationDelay: `${index * 200}ms`}}>
-                <div className="text-4xl md:text-5xl font-bold font-sf-pro-display text-white mb-2">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold font-sf-pro-display text-white mb-2">
                   {stat.number}
                 </div>
                 <div className="text-white/60 font-sf-pro-text font-medium">
@@ -162,11 +162,11 @@ export default function LandingPage() {
       {/* Features Section */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 animate-fadeInUp">
-            <h2 className="text-large font-sf-pro-display text-white mb-4">
+          <div className="text-center mb-12 md:mb-16 animate-fadeInUp">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-large font-sf-pro-display text-white mb-4 px-4">
               Everything You Need for Safe Sharing
             </h2>
-            <p className="text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg lg:text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto px-4">
               Our platform combines cutting-edge technology with community trust to create the ultimate sharing experience.
             </p>
           </div>
@@ -188,11 +188,11 @@ export default function LandingPage() {
       {/* How It Works Section */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 animate-fadeInUp">
-            <h2 className="text-large font-sf-pro-display text-white mb-4">
+          <div className="text-center mb-12 md:mb-16 animate-fadeInUp">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-large font-sf-pro-display text-white mb-4 px-4">
               How ShareLah Works
             </h2>
-            <p className="text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg lg:text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto px-4">
               Get started in minutes and join thousands of Singaporeans already saving money through sharing.
             </p>
           </div>
@@ -218,10 +218,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fadeInUp">
-              <h2 className="text-large font-sf-pro-display text-white mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-large font-sf-pro-display text-white mb-6">
                 Built on Community Trust
               </h2>
-              <p className="text-body-large font-sf-pro-text text-white/70 mb-8">
+              <p className="text-sm sm:text-base md:text-lg lg:text-body-large font-sf-pro-text text-white/70 mb-8">
                 Our comprehensive safety features and community guidelines ensure every rental is secure, reliable, and worry-free.
               </p>
 
@@ -273,10 +273,10 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <div className="animate-fadeInUp">
-            <h2 className="text-large font-sf-pro-display text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-large font-sf-pro-display text-white mb-4 px-4">
               Powered by Modern Technology
             </h2>
-            <p className="text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto mb-12">
+            <p className="text-sm sm:text-base md:text-lg lg:text-body-large font-sf-pro-text text-white/70 max-w-2xl mx-auto mb-8 md:mb-12 px-4">
               Built with cutting-edge web technologies for a fast, secure, and reliable experience.
             </p>
           </div>
@@ -308,10 +308,10 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="animate-fadeInUp">
-            <h2 className="text-large font-sf-pro-display text-white mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-large font-sf-pro-display text-white mb-6 px-4">
               Ready to Start Sharing?
             </h2>
-            <p className="text-body-large font-sf-pro-text text-white/70 mb-10">
+            <p className="text-sm sm:text-base md:text-lg lg:text-body-large font-sf-pro-text text-white/70 mb-8 md:mb-10 px-4">
               Join thousands of Singaporeans who are already saving money and building community through smart sharing.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

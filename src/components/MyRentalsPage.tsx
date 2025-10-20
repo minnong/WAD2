@@ -494,19 +494,19 @@ export default function MyRentalsPage() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
         {/* Enhanced Header with Stats */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-            <div className="flex items-center justify-between flex-1">
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-bold mb-2">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">
                   My Rentals
                 </h1>
-                <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-sm md:text-base lg:text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                   Manage your rental activity and listings
                 </p>
               </div>
 
               {/* Apple-style Toggle */}
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 sm:space-x-3 justify-center sm:justify-end">
                 <span className={`text-sm font-medium ${viewMode === 'customer' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
                   Customer
                 </span>
@@ -641,7 +641,7 @@ export default function MyRentalsPage() {
             <div className="grid grid-cols-3 gap-1">
               <button
                 onClick={() => setCustomerActiveTab('active-rentals')}
-                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`flex-1 py-3 md:py-4 px-2 md:px-6 rounded-xl text-xs md:text-base font-medium transition-all duration-300 flex items-center justify-center gap-1 md:gap-2 ${
                   customerActiveTab === 'active-rentals'
                     ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
                     : theme === 'dark'
@@ -649,12 +649,13 @@ export default function MyRentalsPage() {
                     : 'text-gray-700 hover:bg-gray-100/80'
                 }`}
               >
-                <CheckCircle className="w-5 h-5" />
-                <span>Active Rentals ({activeRentals.length})</span>
+                <CheckCircle className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                <span className="hidden sm:inline">Active Rentals ({activeRentals.length})</span>
+                <span className="sm:hidden">Active ({activeRentals.length})</span>
               </button>
               <button
                 onClick={() => setCustomerActiveTab('pending-requests')}
-                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`flex-1 py-3 md:py-4 px-2 md:px-6 rounded-xl text-xs md:text-base font-medium transition-all duration-300 flex items-center justify-center gap-1 md:gap-2 ${
                   customerActiveTab === 'pending-requests'
                     ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
                     : theme === 'dark'
@@ -662,12 +663,12 @@ export default function MyRentalsPage() {
                     : 'text-gray-700 hover:bg-gray-100/80'
                 }`}
               >
-                <Clock className="w-5 h-5" />
+                <Clock className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
                 <span>Pending ({pendingRequests.length})</span>
               </button>
               <button
                 onClick={() => setCustomerActiveTab('calendar')}
-                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`flex-1 py-3 md:py-4 px-2 md:px-6 rounded-xl text-xs md:text-base font-medium transition-all duration-300 flex items-center justify-center gap-1 md:gap-2 ${
                   customerActiveTab === 'calendar'
                     ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
                     : theme === 'dark'
@@ -675,17 +676,17 @@ export default function MyRentalsPage() {
                     : 'text-gray-700 hover:bg-gray-100/80'
                 }`}
               >
-                <Calendar className="w-5 h-5" />
+                <Calendar className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
                 <span>Calendar</span>
               </button>
             </div>
           </div>
         ) : (
-          <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-            <div className="grid grid-cols-4 gap-1">
+          <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm overflow-x-auto`}>
+            <div className="grid grid-cols-4 gap-1 min-w-max md:min-w-0">
               <button
                 onClick={() => setOwnerActiveTab('my-listings')}
-                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`flex-1 py-3 md:py-4 px-2 md:px-4 lg:px-6 rounded-xl text-xs md:text-sm lg:text-base font-medium transition-all duration-300 flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap ${
                   ownerActiveTab === 'my-listings'
                     ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
                     : theme === 'dark'
@@ -693,12 +694,13 @@ export default function MyRentalsPage() {
                     : 'text-gray-700 hover:bg-gray-100/80'
                 }`}
               >
-                <TrendingUp className="w-5 h-5" />
-                <span>My Listings ({userOwnListings.length})</span>
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                <span className="hidden lg:inline">My Listings ({userOwnListings.length})</span>
+                <span className="lg:hidden">Listings ({userOwnListings.length})</span>
               </button>
               <button
                 onClick={() => setOwnerActiveTab('active-rentals')}
-                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`flex-1 py-3 md:py-4 px-2 md:px-4 lg:px-6 rounded-xl text-xs md:text-sm lg:text-base font-medium transition-all duration-300 flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap ${
                   ownerActiveTab === 'active-rentals'
                     ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
                     : theme === 'dark'
@@ -706,12 +708,13 @@ export default function MyRentalsPage() {
                     : 'text-gray-700 hover:bg-gray-100/80'
                 }`}
               >
-                <CheckCircle className="w-5 h-5" />
-                <span>Active Rentals ({receivedRentalRequests.filter(r => r.status === 'approved').length})</span>
+                <CheckCircle className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                <span className="hidden lg:inline">Active Rentals ({receivedRentalRequests.filter(r => r.status === 'approved').length})</span>
+                <span className="lg:hidden">Active ({receivedRentalRequests.filter(r => r.status === 'approved').length})</span>
               </button>
               <button
                 onClick={() => setOwnerActiveTab('requests')}
-                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`flex-1 py-3 md:py-4 px-2 md:px-4 lg:px-6 rounded-xl text-xs md:text-sm lg:text-base font-medium transition-all duration-300 flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap ${
                   ownerActiveTab === 'requests'
                     ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
                     : theme === 'dark'
@@ -719,12 +722,12 @@ export default function MyRentalsPage() {
                     : 'text-gray-700 hover:bg-gray-100/80'
                 }`}
               >
-                <Inbox className="w-5 h-5" />
+                <Inbox className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
                 <span>Requests ({incomingRequests.length})</span>
               </button>
               <button
                 onClick={() => setOwnerActiveTab('calendar')}
-                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                className={`flex-1 py-3 md:py-4 px-2 md:px-4 lg:px-6 rounded-xl text-xs md:text-sm lg:text-base font-medium transition-all duration-300 flex items-center justify-center gap-1 md:gap-2 whitespace-nowrap ${
                   ownerActiveTab === 'calendar'
                     ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
                     : theme === 'dark'
@@ -732,7 +735,7 @@ export default function MyRentalsPage() {
                     : 'text-gray-700 hover:bg-gray-100/80'
                 }`}
               >
-                <Calendar className="w-5 h-5" />
+                <Calendar className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
                 <span>Calendar</span>
               </button>
             </div>

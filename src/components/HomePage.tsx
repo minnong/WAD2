@@ -12,6 +12,21 @@ import toolLibrary from '../assets/tool_library.jpg';
 import rentImage from '../assets/rent.jpg';
 import toolsImage from '../assets/tools.jpg';
 import communityImage from '../assets/community.jpeg';
+import browseImage from '../assets/Browse.png';
+import listItemImage from '../assets/List Item.png';
+import myRentalsImage from '../assets/My Rentals.png';
+import favouritesImage from '../assets/Favourites.png';
+import hammerImage from '../assets/Hammer.png';
+import flowerImage from '../assets/Flower.png';
+import phoneImage from '../assets/Phone.png';
+import chefHatImage from '../assets/Chef Hat.png';
+import dumbbellImage from '../assets/Dumbbell.png';
+import cameraImage from '../assets/Camera.png';
+import musicNoteImage from '../assets/Music note.png';
+import milkBottleImage from '../assets/Milk Bottle.png';
+import gameControllerImage from '../assets/Game Controller.png';
+import paletteImage from '../assets/Palette.png';
+import officeBagImage from '../assets/Office Bag.png';
 
 export default function HomePage() {
   const { currentUser } = useAuth();
@@ -213,30 +228,29 @@ export default function HomePage() {
           <div className="relative">
             <div className="flex overflow-x-auto scrollbar-hide gap-8 pb-6">
               {[
-                { name: 'Power Tools', icon: Hammer, count: '120+', category: 'Power Tools' },
-                { name: 'Garden', icon: Leaf, count: '85+', category: 'Garden Tools' },
-                { name: 'Electronics', icon: Smartphone, count: '60+', category: 'Electronics' },
-                { name: 'Kitchen', icon: ChefHat, count: '45+', category: 'Kitchen Appliances' },
-                { name: 'Sports', icon: Dumbbell, count: '70+', category: 'Sports Equipment' },
-                { name: 'Photography', icon: Camera, count: '35+', category: 'Photography' },
-                { name: 'Music', icon: Music, count: '28+', category: 'Musical Instruments' },
-                { name: 'Fitness', icon: Dumbbell, count: '42+', category: 'Health & Fitness' },
-                { name: 'Baby & Kids', icon: Baby, count: '55+', category: 'Baby & Kids' },
-                { name: 'Gaming', icon: Gamepad2, count: '38+', category: 'Gaming' },
-                { name: 'Art & Craft', icon: Palette, count: '25+', category: 'Art & Craft' },
-                { name: 'Office', icon: Briefcase, count: '32+', category: 'Office Equipment' }
+                { name: 'Power Tools', image: hammerImage, count: '120+', category: 'Power Tools' },
+                { name: 'Garden', image: flowerImage, count: '85+', category: 'Garden Tools' },
+                { name: 'Electronics', image: phoneImage, count: '60+', category: 'Electronics' },
+                { name: 'Kitchen', image: chefHatImage, count: '45+', category: 'Kitchen Appliances' },
+                { name: 'Sports', image: dumbbellImage, count: '70+', category: 'Sports Equipment' },
+                { name: 'Photography', image: cameraImage, count: '35+', category: 'Photography' },
+                { name: 'Music', image: musicNoteImage, count: '28+', category: 'Musical Instruments' },
+                { name: 'Fitness', image: dumbbellImage, count: '42+', category: 'Health & Fitness' },
+                { name: 'Baby & Kids', image: milkBottleImage, count: '55+', category: 'Baby & Kids' },
+                { name: 'Gaming', image: gameControllerImage, count: '38+', category: 'Gaming' },
+                { name: 'Art & Craft', image: paletteImage, count: '25+', category: 'Art & Craft' },
+                { name: 'Office', image: officeBagImage, count: '32+', category: 'Office Equipment' }
               ].map((category, index) => {
-                const IconComponent = category.icon;
                 return (
                   <div
                     key={index}
                     onClick={() => navigate(`/browse?category=${encodeURIComponent(category.category)}`)}
                     className="flex-none cursor-pointer group mt-1 ml-1 mr-1"
                   >
-                    <div className={`w-24 h-24 rounded-full border border-gray-200/40 flex items-center justify-center mb-3 transition-all group-hover:border-gray-300/60 group-hover:shadow-lg group-hover:scale-105 ${
+                    <div className={`w-24 h-24 rounded-full border border-gray-200/40 flex items-center justify-center mb-3 transition-all group-hover:border-gray-300/60 group-hover:shadow-lg group-hover:scale-105 overflow-hidden ${
                       theme === 'dark' ? 'bg-gray-800/15' : 'bg-gray-100/25'
                     }`}>
-                      <IconComponent className={`w-10 h-10 ${theme === 'dark' ? 'text-gray-400/80' : 'text-gray-500/80'}`} strokeWidth={1.5} />
+                      <img src={category.image} alt={category.name} className="w-12 h-12 object-contain" />
                     </div>
                     <div className="text-center max-w-[96px]">
                       <h3 className="font-medium text-xs mb-1 leading-tight">{category.name}</h3>
@@ -440,8 +454,8 @@ export default function HomePage() {
               : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
           }`}>
             <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                <Search className="w-5 h-5 text-white" />
+              <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                <img src={browseImage} alt="Browse" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">Browse</h3>
@@ -458,8 +472,8 @@ export default function HomePage() {
               : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
           }`}>
             <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
-                <Plus className="w-5 h-5 text-white" />
+              <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                <img src={listItemImage} alt="List Item" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">List Item</h3>
@@ -476,8 +490,8 @@ export default function HomePage() {
               : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
           }`}>
             <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                <ShoppingBag className="w-5 h-5 text-white" />
+              <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                <img src={myRentalsImage} alt="My Rentals" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">My Rentals</h3>
@@ -494,8 +508,8 @@ export default function HomePage() {
               : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
           }`}>
             <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-                <Heart className="w-5 h-5 text-white" />
+              <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                <img src={favouritesImage} alt="Favourites" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">Favorites</h3>

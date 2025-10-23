@@ -6,12 +6,14 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
+import LegoPersonWithBubble from './LegoPersonWithBubble';
 import { Search, Plus, Heart, ShoppingBag, Star, TrendingUp, Users, Award, ChevronLeft, ChevronRight, Hammer, Leaf, Smartphone, ChefHat, Dumbbell, Camera, Music, Baby, Gamepad2, Palette, Briefcase, Wrench, Clock, CheckCircle, XCircle, AlertCircle, DollarSign, Inbox } from 'lucide-react';
 
 import toolLibrary from '../assets/tool_library.jpg';
 import rentImage from '../assets/rent.jpg';
 import toolsImage from '../assets/tools.jpg';
 import communityImage from '../assets/community.jpeg';
+import quickTipsImage from '../assets/quicktips.png';
 import browseImage from '../assets/Browse.png';
 import listItemImage from '../assets/List Item.png';
 import myRentalsImage from '../assets/My Rentals.png';
@@ -711,9 +713,10 @@ export default function HomePage() {
         </div>
 
         {/* Quick Tips */}
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 px-2">Quick Tips</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold mb-8 px-2">Quick Tips</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            {/* Build Your Reputation */}
             <div className="flex items-start space-x-8 p-6">
               <div className="flex-shrink-0">
                 <Users className="w-8 h-8 text-purple-600" strokeWidth={2.5} />
@@ -738,6 +741,7 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Maximize Earnings */}
             <div className="flex items-start space-x-8 p-6">
               <div className="flex-shrink-0">
                 <TrendingUp className="w-8 h-8 text-purple-600" strokeWidth={2.5} />
@@ -766,6 +770,9 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+
+          {/* Quick Tips - LEGO Man with Speech Bubble */}
+          <LegoPersonWithBubble />
         </div>
       </div>
 

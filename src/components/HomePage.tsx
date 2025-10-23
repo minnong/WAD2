@@ -18,10 +18,11 @@ import myRentalsImage from '../assets/My Rentals.png';
 import favouritesImage from '../assets/Favourites.png';
 import hammerImage from '../assets/Hammer.png';
 import flowerImage from '../assets/Flower.png';
-import phoneImage from '../assets/Phone.png';
+import phoneImage from '../assets/grey phone.png';
 import chefHatImage from '../assets/Chef Hat.png';
-import dumbbellImage from '../assets/Dumbbell.png';
-import cameraImage from '../assets/Camera.png';
+import dumbbellImage from '../assets/yellow dumbbell.png';
+import cameraImage from '../assets/blue camera.png';
+import greenDumbbellImage from '../assets/green dumbbell.png';
 import musicNoteImage from '../assets/Music note.png';
 import milkBottleImage from '../assets/Milk Bottle.png';
 import gameControllerImage from '../assets/Game Controller.png';
@@ -235,7 +236,7 @@ export default function HomePage() {
                 { name: 'Sports', image: dumbbellImage, count: '70+', category: 'Sports Equipment' },
                 { name: 'Photography', image: cameraImage, count: '35+', category: 'Photography' },
                 { name: 'Music', image: musicNoteImage, count: '28+', category: 'Musical Instruments' },
-                { name: 'Fitness', image: dumbbellImage, count: '42+', category: 'Health & Fitness' },
+                { name: 'Fitness', image: greenDumbbellImage, count: '42+', category: 'Health & Fitness' },
                 { name: 'Baby & Kids', image: milkBottleImage, count: '55+', category: 'Baby & Kids' },
                 { name: 'Gaming', image: gameControllerImage, count: '38+', category: 'Gaming' },
                 { name: 'Art & Craft', image: paletteImage, count: '25+', category: 'Art & Craft' },
@@ -473,7 +474,7 @@ export default function HomePage() {
           }`}>
             <div className="flex flex-col items-center text-center space-y-3">
               <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
-                <img src={listItemImage} alt="List Item" className="w-full h-full object-cover" />
+                <img src={favouritesImage} alt="List Item" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">List Item</h3>
@@ -491,7 +492,7 @@ export default function HomePage() {
           }`}>
             <div className="flex flex-col items-center text-center space-y-3">
               <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
-                <img src={myRentalsImage} alt="My Rentals" className="w-full h-full object-cover" />
+                <img src={listItemImage} alt="My Rentals" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">My Rentals</h3>
@@ -509,7 +510,7 @@ export default function HomePage() {
           }`}>
             <div className="flex flex-col items-center text-center space-y-3">
               <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
-                <img src={favouritesImage} alt="Favourites" className="w-full h-full object-cover" />
+                <img src={myRentalsImage} alt="Favourites" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm">Favorites</h3>

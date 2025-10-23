@@ -11,6 +11,14 @@ import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
 import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye, Heart } from 'lucide-react';
 
+// Import category images
+import hammerImage from '../assets/hammer.png';
+import greyPhoneImage from '../assets/grey phone.png';
+import flowerImage from '../assets/Flower.png';
+import chefHatImage from '../assets/Chef Hat.png';
+import racketImage from '../assets/racket.png';
+import drillImage from '../assets/drill.png';
+
 // Extend Window interface for Google Maps
 declare global {
   interface Window {
@@ -210,12 +218,12 @@ export default function BrowsePage() {
 
   // Featured categories with tool counts
   const featuredCategories = [
-    { name: 'Power Tools', emoji: '🔨', count: allTools.filter(t => t.category === 'Power Tools').length },
-    { name: 'Electronics', emoji: '📱', count: allTools.filter(t => t.category === 'Electronics').length },
-    { name: 'Garden Tools', emoji: '🌱', count: allTools.filter(t => t.category === 'Garden Tools').length },
-    { name: 'Kitchen Appliances', emoji: '🍳', count: allTools.filter(t => t.category === 'Kitchen Appliances').length },
-    { name: 'Sports Equipment', emoji: '🎾', count: allTools.filter(t => t.category === 'Sports Equipment').length },
-    { name: 'Home & DIY', emoji: '🔧', count: allTools.filter(t => t.category === 'Home & DIY').length }
+    { name: 'Power Tools', image: hammerImage, count: allTools.filter(t => t.category === 'Power Tools').length },
+    { name: 'Electronics', image: greyPhoneImage, count: allTools.filter(t => t.category === 'Electronics').length },
+    { name: 'Garden Tools', image: flowerImage, count: allTools.filter(t => t.category === 'Garden Tools').length },
+    { name: 'Kitchen Appliances', image: chefHatImage, count: allTools.filter(t => t.category === 'Kitchen Appliances').length },
+    { name: 'Sports Equipment', image: racketImage, count: allTools.filter(t => t.category === 'Sports Equipment').length },
+    { name: 'Home & DIY', image: drillImage, count: allTools.filter(t => t.category === 'Home & DIY').length }
   ];
 
   const searchSuggestions = searchTerm.length > 0
@@ -1457,8 +1465,8 @@ export default function BrowsePage() {
                       : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
                   }`}
                 >
-                  <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
-                    {category.emoji}
+                  <div className="w-12 h-12 mx-auto mb-2 group-hover:scale-110 transition-transform flex items-center justify-center">
+                    <img src={category.image} alt={category.name} className="w-full h-full object-contain" />
                   </div>
                   <h3 className="font-medium text-sm mb-1">{category.name}</h3>
                   <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>

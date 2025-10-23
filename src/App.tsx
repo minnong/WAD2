@@ -21,6 +21,7 @@ import UserSettingsPage from './components/UserSettingsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import NotFoundPage from './components/NotFoundPage'
 import ScrollToTop from './components/ScrollToTop'
+import ChatBot from './components/ChatBot'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
               <ChatProvider>
                 <Router>
                   <ScrollToTop />
+                  <ChatBot />
                   <Routes>
                 {/* Landing page with authenticated redirect */}
                 <Route path="/" element={<AuthenticatedRedirect />} />

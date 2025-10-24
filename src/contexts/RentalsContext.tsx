@@ -16,7 +16,7 @@ import { db } from '../config/firebase';
 import { useAuth } from './AuthContext';
 import { emailService } from '../services/emailService';
 
-interface RentalRequest {
+export interface RentalRequest {
   id: string;
   toolId: string;
   toolName: string;
@@ -35,6 +35,12 @@ interface RentalRequest {
   requestDate: Timestamp | Date;
   location: string;
   hasReview?: boolean;
+  // Condition tracking fields
+  preRentalReportId?: string;
+  postRentalRenterReportId?: string;
+  postRentalOwnerReportId?: string;
+  hasActiveDispute?: boolean;
+  conditionVerified?: boolean;
 }
 
 

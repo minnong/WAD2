@@ -18,6 +18,7 @@ import ChatPage from './components/ChatPage'
 import ProfilePage from './components/ProfilePage'
 import UserProfilePage from './components/UserProfilePage'
 import UserSettingsPage from './components/UserSettingsPage'
+import DisputesPage from './components/DisputesPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import NotFoundPage from './components/NotFoundPage'
 import ScrollToTop from './components/ScrollToTop'
@@ -47,6 +48,7 @@ export default function App() {
                 <Route path="/my-rentals" element={<ProtectedRoute><MyRentalsPage /></ProtectedRoute>} />
                 <Route path="/my-rentals/:tab" element={<ProtectedRoute><MyRentalsPage /></ProtectedRoute>} />
                 <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
+                <Route path="/disputes" element={<ProtectedRoute><DisputesPage /></ProtectedRoute>} />
                 <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/profile/tab/:tab" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

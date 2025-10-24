@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import {
   collection,
@@ -15,8 +15,9 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from './AuthContext';
+import type { ConditionStatus } from '../types/conditionTracking';
 
-interface Listing {
+export interface Listing {
   id: string;
   name: string;
   description: string;
@@ -35,6 +36,7 @@ interface Listing {
   createdAt: Timestamp | Date;
   userId: string;
   isActive?: boolean; // For delisting/relisting
+  conditionStatus?: ConditionStatus; // Track if item is available, faulty, under repair, or disputed
 }
 
 interface ListingsContextType {
@@ -46,6 +48,8 @@ interface ListingsContextType {
   deleteListing: (id: string) => Promise<void>;
   delistListing: (id: string) => Promise<void>;
   relistListing: (id: string) => Promise<void>;
+  isListingAvailableForRent: (listing: Listing) => boolean;
+  getListingAvailabilityMessage: (listing: Listing) => string | null;
 }
 
 const ListingsContext = createContext<ListingsContextType | null>(null);
@@ -129,6 +133,7 @@ export function ListingsProvider({ children }: ListingsProviderProps) {
         createdAt: serverTimestamp(),
         userId: currentUser.uid,
         isActive: true, // New listings are active by default
+        conditionStatus: 'available' as ConditionStatus, // Default to available
       };
 
       await addDoc(collection(db, 'listings'), newListing);
@@ -217,6 +222,39 @@ export function ListingsProvider({ children }: ListingsProviderProps) {
     }
   };
 
+  // Check if a listing is available for rent based on condition status and active status
+  const isListingAvailableForRent = useCallback((listing: Listing): boolean => {
+    // Check if listing is active (not delisted)
+    if (listing.isActive === false) {
+      return false;
+    }
+
+    // Check condition status
+    const conditionStatus = listing.conditionStatus || 'available';
+    return conditionStatus === 'available';
+  }, []);
+
+  // Get availability message for a listing
+  const getListingAvailabilityMessage = useCallback((listing: Listing): string | null => {
+    if (listing.isActive === false) {
+      return 'This item has been delisted and is not available for rent.';
+    }
+
+    const conditionStatus = listing.conditionStatus || 'available';
+
+    switch (conditionStatus) {
+      case 'faulty':
+        return 'This item is currently faulty and unavailable for rent.';
+      case 'under-repair':
+        return 'This item is under repair and temporarily unavailable for rent.';
+      case 'disputed':
+        return 'This item has an active dispute and is unavailable for rent.';
+      case 'available':
+      default:
+        return null;
+    }
+  }, []);
+
   return (
     <ListingsContext.Provider
       value={{
@@ -228,6 +266,8 @@ export function ListingsProvider({ children }: ListingsProviderProps) {
         deleteListing,
         delistListing,
         relistListing,
+        isListingAvailableForRent,
+        getListingAvailabilityMessage,
       }}
     >
       {children}

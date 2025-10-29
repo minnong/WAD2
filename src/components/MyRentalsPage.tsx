@@ -9,6 +9,7 @@ import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
 import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin, Award, DollarSign } from 'lucide-react';
 
+
 export default function MyRentalsPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,6 +51,9 @@ export default function MyRentalsPage() {
     const currentTab = viewMode === 'owner' ? ownerActiveTab : customerActiveTab;
     navigate(`/my-rentals?view=${viewMode}&tab=${currentTab}`, { replace: true });
   }, [viewMode, ownerActiveTab, customerActiveTab]);
+
+
+  
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
@@ -61,6 +65,22 @@ export default function MyRentalsPage() {
   const [selectedRentalForReview, setSelectedRentalForReview] = useState<any>(null);
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
+  // ✅ New Toast State + Auto-hide Logic (independent of showSuccessMessage)
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  useEffect(() => {
+    const handleToast = (e: any) => setToast(e.detail);
+    window.addEventListener("toast", handleToast);
+    return () => window.removeEventListener("toast", handleToast);
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 2500);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+
 
   // Get user's rental activity - separate active rentals, completed rentals, and pending requests
   const activeRentals = userRentalRequests.filter(request =>
@@ -431,6 +451,19 @@ export default function MyRentalsPage() {
         : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
     }`}>
       <LiquidGlassNav />
+      {/* ✅ Global Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed top-6 right-6 flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white transition-all duration-300 ${
+            toast.type === "success" ? "bg-green-600" : "bg-red-600"
+          }`}
+          style={{ zIndex: 9999 }}
+        >
+          {toast.type === "success" ? <CheckCircle size={18} /> : <XCircle size={18} />}
+          <span>{toast.message}</span>
+        </div>
+      )}
+
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
         {/* Enhanced Header with Stats */}
@@ -708,6 +741,55 @@ export default function MyRentalsPage() {
                         </span>
                       </div>
 
+                      {/* Payment button (only show if approved) */}
+                      {item.status === 'approved' && (
+                        <div className="absolute top-12 right-3 z-10 flex flex-col items-end">
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (item.paymentStatus === 'paid') return;
+
+                              try {
+                                const res = await fetch(
+                                  `${import.meta.env.VITE_BACKEND_URL}/api/stripe/create-checkout-session`,
+                                  {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                      itemName: item.toolName,
+                                      itemImage: item.toolImage,
+                                      amount: item.totalCost, // base rental (before +20%)
+                                      renterEmail: currentUser?.email || "", // optional
+                                      rentalId: item.id,
+                                    }),
+                                  }
+                                );
+
+                                const data = await res.json();
+                                if (data.url) {
+                                  window.location.href = data.url; // ✅ redirect to Stripe Checkout
+                                } else {
+                                  alert("Unable to start payment session. Please try again.");
+                                }
+                              } catch (error) {
+                                console.error("Stripe redirect error:", error);
+                                alert("Something went wrong starting payment.");
+                              }
+                            }}
+                            disabled={item.paymentStatus === 'paid'}
+                            className={`px-3 py-1 text-xs rounded-lg transition ${
+                              item.paymentStatus === 'paid'
+                                ? 'bg-green-600 opacity-90 cursor-not-allowed text-white'
+                                : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                            }`}
+                          >
+                            {item.paymentStatus === 'paid' ? 'Paid' : 'Make Payment'}
+                          </button>
+                      </div>
+                      )}
+
+
+
                       {/* Image */}
                       <div className="relative">
                         {renderToolImage(item.toolImage, "medium")}
@@ -741,7 +823,20 @@ export default function MyRentalsPage() {
                             <span className="text-lg font-bold text-purple-400">
                               ${formatPrice(item.totalCost)}
                             </span>
+                            <span className="text-xs text-gray-400">Deposit:</span>
+                            <span className="text-lg font-bold text-purple-400">
+                              ${formatPrice(item.depositAmount ?? Math.round(item.totalCost * 0.2 * 100) / 100)}
+                            </span>
+                            <span className="text-xs text-gray-400">Total:</span>
+                            <span className="text-lg font-bold text-purple-400">
+                              ${formatPrice(item.depositAmount ?? Math.round(item.totalCost * 1.2 * 100) / 100)}
+                            </span>
+                            
                           </div>
+
+                          {item.paymentStatus === "paid" && (
+                            <p className="text-green-400 text-sm font-semibold">✅ Paid</p>
+                          )}
                         </div>
 
                         {/* Action Buttons */}
@@ -1421,6 +1516,14 @@ export default function MyRentalsPage() {
                             <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
                             <span className="font-black text-2xl text-purple-500">${formatPrice(request.totalCost)}</span>
                           </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Deposit:</span>
+                            <span className="font-black text-2xl text-purple-500">${formatPrice(request.depositAmount ?? Math.round((request.totalCost * 0.2) * 100) / 100)}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total:</span>
+                            <span className="font-black text-2xl text-purple-500">${formatPrice(request.totalWithDeposit ?? Math.round((request.totalCost * 1.2) * 100) / 100)}</span>
+                          </div>
                         </div>
 
                         {request.message && (
@@ -1770,7 +1873,10 @@ export default function MyRentalsPage() {
                 {successMessage.includes('approved') ? 'Request Approved' :
                  successMessage.includes('declined') ? 'Request Declined' :
                  successMessage.includes('Review') ? 'Review Submitted' :
-                 'Request Cancelled'}
+                 successMessage.toLowerCase().includes('payment') ? 'Payment Successful' :
+                 successMessage.toLowerCase().includes('cancel')  ? 'Request Cancelled' :
+                'Success'
+                }
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">{successMessage}</p>
             </div>

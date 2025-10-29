@@ -31,10 +31,15 @@ interface RentalRequest {
   endTime: string;
   message: string;
   totalCost: number;
+  depositAmount?: number;
+  totalWithDeposit?: number;
   status: 'pending' | 'approved' | 'declined' | 'active' | 'completed' | 'cancelled';
   requestDate: Timestamp | Date;
   location: string;
   hasReview?: boolean;
+  paymentStatus?: 'unpaid' | 'paid';
+  paymentDate?: string;
+
 }
 
 
@@ -48,6 +53,7 @@ interface RentalsContextType {
   getUserRentals: () => RentalRequest[];
   checkDateConflict: (toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => boolean;
   getUnavailableDates: (toolId: string) => Array<{ start: string; end: string; status: string }>;
+  markAsPaid: (id: string) => Promise<void>;
 }
 
 const RentalsContext = createContext<RentalsContextType | null>(null);
@@ -161,50 +167,56 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
   };
 
   const addRentalRequest = async (requestData: Omit<RentalRequest, 'id' | 'requestDate'>) => {
-    if (!currentUser) {
-      throw new Error('User must be authenticated to create rental requests');
-    }
+  if (!currentUser) {
+    throw new Error('User must be authenticated to create rental requests');
+  }
 
-    // Check for date conflicts before creating the request
-    if (checkDateConflict(requestData.toolId, requestData.startDate, requestData.endDate)) {
-      throw new Error('The selected dates conflict with an existing rental. Please choose different dates.');
-    }
+  // ✅ Check for date conflicts before creating the request
+  if (checkDateConflict(requestData.toolId, requestData.startDate, requestData.endDate)) {
+    throw new Error('The selected dates conflict with an existing rental. Please choose different dates.');
+  }
 
-    try {
-      const newRequest = {
-        ...requestData,
-        requestDate: serverTimestamp(),
-      };
+  try {
+    // ✅ Add default payment fields here
+    const newRequest = {
+      ...requestData,
+      depositAmount: requestData.depositAmount ?? Math.round(requestData.totalCost * 0.2 * 100) / 100,
+      totalWithDeposit: requestData.totalWithDeposit ?? Math.round(requestData.totalCost * 1.2 * 100) / 100,
+      requestDate: serverTimestamp(),
+      paymentStatus: "unpaid",      // 👈 new field: ensures “Make Payment” shows later
+      paymentDate: null,            // 👈 for tracking
+    };
 
-      await addDoc(collection(db, 'rentalRequests'), newRequest);
+    // ✅ Add rental request to Firestore
+    await addDoc(collection(db, 'rentalRequests'), newRequest);
 
-      // Send email notifications
-      const emailData = {
-        ownerName: requestData.ownerName,
-        ownerEmail: requestData.ownerEmail,
-        renterName: requestData.renterName,
-        renterEmail: requestData.renterEmail,
-        itemName: requestData.toolName,
-        startDate: requestData.startDate,
-        endDate: requestData.endDate,
-        totalCost: requestData.totalCost,
-        message: requestData.message,
-      };
+    // ✅ Send email notifications (keep your original emailService code)
+    const emailData = {
+      ownerName: requestData.ownerName,
+      ownerEmail: requestData.ownerEmail,
+      renterName: requestData.renterName,
+      renterEmail: requestData.renterEmail,
+      itemName: requestData.toolName,
+      startDate: requestData.startDate,
+      endDate: requestData.endDate,
+      totalCost: requestData.totalCost,
+      message: requestData.message,
+    };
 
-      // Send emails in parallel
-      const [ownerEmailResult, renterEmailResult] = await Promise.all([
-        emailService.sendRentalRequestToOwner(emailData),
-        emailService.sendRentalRequestConfirmationToRenter(emailData),
-      ]);
+    const [ownerEmailResult, renterEmailResult] = await Promise.all([
+      emailService.sendRentalRequestToOwner(emailData),
+      emailService.sendRentalRequestConfirmationToRenter(emailData),
+    ]);
 
-      const emailsSent = ownerEmailResult.success && renterEmailResult.success;
+    const emailsSent = ownerEmailResult.success && renterEmailResult.success;
 
-      return { emailsSent };
-    } catch (error) {
-      console.error('Error adding rental request:', error);
-      throw error;
-    }
-  };
+    return { emailsSent };
+  } catch (error) {
+    console.error('Error adding rental request:', error);
+    throw error;
+  }
+};
+
 
   const updateRentalStatus = async (id: string, status: RentalRequest['status']) => {
     if (!currentUser) {
@@ -253,6 +265,27 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       throw error;
     }
   };
+    // ✅ Mark rental as paid (used after Stripe success)
+  const markAsPaid = async (id: string) => {
+    if (!currentUser) {
+      throw new Error("User must be authenticated to mark payment");
+    }
+
+    try {
+      const rentalRef = doc(db, "rentalRequests", id);
+
+      await updateDoc(rentalRef, {
+        paymentStatus: "paid",
+        paymentDate: new Date().toISOString(),
+      });
+
+      console.log(`✅ Rental ${id} marked as paid.`);
+    } catch (error) {
+      console.error("Error marking rental as paid:", error);
+      throw error;
+    }
+  };
+
 
   const getUserRentals = () => {
     // Return the user's rental requests (already filtered by current user)
@@ -271,6 +304,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
         getUserRentals,
         checkDateConflict,
         getUnavailableDates,
+        markAsPaid,
       }}
     >
       {children}

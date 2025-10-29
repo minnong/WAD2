@@ -199,6 +199,10 @@ export default function ListingDetailPage() {
       const startTime = startDateTime.toTimeString().slice(0, 5);
       const endTime = endDateTime.toTimeString().slice(0, 5);
 
+      //compute deposit breakdown
+      const depositAmount = Math.round(totalCost * 0.2 * 100) / 100;
+      const totalWithDeposit = Math.round((totalCost + depositAmount) * 100) / 100;
+
       // Create rental request and add to context
       const rentalRequestData = {
         toolId: String(tool.id),
@@ -214,6 +218,8 @@ export default function ListingDetailPage() {
         endTime: endTime,
         message: rentRequest.message,
         totalCost: totalCost,
+        depositAmount: depositAmount,
+        totalWithDeposit: totalWithDeposit,
         status: 'pending' as const,
         location: tool.location
       };
@@ -554,24 +560,34 @@ export default function ListingDetailPage() {
 
                 // Ensure 2 decimal places
                 totalCost = Math.round(totalCost * 100) / 100;
+                const depositAmount = Math.round(totalCost * 0.2 * 100) / 100;
+                const totalWithDeposit = Math.round((totalCost + depositAmount) * 100) / 100;
 
                 return (
-                  <div className={`p-3 rounded-lg ${
-                    theme === 'dark' ? 'bg-gray-700/50' : 'bg-blue-50'
-                  }`}>
+                  <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700/50' : 'bg-blue-50'}`}>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Total Cost:</span>
+                      <span className="text-sm font-medium">Total (incl. deposit):</span>
                       <span className="font-bold text-lg text-purple-300">
-                        ${formatPrice(totalCost)}
+                        ${formatPrice(totalWithDeposit)}
                       </span>
                     </div>
+
                     <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                       {quantity} {unitName} × ${formatPrice(tool.price)}/{tool.period}
+                    </p>
+
+                    <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Deposit amount: <span className="font-semibold">${formatPrice(depositAmount)}</span> (20% refundable)
+                    </p>
+
+                    <p className={`text-xs italic mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}`}>
+                      Deposit will be refunded if item is returned in good condition.
                     </p>
                   </div>
                 );
               })()}
             </div>
+
 
             {/* Modal Footer */}
             <div className="flex space-x-3 p-6 border-t border-gray-200/20">
@@ -647,7 +663,7 @@ export default function ListingDetailPage() {
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-300 dark:border-gray-600">
                     <span className="font-semibold text-gray-700 dark:text-gray-300">Total Cost:</span>
-                    <span className="font-bold text-xl text-green-600 dark:text-green-400">${formatPrice(successData.totalCost)}</span>
+                    <span className="font-bold text-xl text-green-600 dark:text-green-400">${formatPrice(successData.totalCost *1.2)}</span>
                   </div>
                 </div>
               </div>

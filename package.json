@@ -10,7 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@paypal/paypal-js": "^9.0.1",
+    "@paypal/react-paypal-js": "^8.9.2",
     "@radix-ui/react-slot": "^1.2.3",
+    "@stripe/react-stripe-js": "^5.2.0",
+    "@stripe/stripe-js": "^8.0.0",
     "@types/react-router-dom": "^5.3.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -21,6 +25,7 @@
     "react-dom": "^19.1.1",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.9.1",
+    "stripe": "^19.1.0",
     "tailwind-merge": "^3.3.1",
     "three": "^0.180.0"
   },

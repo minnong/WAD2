@@ -209,4 +209,95 @@ export const emailService = {
       return { success: false, error };
     }
   },
+    /**
+   * Send email to renter when rental is marked as completed
+   */
+  sendRentalCompletedEmail: async (data: RentalRequestEmailData) => {
+    try {
+      console.log('Sending rental completion email to renter:', data.renterEmail);
+      const response = await fetch(`${BACKEND_URL}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: data.renterEmail,
+          subject: `Your Rental Has Been Marked as Completed`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #7c3aed;">Rental Completed</h2>
+              <p>Hi ${data.renterName},</p>
+              <p>Your rental for <strong>${data.itemName}</strong> from ${data.startDate} to ${data.endDate} has been marked as <strong>completed</strong> by the owner <strong>${data.ownerName}</strong>.</p>
+
+              <div style="background-color:#f3f4f6; padding:15px; border-radius:8px; margin:20px 0;">
+                <p style="margin:0;">A 24-hour window has now started. During this period, the owner may report any issues with the returned item.</p>
+                <p style="margin-top:8px;">If no report is filed within 24 hours, your deposit of <strong>$${(data.totalCost * 0.2).toFixed(2)}</strong> will be automatically refunded to your account.</p>
+              </div>
+
+              <p>If the owner reports a fault within the window, your deposit may be forfeited in accordance with ShareLah’s rental policy.</p>
+
+              <p style="color:#666; font-size:12px; margin-top:30px;">
+                Best regards,<br>ShareLah Team
+              </p>
+            </div>
+          `,
+        }),
+      });
+
+      const result = await response.json();
+      console.log('Completion email sent to renter:', result);
+      return { success: true, response: result };
+    } catch (error) {
+      console.error('Failed to send completion email:', error);
+      return { success: false, error };
+    }
+  },
+
+    /**
+   * Send email to renter when deposit is forfeited after completion
+   */
+  sendDepositForfeitedEmail: async (data: RentalRequestEmailData) => {
+    try {
+      console.log('Sending deposit forfeited email to renter:', data.renterEmail);
+      const response = await fetch(`${BACKEND_URL}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: data.renterEmail,
+          subject: `Deposit Forfeited for ${data.itemName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #ef4444;">Deposit Forfeited</h2>
+              <p>Hi ${data.renterName},</p>
+              <p>
+                The rental for <strong>${data.itemName}</strong> from ${data.startDate} to ${data.endDate}
+                has been marked as <strong>completed</strong> by the owner, <strong>${data.ownerName}</strong>.
+              </p>
+              <p>
+                Unfortunately, the deposit of <strong>$${(data.totalCost * 0.2).toFixed(2)}</strong> was forfeited
+                due to reported issues with the returned item.
+              </p>
+
+              <div style="background-color:#f3f4f6; padding:15px; border-radius:8px; margin:20px 0;">
+                <p style="margin:0;">If you believe this is an error, please contact ShareLah support at 
+                <a href="mailto:support@sharelah.sg">support@sharelah.sg</a>.</p>
+              </div>
+
+              <p style="color:#666; font-size:12px; margin-top:30px;">
+                Best regards,<br>ShareLah Team
+              </p>
+            </div>
+          `,
+        }),
+      });
+
+      const result = await response.json();
+      console.log('Deposit forfeited email sent:', result);
+      return { success: true, response: result };
+    } catch (error) {
+      console.error('Failed to send deposit forfeited email:', error);
+      return { success: false, error };
+    }
+  },
+
+
+
 };

@@ -7,7 +7,38 @@ import { useAuth } from '../contexts/AuthContext';
 import { reviewsService } from '../services/firebase';
 import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
+import { updateGamification } from '../services/gamificationService';
+
 import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin, Award, DollarSign } from 'lucide-react';
+
+function CountdownTimer({ deadline }: { deadline: string }) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const end = new Date(deadline).getTime();
+      const diff = end - now;
+
+      if (diff <= 0) {
+        clearInterval(interval);
+        setTimeLeft("Expired");
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [deadline]);
+
+  return (
+    <p className="text-xs text-yellow-400 italic mt-2">
+      Report window active — expires in {timeLeft}.
+    </p>
+  );
+}
 
 
 export default function MyRentalsPage() {
@@ -17,11 +48,14 @@ export default function MyRentalsPage() {
   const { currentUser } = useAuth();
   const { userListings, deleteListing, delistListing, relistListing } = useListings(); // Get user-specific listings
   const { userRentalRequests, receivedRentalRequests, updateRentalStatus, updateRentalData } = useRentals(); // Get user's rental requests directly
+  // combine all rental data for easy lookup
+  const allMyRentals = [...userRentalRequests, ...receivedRentalRequests];
+
 
   // Owner tabs: my-listings, active-rentals, requests, calendar
   // Customer tabs: active-rentals, pending-requests, calendar
-  const ownerTabs = ['my-listings', 'active-rentals', 'requests', 'calendar'] as const;
-  const customerTabs = ['active-rentals', 'pending-requests', 'calendar'] as const;
+  const ownerTabs = ['my-listings', 'active-rentals', 'completed-rentals', 'requests', 'calendar'] as const;
+  const customerTabs = ['active-rentals', 'completed-rentals', 'pending-requests', 'calendar'] as const;
 
   type OwnerTab = typeof ownerTabs[number];
   type CustomerTab = typeof customerTabs[number];
@@ -98,14 +132,21 @@ export default function MyRentalsPage() {
   const delistedListings = userListings.filter(l => l.isActive === false);
   const incomingRequests = receivedRentalRequests.filter(request => request.status === 'pending');
 
-  // Customer stats
+  // ✅ Customer stats
   const completedRentals = userRentalRequests.filter(r => r.status === 'completed');
-  const totalSpent = completedRentals.reduce((sum, r) => sum + r.totalCost, 0);
+  const totalSpent = completedRentals.reduce((sum, r) => {
+    const base = r.totalCost || 0;
+    const forfeited = r.depositForfeited ? (r.depositAmount || 0) : 0;
+    return sum + base + forfeited;
+  }, 0);
 
-  // Owner stats
-  const approvedBookings = receivedRentalRequests.filter(r => r.status === 'approved' || r.status === 'active');
+  // ✅ Owner stats
   const completedBookings = receivedRentalRequests.filter(r => r.status === 'completed');
-  const totalEarnings = completedBookings.reduce((sum, r) => sum + r.totalCost, 0);
+  const totalEarnings = completedBookings.reduce((sum, r) => {
+    const base = r.totalCost || 0;
+    const forfeited = r.depositForfeited ? (r.depositAmount || 0) : 0;
+    return sum + base + forfeited;
+  }, 0);
 
   // Helper function to format datetime
   const formatDateTime = (date: string, time: string) => {
@@ -231,24 +272,86 @@ export default function MyRentalsPage() {
     setShowApprovalModal(true);
   };
 
-  const handleMarkAsCompleted = async (requestId: string) => {
-    if (window.confirm('Mark this rental as completed? The renter will be notified.')) {
-      try {
-        await updateRentalStatus(requestId, 'completed');
-        setSuccessMessage('Rental marked as completed!');
-        setShowSuccessMessage(true);
-        setTimeout(() => setShowSuccessMessage(false), 3000);
-      } catch (error) {
-        console.error('Error marking rental as completed:', error);
-        alert('Failed to mark rental as completed. Please try again.');
-      }
+  const handleMarkAsCompleted = async (rental: any) => {
+    if (!window.confirm('Mark this rental as completed? The renter will be notified.')) return;
+
+    try {
+      // 1️⃣ Update rental status
+      await updateRentalData(rental.id, {
+        status: 'completed',
+        completionDate: new Date().toISOString(),
+        reportWindowActive: true,
+        depositRefundDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24h later
+      });
+
+      // 2️⃣ Notify renter via email
+      await emailService.sendRentalCompletedEmail({
+        ownerName: currentUser?.displayName || currentUser?.email || 'Owner',
+        ownerEmail: currentUser?.email || '',
+        renterName: rental.renterName,
+        renterEmail: rental.renterEmail,
+        itemName: rental.toolName,
+        startDate: rental.startDate,
+        endDate: rental.endDate,
+        totalCost: rental.totalCost,
+      });
+
+      // 3️⃣ Gamification: owner immediately earns points
+      await updateGamification(rental.ownerEmail, 'owner', 'complete_rental');
+
+      setSuccessMessage('Rental marked as completed!');
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (error) {
+      console.error('Error marking rental as completed:', error);
+      alert('Failed to mark rental as completed. Please try again.');
     }
   };
+
+
+  const handleReportIssue = async (requestId: string) => {
+    const rental = allMyRentals.find(r => r.id === requestId);
+    if (!rental) {
+      console.error('handleReportIssue: rental not found for id', requestId);
+      alert('Rental not found.');
+      return;
+    }
+
+    if (!window.confirm("Report this rental as faulty? This will forfeit the renter’s deposit to you.")) return;
+
+    try {
+      await updateRentalData(requestId, {
+        depositForfeited: true,
+        reportWindowActive: false,
+      });
+
+      // ✅ send forfeited-deposit email to renter
+      await emailService.sendDepositForfeitedEmail({
+        ownerName: currentUser?.displayName || currentUser?.email || 'Owner',
+        ownerEmail: currentUser?.email || '',
+        renterName: rental.renterName,
+        renterEmail: rental.renterEmail,
+        itemName: rental.toolName,
+        startDate: rental.startDate,
+        endDate: rental.endDate,
+        totalCost: rental.totalCost,
+      });
+
+      alert("✅ Report submitted. Deposit forfeited to your earnings.");
+    } catch (error) {
+      console.error("Error reporting issue:", error);
+      alert("Failed to report issue. Please try again.");
+    }
+  };
+
 
   const handleLeaveReview = (rental: any) => {
     setSelectedRentalForReview(rental);
     setShowReviewModal(true);
   };
+
+
+
 
   const confirmApprovalAction = async () => {
     if (!selectedRequestId || !approvalAction) return;
@@ -551,7 +654,7 @@ export default function MyRentalsPage() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold">${totalSpent.toFixed(2)}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Spent</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Spent (incl. forfeited deposit)</p>
                   </div>
                 </div>
               </div>
@@ -589,7 +692,7 @@ export default function MyRentalsPage() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold">${totalEarnings.toFixed(2)}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Earnings</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Earnings (incl. forfeited deposit)</p>
                   </div>
                 </div>
               </div>
@@ -612,7 +715,7 @@ export default function MyRentalsPage() {
         {/* Tabs based on view mode */}
         {viewMode === 'customer' ? (
           <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-4 gap-1">
               <button
                 onClick={() => setCustomerActiveTab('active-rentals')}
                 className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
@@ -625,6 +728,19 @@ export default function MyRentalsPage() {
               >
                 <CheckCircle className="w-5 h-5" />
                 <span>Active Rentals ({activeRentals.length})</span>
+              </button>
+              <button
+                onClick={() => setCustomerActiveTab('completed-rentals')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  customerActiveTab === 'completed-rentals'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <CheckCircle className="w-5 h-5" />
+                <span>Completed Rentals ({completedRentalsCustomer.length})</span>
               </button>
               <button
                 onClick={() => setCustomerActiveTab('pending-requests')}
@@ -656,7 +772,7 @@ export default function MyRentalsPage() {
           </div>
         ) : (
           <div className={`rounded-2xl p-1 mb-8 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-            <div className="grid grid-cols-4 gap-1">
+            <div className="grid grid-cols-5 gap-1">
               <button
                 onClick={() => setOwnerActiveTab('my-listings')}
                 className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
@@ -683,6 +799,21 @@ export default function MyRentalsPage() {
                 <CheckCircle className="w-5 h-5" />
                 <span>Active Rentals ({receivedRentalRequests.filter(r => r.status === 'approved' || r.status === 'active').length})</span>
               </button>
+              <button
+                onClick={() => setOwnerActiveTab('completed-rentals')}
+                className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
+                  ownerActiveTab === 'completed-rentals'
+                    ? 'bg-gradient-to-r from-purple-800 to-purple-900 text-white shadow-lg transform scale-[1.02]'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-gray-700/50'
+                    : 'text-gray-700 hover:bg-gray-100/80'
+                }`}
+              >
+                <CheckCircle className="w-5 h-5" />
+                <span>Completed Rentals ({receivedRentalRequests.filter(r => r.status === 'completed').length})</span>
+              </button>
+
+              
               <button
                 onClick={() => setOwnerActiveTab('requests')}
                 className={`flex-1 py-4 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
@@ -887,13 +1018,14 @@ export default function MyRentalsPage() {
                 </div>
               </div>
             )}
+          </div>
+          ) : viewMode === 'customer' && customerActiveTab === 'completed-rentals' ? (
+            <div className="space-y-6">
+              <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                ✅ Completed Rentals
+              </h2>
 
-            {/* Completed Rentals Section */}
-            {completedRentalsCustomer.length > 0 && (
-              <div className="mt-12">
-                <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  ✅ Completed Rentals
-                </h2>
+              {completedRentalsCustomer.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {completedRentalsCustomer.map((item) => (
                     <div
@@ -903,73 +1035,48 @@ export default function MyRentalsPage() {
                         theme === 'dark'
                           ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
                           : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
-                      }`}>
-
-                      {/* Status Badge */}
+                      }`}
+                    >
                       <div className="absolute top-2 right-2 z-10">
                         <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${getStatusColor(item.status)}`}>
                           {item.status}
                         </span>
                       </div>
 
-                      {/* Image */}
                       <div className="relative">
                         {renderToolImage(item.toolImage, "medium")}
                       </div>
 
-                      {/* Content */}
                       <div className="p-3">
                         <h3 className="text-base font-bold mb-1 text-white truncate">{item.toolName}</h3>
-                        <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                          from <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/profile/${encodeURIComponent(item.ownerEmail)}`);
-                            }}
-                            className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
-                          >
-                            {item.ownerName}
-                          </button>
+                        <p className="text-xs text-gray-400 mb-2">
+                          from {item.ownerName}
                         </p>
 
-                        <div className="space-y-1 mb-3">
-                          <div className="flex items-center gap-1 text-xs">
-                            <Clock className="w-3 h-3 text-gray-400" />
-                            <span className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} truncate`}>
-                              {item.startDate} - {item.endDate}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs text-gray-400">Cost:</span>
-                            <span className="text-lg font-bold text-purple-400">
-                              ${formatPrice(item.totalCost)}
-                            </span>
-                          </div>
+                        <div className="flex justify-between items-center text-sm mb-2">
+                          <span className="text-gray-400">Cost:</span>
+                          <span className="font-bold text-purple-400">${formatPrice(item.totalCost)}</span>
+                        </div>
+                        {/* Deposit Amount */}
+                        <div className="flex justify-between items-center text-sm mb-2">
+                          <span className="text-gray-400">Deposit:</span>
+                          <span className="font-bold text-amber-400">${formatPrice(item.totalCost * 0.2 || 0)}</span>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
-                          <div className="flex justify-center mb-2">
-                            {!item.hasReview ? (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleLeaveReview(item);
-                                }}
-                                className="transition-all hover:scale-110"
-                                title="Leave Review"
-                              >
-                                <Star className="w-5 h-5 text-yellow-500" />
-                              </button>
-                            ) : (
-                              <span className="text-xs text-green-500 font-medium flex items-center gap-1">
-                                <CheckCircle className="w-3 h-3" />
-                                Review Left
-                              </span>
-                            )}
-                          </div>
+                        {/* ✅ Deposit status for renters */}
+                        <div className="flex justify-between items-center text-xs mt-2">
+                          {item.depositForfeited ? (
+                            <span className="px-2 py-1 rounded-lg bg-red-600 text-white font-semibold">
+                              Deposit Forfeited
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 rounded-lg bg-green-600 text-white font-semibold">
+                              Deposit Refunded
+                            </span>
+                          )}
+                        </div>
 
+                        <div className="flex flex-col gap-1.5 mt-3 pt-2 border-t border-gray-600/30">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -984,7 +1091,6 @@ export default function MyRentalsPage() {
                             <MessageCircle className="w-3 h-3" />
                             Chat
                           </button>
-
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1000,9 +1106,15 @@ export default function MyRentalsPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="text-center py-12 text-gray-400">
+                  No completed rentals yet.
+                </div>
+              )}
+            </div>
+
+
+          
         ) : viewMode === 'customer' && customerActiveTab === 'pending-requests' ? (
           <div className="space-y-6">
             {/* Pending Requests Section */}
@@ -1440,6 +1552,32 @@ export default function MyRentalsPage() {
                               <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Earning:</span>
                               <span className="font-black text-2xl text-green-500">${formatPrice(request.totalCost)}</span>
                             </div>
+                            {/* Deposit breakdown + report button */}
+                            <div className="flex items-center gap-1 text-sm mt-2">
+                              <span className="text-gray-400">Deposit:</span>
+                              <span className="font-bold text-purple-400">${formatPrice(request.depositAmount ?? Math.round((request.totalCost * 0.2) * 100) / 100)}</span>
+                            </div>
+
+                            {request.status === 'completed' && request.reportWindowActive && (
+                              <button
+                                onClick={() => handleReportIssue(request.id)}
+                                className="mt-3 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm"
+                              >
+                                Report Faulty Item (within 24h)
+                              </button>
+                            )}
+                            {(request.status === 'approved' || request.status === 'active') && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkAsCompleted(request);
+                                }}
+                                className="mt-2 px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm"
+                              >
+                                Mark as Completed
+                              </button>
+                            )}
+
                           </div>
                         </div>
                       </div>
@@ -1459,6 +1597,118 @@ export default function MyRentalsPage() {
               <div className="text-center py-12">
                 <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                   No active rentals at the moment.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : viewMode === 'owner' && ownerActiveTab === 'completed-rentals' ? (
+          <div className="space-y-6">
+            {/* ✅ Completed Rentals Section */}
+            {receivedRentalRequests.filter(r => r.status === 'completed').length > 0 ? (
+              <div>
+                <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  🏁 Completed Rentals
+                </h2>
+                <div className="space-y-6 mb-12">
+                  {receivedRentalRequests
+                    .filter(r => r.status === 'completed')
+                    .map((request) => (
+                      <div key={request.id} className="flex items-center justify-between">
+                        {/* Rental Card */}
+                        <div
+                          onClick={() => handleViewListing(request.toolId)}
+                          className={`relative flex items-center p-6 gap-6 w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
+                            theme === 'dark'
+                              ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
+                              : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
+                          }`}
+                        >
+                          <div className="flex-shrink-0">
+                            {renderToolImage(request.toolImage, "large")}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="mb-4">
+                              <h3 className="text-xl font-bold mb-1 text-white">{request.toolName}</h3>
+                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                                Rented by{" "}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/profile/${encodeURIComponent(request.renterEmail)}`);
+                                  }}
+                                  className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                                >
+                                  {request.renterName}
+                                </button>
+                              </p>
+                            </div>
+
+                            <div className="space-y-2 mb-3">
+                              <div className="flex items-center space-x-2">
+                                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                                <span className="font-semibold text-sm">{formatDateTime(request.startDate, request.startTime)}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                                <span className="font-semibold text-sm">{formatDateTime(request.endDate, request.endTime)}</span>
+                              </div>
+                            </div>
+
+                            {/* 💰 Cost Breakdown */}
+                            <div className="space-y-1 mt-3">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-400">Base Cost:</span>
+                                <span className="font-semibold text-purple-300">${formatPrice(request.totalCost)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-400">Deposit (20%):</span>
+                                <span className="font-semibold text-purple-400">${formatPrice(request.depositAmount ?? Math.round(request.totalCost * 0.2 * 100) / 100)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-400">Total Received:</span>
+                                <span className="font-bold text-green-500">${formatPrice((request.totalCost ?? 0) + (request.depositForfeited ? (request.depositAmount ?? request.totalCost * 0.2) : 0))}</span>
+                              </div>
+                            </div>
+
+                            {/* ⏰ Deposit Status + 3 Scenarios */}
+                            <div className="mt-3">
+                              {request.reportWindowActive ? (
+                                <>
+                                  <CountdownTimer deadline={request.depositRefundDeadline ?? ''} />
+                                  <button
+                                    onClick={() => handleReportIssue(request.id)}
+                                    className="mt-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-all"
+                                  >
+                                    Report Faulty Item (within 24h)
+                                  </button>
+                                </>
+                              ) : request.depositForfeited ? (
+                                <button
+                                  disabled
+                                  className="mt-2 px-3 py-1 bg-gray-700 text-white rounded-lg text-xs font-medium opacity-70 cursor-not-allowed"
+                                >
+                                  Deposit Forfeited
+                                </button>
+                              ) : (
+                                <button
+                                  disabled
+                                  className="mt-2 px-3 py-1 bg-green-600 text-white rounded-lg text-xs font-medium opacity-70 cursor-not-allowed"
+                                >
+                                  Deposit Refunded
+                                </button>
+                              )}
+                            </div>
+
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  No completed rentals yet.
                 </p>
               </div>
             )}

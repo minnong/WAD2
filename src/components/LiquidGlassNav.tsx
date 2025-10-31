@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, LogOut, Settings, ChevronDown, Search, Plus, Heart, ShoppingBag, Bell, Sun, Moon, MessageCircle } from 'lucide-react';
+import { User, LogOut, Settings, ChevronDown, Search, Plus, Heart, ShoppingBag, Bell, Sun, Moon, MessageCircle, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -111,6 +111,17 @@ const LiquidGlassNav: React.FC = () => {
               }`}>
                 <MessageCircle className="w-4 h-4" />
                 <span className="text-sm font-medium">Chat</span>
+              </button>
+              <button
+                onClick={() => navigate('/leaderboard')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all ${
+                  theme === 'dark'
+                    ? 'text-white/80 hover:text-white hover:bg-white/10'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
+                }`}
+              >
+                <Crown className="w-4 h-4 text-yellow-400" />
+                <span className="text-sm font-medium">Leaderboard</span>
               </button>
             </div>
           )}

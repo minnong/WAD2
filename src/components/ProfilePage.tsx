@@ -7,6 +7,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
 import { Edit3, Star, Award, Clock, MapPin, Mail, Phone, User, Settings, Shield, ExternalLink, Trash2, XCircle, CheckCircle, Package, ShoppingBag } from 'lucide-react';
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
+
 
 export default function ProfilePage() {
   const { currentUser } = useAuth();
@@ -40,13 +43,17 @@ export default function ProfilePage() {
     uid: currentUser?.uid || '',
     emailVerified: currentUser?.emailVerified || false,
     creationTime: currentUser?.metadata?.creationTime || '',
-    lastSignInTime: currentUser?.metadata?.lastSignInTime || ''
+    lastSignInTime: currentUser?.metadata?.lastSignInTime || '',
+    ownerPoints: 0,
+    renterPoints: 0,
+    badges: [] as string[],
   });
 
   // Update profile data when currentUser changes
   useEffect(() => {
     if (currentUser) {
-      setProfileData({
+      setProfileData(prev => ({
+        ...prev, //keep old points and badges
         displayName: currentUser.displayName || '',
         email: currentUser.email || '',
         phone: currentUser.phoneNumber || '',
@@ -57,9 +64,32 @@ export default function ProfilePage() {
         emailVerified: currentUser.emailVerified || false,
         creationTime: currentUser.metadata?.creationTime || '',
         lastSignInTime: currentUser.metadata?.lastSignInTime || ''
-      });
+      }));
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    const fetchGamification = async () => {
+      if (!currentUser?.email) return;
+      try {
+        const docRef = doc(db, "users", currentUser.email);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          setProfileData(prev => ({
+            ...prev,
+            ownerPoints: data.ownerPoints || 0,
+            renterPoints: data.renterPoints || 0,
+            badges: data.badges || [],
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching gamification data:", err);
+      }
+    };
+    fetchGamification();
+  }, [currentUser]);
+
 
   // Get user stats (filter by userId instead of email for better accuracy)
   const userListings = listings.filter(l => l.userId === currentUser?.uid);
@@ -201,9 +231,9 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile Info */}
-              <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <h1 className="text-xl md:text-2xl font-bold">{profileData.displayName || 'Anonymous User'}</h1>
+            <div className="flex-1">
+              <div className="flex items-center space-x-3 mb-2">
+                <h1 className="text-2xl font-bold">{profileData.displayName || 'Anonymous User'}</h1>
                 <div className="flex items-center space-x-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-current" />
                   <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
@@ -215,6 +245,23 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
+              {profileData.badges && profileData.badges.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 ml-1">
+                  {profileData.badges.map((badge, index) => (
+                    <span
+                      key={index}
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                        badge.includes("Reliable") ? "bg-yellow-500/20 text-yellow-300" :
+                        badge.includes("Engaged") ? "bg-blue-500/20 text-blue-300" :
+                        badge.includes("Perfect") ? "bg-green-500/20 text-green-300" :
+                        "bg-purple-700/30 text-purple-300"
+                      }`}
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-4 text-sm mb-3">
                 <div className="flex items-center space-x-1">
                   <Mail className="w-4 h-4 text-gray-400" />
@@ -238,6 +285,38 @@ export default function ProfilePage() {
               <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} max-w-2xl`}>
                 {profileData.bio}
               </p>
+              {/* 🎮 Gamification Section */}
+              <div className="mt-6 border-t border-gray-700/50 pt-4">
+                <h3 className="text-lg font-semibold mb-2 text-purple-400">Your Achievements</h3>
+
+                {/* Points summary */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                  <p className="text-sm text-gray-400">
+                    🧰 <strong>Owner Points:</strong> {profileData.ownerPoints ?? 0}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    🤝 <strong>Renter Points:</strong> {profileData.renterPoints ?? 0}
+                  </p>
+                </div>
+
+                {/* Badges */}
+                {profileData.badges && profileData.badges.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {profileData.badges.map((badge) => (
+                      <span
+                        key={badge}
+                        className="text-xs bg-purple-700/30 text-purple-300 px-2 py-1 rounded-full"
+                      >
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500 italic">
+                    No badges yet — start renting or listing tools to earn some!
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Edit Button */}
@@ -360,12 +439,12 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <div className="mb-8">
-          <div className="flex space-x-1 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex space-x-1 overflow-x-auto">
             {tabs.map((tabItem) => (
               <button
                 key={tabItem.id}
                 onClick={() => navigate(tabItem.id === 'overview' ? '/profile' : `/profile/tab/${tabItem.id}`)}
-                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                   activeTab === tabItem.id
                     ? 'bg-purple-900 text-white shadow-lg'
                     : theme === 'dark'
@@ -439,7 +518,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <h3 className="text-base md:text-lg font-semibold">Recent Activity</h3>
+              <h3 className="text-lg font-semibold">Recent Activity</h3>
               <div className="space-y-4">
                 {userRentals.slice(0, 5).map((rental, index) => (
                   <div key={index} className={`p-4 rounded-lg border ${
@@ -478,7 +557,7 @@ export default function ProfilePage() {
             <div className="space-y-6">
               {/* Active Listings */}
               <div>
-                <h3 className="text-base md:text-lg font-semibold mb-4">Active Listings</h3>
+                <h3 className="text-lg font-semibold mb-4">Active Listings</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {activeListings.map((listing) => (
                     <div
@@ -593,8 +672,8 @@ export default function ProfilePage() {
               {/* Delisted Listings Section */}
               {delistedListings.length > 0 && (
                 <div className="mt-8 pt-8 border-t border-gray-600/30">
-                  <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2">
-                    <XCircle className="w-4 h-4 md:w-5 md:h-5 text-orange-400" />
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <XCircle className="w-5 h-5 text-orange-400" />
                     Delisted Items
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -701,8 +780,8 @@ export default function ProfilePage() {
             <div className="space-y-8">
               {/* Renting History (As Customer) */}
               <div>
-                <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-purple-400" />
                   Renting History (As Customer)
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -722,6 +801,7 @@ export default function ProfilePage() {
                           rental.status === 'completed' ? 'bg-green-500/90 text-white' :
                           rental.status === 'approved' ? 'bg-blue-500/90 text-white' :
                           rental.status === 'pending' ? 'bg-yellow-500/90 text-white' :
+                          rental.status === 'active' ? 'bg-purple-500/90 text-white' :
                           rental.status === 'declined' ? 'bg-red-500/90 text-white' :
                           'bg-gray-500/90 text-white'
                         }`}>
@@ -787,8 +867,8 @@ export default function ProfilePage() {
 
               {/* Listing History (As Owner) */}
               <div className="pt-8 border-t border-gray-600/30">
-                <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Package className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-green-400" />
                   Listing Rental History (As Owner)
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -808,6 +888,7 @@ export default function ProfilePage() {
                           rental.status === 'completed' ? 'bg-green-500/90 text-white' :
                           rental.status === 'approved' ? 'bg-blue-500/90 text-white' :
                           rental.status === 'pending' ? 'bg-yellow-500/90 text-white' :
+                          rental.status === 'active' ? 'bg-purple-500/90 text-white' :
                           rental.status === 'declined' ? 'bg-red-500/90 text-white' :
                           'bg-gray-500/90 text-white'
                         }`}>

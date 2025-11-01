@@ -342,7 +342,7 @@ export default function ListingDetailPage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -561,7 +561,7 @@ export default function ListingDetailPage() {
             theme === 'dark' ? 'bg-gray-800' : 'bg-white'
           }`}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200/20">
+            <div className="flex items-center justify-between p-3 md:p-4 lg:p-6 border-b border-gray-200/20">
               <h3 className="text-lg font-semibold">Request to Rent</h3>
               <button
                 onClick={() => setShowRentModal(false)}
@@ -671,7 +671,7 @@ export default function ListingDetailPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex space-x-3 p-6 border-t border-gray-200/20">
+            <div className="flex space-x-3 p-3 md:p-4 lg:p-6 border-t border-gray-200/20">
               <button
                 onClick={() => setShowRentModal(false)}
                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
@@ -707,7 +707,7 @@ export default function ListingDetailPage() {
             theme === 'dark' ? 'bg-gray-800' : 'bg-white'
           }`}>
             {/* Success Header */}
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-center text-white">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-3 md:p-4 lg:p-6 text-center text-white">
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8" />
               </div>

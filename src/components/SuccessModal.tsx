@@ -44,7 +44,7 @@ export default function SuccessModal({
         theme === 'dark' ? 'bg-gray-800' : 'bg-white'
       }`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200/20">
+        <div className="flex items-center justify-between p-3 md:p-4 lg:p-6 border-b border-gray-200/20">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
               <CheckCircle className="w-6 h-6 text-green-500" />
@@ -93,7 +93,7 @@ export default function SuccessModal({
 
         {/* Footer */}
         {(actionButton || !autoClose) && (
-          <div className="flex space-x-3 p-6 border-t border-gray-200/20">
+          <div className="flex space-x-3 p-3 md:p-4 lg:p-6 border-t border-gray-200/20">
             {!autoClose && (
               <button
                 onClick={onClose}

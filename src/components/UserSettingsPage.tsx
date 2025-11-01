@@ -317,7 +317,7 @@ export default function UserSettingsPage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Settings</h1>
@@ -925,7 +925,7 @@ export default function UserSettingsPage() {
         {/* Delete Account Modal */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className={`max-w-md w-full p-6 rounded-lg ${
+            <div className={`max-w-md w-full p-3 md:p-4 lg:p-6 rounded-lg ${
               theme === 'dark' ? 'bg-gray-800' : 'bg-white'
             }`}>
               <div className="text-center mb-6">

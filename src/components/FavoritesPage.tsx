@@ -95,7 +95,7 @@ export default function FavoritesPage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2 flex items-center">
@@ -229,7 +229,7 @@ export default function FavoritesPage() {
             </p>
             <button
               onClick={() => navigate('/browse')}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 md:px-6 md:py-3 lg:px-8 lg:py-4 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg"
             >
               Start Browsing Tools
             </button>

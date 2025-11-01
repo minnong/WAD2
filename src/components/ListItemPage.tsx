@@ -641,7 +641,7 @@ export default function ListItemPage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -667,7 +667,7 @@ export default function ListItemPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Photo Upload */}
-          <div className={`rounded-2xl p-6 border-0 shadow-sm ${
+          <div className={`rounded-2xl p-3 md:p-4 lg:p-6 border-0 shadow-sm ${
             theme === 'dark'
               ? 'bg-gray-800/60'
               : 'bg-white/80 backdrop-blur-sm'
@@ -709,7 +709,7 @@ export default function ListItemPage() {
 
             {/* Upload Area */}
             {uploadedImages.length < 5 && (
-              <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
+              <div className={`border-2 border-dashed rounded-xl p-4 md:p-6 lg:p-8 text-center transition-colors cursor-pointer ${
                 theme === 'dark'
                   ? 'border-gray-600 hover:border-gray-500'
                   : 'border-gray-300 hover:border-gray-400'
@@ -739,7 +739,7 @@ export default function ListItemPage() {
           </div>
 
           {/* Basic Information */}
-          <div className={`rounded-2xl p-6 border-0 shadow-sm ${
+          <div className={`rounded-2xl p-3 md:p-4 lg:p-6 border-0 shadow-sm ${
             theme === 'dark'
               ? 'bg-gray-800/60'
               : 'bg-white/80 backdrop-blur-sm'
@@ -849,7 +849,7 @@ export default function ListItemPage() {
           </div>
 
           {/* Pricing & Location */}
-          <div className={`rounded-2xl p-6 border-0 shadow-sm ${
+          <div className={`rounded-2xl p-3 md:p-4 lg:p-6 border-0 shadow-sm ${
             theme === 'dark'
               ? 'bg-gray-800/60'
               : 'bg-white/80 backdrop-blur-sm'

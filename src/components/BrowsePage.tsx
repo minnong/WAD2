@@ -1147,7 +1147,7 @@ export default function BrowsePage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Browse Tools</h1>
@@ -1256,7 +1256,7 @@ export default function BrowsePage() {
 
               {/* Dropdown Menu */}
               {showFilters && (
-                <div className={`absolute top-full right-0 mt-2 w-72 rounded-2xl border shadow-xl backdrop-blur-md z-20 ${
+                <div className={`absolute top-full right-0 mt-2 w-64 md:w-72 rounded-2xl border shadow-xl backdrop-blur-md z-20 ${
                   theme === 'dark'
                     ? 'bg-gray-800/95 border-gray-700'
                     : 'bg-white/95 border-gray-200'
@@ -1454,7 +1454,7 @@ export default function BrowsePage() {
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-4">
               {featuredCategories.map((category) => (
                 <button
                   key={category.name}
@@ -1500,7 +1500,7 @@ export default function BrowsePage() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 md:gap-4">
               {topRatedTools.map((tool) => (
                 <div
                   key={tool.id}
@@ -1574,7 +1574,7 @@ export default function BrowsePage() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 md:gap-4">
               {trendingTools.map((tool) => (
                 <div
                   key={tool.id}
@@ -1671,7 +1671,7 @@ export default function BrowsePage() {
               /* List View - Show tools only when searched/filtered */
               (searchSubmitted || selectedCategory !== 'All') && (
                 filteredTools.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
                     {filteredTools.map((tool) => (
                       <div
                         key={tool.id}
@@ -1684,9 +1684,9 @@ export default function BrowsePage() {
                       >
                         {/* Tool Image */}
                         <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
-                          {renderToolImage(tool, "text-6xl")}
-                          <div className="absolute top-3 right-3 bg-purple-900 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
-                            <Star className="w-3 h-3 fill-current" />
+                          {renderToolImage(tool, "text-4xl md:text-6xl")}
+                          <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-purple-900 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
+                            <Star className="w-2.5 h-2.5 md:w-3 md:h-3 fill-current" />
                             <span>{tool.rating}</span>
                           </div>
                           {/* Favorite Button */}
@@ -1709,10 +1709,10 @@ export default function BrowsePage() {
                         </div>
 
                         {/* Tool Info */}
-                        <div className="p-4 space-y-3">
+                        <div className="p-2 md:p-4 space-y-2 md:space-y-3">
                           <div>
-                            <h3 className="font-semibold text-lg line-clamp-2">{tool.name}</h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                            <h3 className="font-semibold text-sm md:text-lg line-clamp-2">{tool.name}</h3>
+                            <p className={`text-xs md:text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                               by <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1725,23 +1725,23 @@ export default function BrowsePage() {
                             </p>
                           </div>
 
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between text-sm md:text-base">
                             <div>
-                              <span className="text-xl font-bold text-purple-300">${tool.price}</span>
-                              <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                              <span className="text-lg md:text-xl font-bold text-purple-300">${tool.price}</span>
+                              <span className={`text-xs md:text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                                 /{tool.period}
                               </span>
                             </div>
                             <div className="flex items-center space-x-1">
-                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                              <span className="text-sm font-medium">{tool.rating}</span>
+                              <Star className="w-3 md:w-4 h-3 md:h-4 text-yellow-400 fill-current" />
+                              <span className="text-xs md:text-sm font-medium">{tool.rating}</span>
                               <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                                 ({tool.reviews})
                               </span>
                             </div>
                           </div>
 
-                          <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          <div className={`text-xs md:text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                             📍 {tool.location}
                           </div>
                         </div>
@@ -1789,7 +1789,7 @@ export default function BrowsePage() {
               : 'bg-white'
           }`}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200/20">
+            <div className="flex items-center justify-between p-3 md:p-4 lg:p-6 border-b border-gray-200/20">
               <h3 className="text-lg font-semibold">Request to Rent</h3>
               <button
                 onClick={() => setShowRentModal(false)}
@@ -1921,7 +1921,7 @@ export default function BrowsePage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex space-x-3 p-6 border-t border-gray-200/20">
+            <div className="flex space-x-3 p-3 md:p-4 lg:p-6 border-t border-gray-200/20">
               <button
                 onClick={() => setShowRentModal(false)}
                 className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors ${

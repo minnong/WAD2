@@ -142,6 +142,42 @@ export default function MyRentalsPage() {
     return price % 1 === 0 ? price.toString() : price.toFixed(2);
   };
 
+  // Helper function to check if rental is truly active (not expired)
+  const isRentalActive = (request: any) => {
+    if (request.status !== 'approved') return false;
+
+    // Parse end date
+    let endDate: Date;
+    if (request.endDate instanceof Date) {
+      endDate = request.endDate;
+    } else if (request.endDate?.toDate) {
+      // Firestore Timestamp
+      endDate = request.endDate.toDate();
+    } else if (typeof request.endDate === 'string') {
+      // String date
+      endDate = new Date(request.endDate);
+    } else {
+      return true; // Default to active if we can't parse date
+    }
+
+    // Check if end date has passed
+    const now = new Date();
+    return endDate > now;
+  };
+
+  // Helper function to check if rental is in the past (completed or expired)
+  const isRentalPast = (request: any) => {
+    // Already completed
+    if (request.status === 'completed') return true;
+
+    // Approved but expired
+    if (request.status === 'approved') {
+      return !isRentalActive(request);
+    }
+
+    return false;
+  };
+
   const handleViewListing = (listingId: string) => {
     navigate(`/listing/${listingId}`);
   };
@@ -491,7 +527,7 @@ export default function MyRentalsPage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Enhanced Header with Stats */}
         <div className="mb-8">
           <div className="flex flex-col gap-4 mb-6">
@@ -534,49 +570,49 @@ export default function MyRentalsPage() {
           {/* Quick Stats */}
           {viewMode === 'customer' ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <Package className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{activeRentals.length}</p>
+                    <p className="text-lg md:text-2xl font-bold">{activeRentals.length}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Active Rentals</p>
                   </div>
                 </div>
               </div>
 
-              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{completedRentals.length}</p>
+                    <p className="text-lg md:text-2xl font-bold">{completedRentals.length}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Completed</p>
                   </div>
                 </div>
               </div>
 
-              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{pendingRequests.length}</p>
+                    <p className="text-lg md:text-2xl font-bold">{pendingRequests.length}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Pending</p>
                   </div>
                 </div>
               </div>
 
-              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">${totalSpent.toFixed(2)}</p>
+                    <p className="text-lg md:text-2xl font-bold">${totalSpent.toFixed(2)}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Spent</p>
                   </div>
                 </div>
@@ -584,49 +620,49 @@ export default function MyRentalsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{userOwnListings.length}</p>
+                    <p className="text-lg md:text-2xl font-bold">{userOwnListings.length}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>My Listings</p>
                   </div>
                 </div>
               </div>
 
-              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-                    <Inbox className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                    <Inbox className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{incomingRequests.length}</p>
+                    <p className="text-lg md:text-2xl font-bold">{incomingRequests.length}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Incoming Requests</p>
                   </div>
                 </div>
               </div>
 
-              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <Award className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Award className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">${totalEarnings.toFixed(2)}</p>
+                    <p className="text-lg md:text-2xl font-bold">${totalEarnings.toFixed(2)}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Earnings</p>
                   </div>
                 </div>
               </div>
 
-              <div className={`rounded-2xl p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{completedBookings.length}</p>
+                    <p className="text-lg md:text-2xl font-bold">{completedBookings.length}</p>
                     <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Completed Bookings</p>
                   </div>
                 </div>
@@ -751,7 +787,7 @@ export default function MyRentalsPage() {
                 <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   Active Rentals
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                   {activeRentals.map((item) => (
                     <div
                       key={item.id}
@@ -859,9 +895,9 @@ export default function MyRentalsPage() {
             {completedRentalsCustomer.length > 0 && (
               <div className="mt-12">
                 <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  ✅ Completed Rentals
+                  Completed Rentals
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                   {completedRentalsCustomer.map((item) => (
                     <div
                       key={item.id}
@@ -971,136 +1007,81 @@ export default function MyRentalsPage() {
             )}
           </div>
         ) : viewMode === 'customer' && customerActiveTab === 'pending-requests' ? (
-          <div className="space-y-6">
+          <div>
             {/* Pending Requests Section */}
-            {pendingRequests.length > 0 && (
+            {pendingRequests.length > 0 ? (
               <div>
-                <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  ⏳ Pending Requests
+                <h2 className={`text-lg md:text-2xl font-bold mb-3 md:mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  Pending Requests
                 </h2>
-                <div className="space-y-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                   {pendingRequests.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between">
-                      {/* Listing Box - Left 2 Columns Only */}
-                      <div
-                        onClick={() => handleViewListing(item.toolId)}
-                        className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
-                          theme === 'dark'
-                            ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
-                            : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
-                        }`}>
-
-                        {/* Large Image on Left */}
-                        <div className="flex-shrink-0">
-                          {renderToolImage(item.toolImage, "large")}
-                        </div>
-
-                        {/* Listing Details in Center */}
-                        <div className="flex-1 min-w-0">
-                          <div className="mb-4">
-                            <h3 className="text-xl font-bold mb-1 text-white">{item.toolName}</h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                              From <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/profile/${encodeURIComponent(item.ownerEmail)}`);
-                                }}
-                                className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
-                              >
-                                {item.ownerName}
-                              </button> • {item.location}
-                            </p>
-                          </div>
-
-                          <div className="space-y-2 mb-4">
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
-                              <span className="font-semibold text-sm">{formatDateTime(item.startDate, item.startTime)}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
-                              <span className="font-semibold text-sm">{formatDateTime(item.endDate, item.endTime)}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                              <span className="font-black text-2xl text-purple-500">${formatPrice(item.totalCost)}</span>
-                            </div>
-                          </div>
-
-                          {item.message && (
-                            <div className={`p-3 rounded-lg mb-4 ${
-                              theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
-                            }`}>
-                              <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>YOUR MESSAGE</p>
-                              <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                                "{item.message}"
-                              </p>
-                            </div>
-                          )}
+                    <div
+                      key={item.id}
+                      onClick={() => handleViewListing(item.toolId)}
+                      className={`rounded-xl border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden group ${
+                        theme === 'dark'
+                          ? 'bg-gray-800/60 hover:bg-gray-800/80'
+                          : 'bg-white/80 hover:bg-white/90 backdrop-blur-sm'
+                      }`}
+                    >
+                      {/* Tool Image */}
+                      <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center relative">
+                        {renderToolImage(item.toolImage, "medium")}
+                        <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-orange-900 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full text-xs font-bold">
+                          Pending
                         </div>
                       </div>
 
-                      {/* Status & Actions - Outside Box on Right */}
-                      <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
-                        {/* Status Badge */}
-                        <div className="flex flex-col items-end space-y-2">
-                          <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(item.status)}`}>
-                            {getStatusIcon(item.status)}
-                            <span className="capitalize">{item.status}</span>
-                          </span>
-                          <p className="text-xs text-orange-500 font-medium">⏳ Waiting for approval</p>
+                      {/* Tool Info */}
+                      <div className="p-2 md:p-4 space-y-2 md:space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-sm md:text-lg line-clamp-2">{item.toolName}</h3>
+                          <p className={`text-xs md:text-sm line-clamp-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                            by {item.ownerName}
+                          </p>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-col space-y-2 w-full">
+                        <div className="flex items-center justify-between text-sm md:text-base">
+                          <div>
+                            <span className="text-lg md:text-xl font-bold text-purple-300">${item.totalCost}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-1 md:gap-2">
                           <button
-                            onClick={() => handleContactOwner(item)}
-                            className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleContactOwner(item);
+                            }}
+                            className={`flex-1 py-1 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
                               theme === 'dark'
-                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
-                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                             }`}
                           >
-                            <MessageCircle className="w-4 h-4" />
-                            <span>Contact Owner</span>
+                            Contact
                           </button>
-
                           <button
-                            onClick={() => handleCancelRequest(item.id)}
-                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCancelRequest(item.id);
+                            }}
+                            className="flex-1 py-1 md:py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs md:text-sm font-medium transition-all"
                           >
-                            <XCircle className="w-4 h-4" />
-                            <span>Cancel Request</span>
+                            Cancel
                           </button>
-
-                        </div>
-
-                        {/* Request Date */}
-                        <div className="text-center mt-3">
-                          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                            Requested: {item.requestDate instanceof Date
-                              ? item.requestDate.toLocaleString('en-SG', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: true
-                                })
-                              : new Date((item.requestDate as any).toDate()).toLocaleString('en-SG', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: true
-                                })}
-                          </span>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 md:py-12">
+                <p className={`text-sm md:text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  No pending requests at the moment.
+                </p>
               </div>
             )}
           </div>
@@ -1239,7 +1220,7 @@ export default function MyRentalsPage() {
                   <XCircle className="w-6 h-6 text-orange-400" />
                   Delisted Items
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                   {delistedListings.map((item) => (
                     <div
                       key={item.id}
@@ -1346,33 +1327,42 @@ export default function MyRentalsPage() {
             )}
           </div>
         ) : viewMode === 'owner' && ownerActiveTab === 'active-rentals' ? (
-          <div className="space-y-6">
-            {/* Active Rentals for Owner */}
-            {receivedRentalRequests.filter(r => r.status === 'approved').length > 0 ? (
-              <div>
-                <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  ✅ Active Rentals
-                </h2>
-                <div className="space-y-6 mb-12">
+          <div className="space-y-8 md:space-y-12">
+            {/* Active Rentals Section */}
+            <div>
+              <h2 className={`text-lg md:text-2xl font-bold mb-3 md:mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                Active Rentals
+              </h2>
+              {receivedRentalRequests.filter(r => isRentalActive(r)).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
                   {receivedRentalRequests
-                    .filter(r => r.status === 'approved')
+                    .filter(r => isRentalActive(r))
                     .map((request) => (
-                    <div key={request.id} className="flex items-center justify-between">
-                      {/* Listing Box */}
                       <div
+                        key={request.id}
                         onClick={() => handleViewListing(request.toolId)}
-                        className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
+                        className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden ${
                           theme === 'dark'
-                            ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
-                            : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
-                        }`}>
-                        <div className="flex-shrink-0">
-                          {renderToolImage(request.toolImage, "large")}
+                            ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                            : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                        }`}
+                      >
+                        {/* Image */}
+                        <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+                          {renderToolImage(request.toolImage, "medium")}
+                          <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-green-600 text-white px-2 py-1 rounded-lg text-xs md:text-sm font-bold flex items-center space-x-1">
+                            {getStatusIcon(request.status)}
+                            <span>Active</span>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="mb-4">
-                            <h3 className="text-xl font-bold mb-1 text-white">{request.toolName}</h3>
-                            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+
+                        {/* Info */}
+                        <div className="p-2 md:p-4 space-y-2 md:space-y-3">
+                          <div>
+                            <h3 className="font-semibold text-sm md:text-lg line-clamp-2 text-gray-900 dark:text-white">
+                              {request.toolName}
+                            </h3>
+                            <p className={`text-xs md:text-sm line-clamp-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                               Rented by <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1384,187 +1374,249 @@ export default function MyRentalsPage() {
                               </button>
                             </p>
                           </div>
-                          <div className="space-y-2 mb-4">
+
+                          <div className="space-y-1 text-xs md:text-sm">
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
-                              <span className="font-semibold text-sm">{formatDateTime(request.startDate, request.startTime)}</span>
+                              <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                              <span className="font-semibold text-gray-900 dark:text-white">{formatDateTime(request.startDate, request.startTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
-                              <span className="font-semibold text-sm">{formatDateTime(request.endDate, request.endTime)}</span>
+                              <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                              <span className="font-semibold text-gray-900 dark:text-white">{formatDateTime(request.endDate, request.endTime)}</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Earning:</span>
-                              <span className="font-black text-2xl text-green-500">${formatPrice(request.totalCost)}</span>
+                              <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Earning:</span>
+                              <span className="font-black text-base md:text-lg text-green-500">${formatPrice(request.totalCost)}</span>
                             </div>
                           </div>
                         </div>
                       </div>
-
-                      {/* Status */}
-                      <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
-                        <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(request.status)}`}>
-                          {getStatusIcon(request.status)}
-                          <span className="capitalize">{request.status}</span>
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className={`text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  No active rentals at the moment.
-                </p>
+              ) : (
+                <div className="text-center py-8 md:py-12">
+                  <p className={`text-sm md:text-lg ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    You have no active rentals currently.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Past Rentals Section */}
+            {receivedRentalRequests.filter(r => isRentalPast(r)).length > 0 && (
+              <div>
+                <h2 className={`text-lg md:text-2xl font-bold mb-3 md:mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                  Past Rentals
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                  {receivedRentalRequests
+                    .filter(r => isRentalPast(r))
+                    .map((request) => (
+                      <div
+                        key={request.id}
+                        onClick={() => handleViewListing(request.toolId)}
+                        className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden opacity-75 ${
+                          theme === 'dark'
+                            ? 'bg-gradient-to-br from-gray-800/60 to-gray-900/40 backdrop-blur-sm'
+                            : 'bg-gradient-to-br from-white/70 to-gray-50/60 backdrop-blur-sm'
+                        }`}
+                      >
+                        {/* Image */}
+                        <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+                          {renderToolImage(request.toolImage, "medium")}
+                          <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-gray-500 text-white px-2 py-1 rounded-lg text-xs md:text-sm font-bold flex items-center space-x-1">
+                            ✓ Completed
+                          </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="p-2 md:p-4 space-y-2 md:space-y-3">
+                          <div>
+                            <h3 className="font-semibold text-sm md:text-lg line-clamp-2 text-gray-900 dark:text-white">
+                              {request.toolName}
+                            </h3>
+                            <p className={`text-xs md:text-sm line-clamp-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                              Was rented by <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/profile/${encodeURIComponent(request.renterEmail)}`);
+                                }}
+                                className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                              >
+                                {request.renterName}
+                              </button>
+                            </p>
+                          </div>
+
+                          <div className="space-y-1 text-xs md:text-sm">
+                            <div className="flex items-center space-x-2">
+                              <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Period:</span>
+                              <span className="font-semibold text-gray-900 dark:text-white">{formatDateTime(request.startDate, request.startTime)}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>to</span>
+                              <span className="font-semibold text-gray-900 dark:text-white">{formatDateTime(request.endDate, request.endTime)}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Earned:</span>
+                              <span className="font-black text-base md:text-lg text-green-500">${formatPrice(request.totalCost)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
           </div>
         ) : viewMode === 'owner' && ownerActiveTab === 'requests' ? (
-          <div className="space-y-6">
-            <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              📬 Pending Requests
+          <div className="space-y-3 md:space-y-6">
+            <h2 className={`text-lg md:text-2xl font-bold mb-3 md:mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              Pending Requests
             </h2>
             {incomingRequests.length > 0 ? (
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
                 {incomingRequests.map((request) => (
-                  <div key={request.id} className="flex items-center justify-between">
-                    {/* Listing Box - Left 2 Columns Only */}
-                    <div
-                      onClick={() => handleViewListing(request.toolId)}
-                      className={`relative flex items-center p-6 gap-6 flex-none w-3/5 rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden ${
-                        theme === 'dark'
-                          ? 'bg-gradient-to-r from-gray-800/80 via-gray-800/75 to-transparent backdrop-blur-sm'
-                          : 'bg-gradient-to-r from-white/90 via-white/85 to-transparent backdrop-blur-sm'
-                      }`}>
-
-                      {/* Large Image on Left */}
-                      <div className="flex-shrink-0">
-                        {renderToolImage(request.toolImage, "large")}
-                      </div>
-
-                      {/* Listing Details in Center */}
-                      <div className="flex-1 min-w-0">
-                        <div className="mb-4">
-                          <h3 className="text-xl font-bold mb-1 text-white">{request.toolName}</h3>
-                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Request from <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/profile/${encodeURIComponent(request.renterEmail)}`);
-                              }}
-                              className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
-                            >
-                              {request.renterName}
-                            </button> • {request.renterEmail}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
-                            <span className="font-semibold text-sm">{formatDateTime(request.startDate, request.startTime)}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
-                            <span className="font-semibold text-sm">{formatDateTime(request.endDate, request.endTime)}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
-                            <span className="font-black text-2xl text-purple-500">${formatPrice(request.totalCost)}</span>
-                          </div>
-                        </div>
-
-                        {request.message && (
-                          <div className={`p-3 rounded-lg mb-4 ${
-                            theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
-                          }`}>
-                            <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>RENTER'S MESSAGE</p>
-                            <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                              "{request.message}"
-                            </p>
-                          </div>
-                        )}
+                  <div
+                    key={request.id}
+                    onClick={() => handleViewListing(request.toolId)}
+                    className={`rounded-xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden flex flex-col ${
+                      theme === 'dark'
+                        ? 'bg-gradient-to-br from-gray-800/80 to-gray-900/60 backdrop-blur-sm'
+                        : 'bg-gradient-to-br from-white/90 to-gray-50/80 backdrop-blur-sm'
+                    }`}
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+                      {renderToolImage(request.toolImage, "medium")}
+                      <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-yellow-500 text-white px-2 py-1 rounded-lg text-xs md:text-sm font-bold flex items-center space-x-1">
+                        Pending
                       </div>
                     </div>
 
-                    {/* Status & Actions - Outside Box on Right */}
-                    <div className="flex flex-col items-end space-y-4 flex-shrink-0 min-w-[200px]">
-                      {/* Status Badge */}
-                      <div className="flex flex-col items-end space-y-2">
-                        <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2 ${getStatusColor(request.status)}`}>
-                          {getStatusIcon(request.status)}
-                          <span className="capitalize">{request.status}</span>
-                        </span>
-                        <p className="text-xs text-yellow-500 font-medium">⏳ Awaiting response</p>
+                    {/* Info */}
+                    <div className="p-2 md:p-4 space-y-2 md:space-y-3 flex-1 flex flex-col">
+                      <div>
+                        <h3 className="font-semibold text-sm md:text-lg line-clamp-2 text-gray-900 dark:text-white">
+                          {request.toolName}
+                        </h3>
+                        <p className={`text-xs md:text-sm line-clamp-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Request from <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/profile/${encodeURIComponent(request.renterEmail)}`);
+                            }}
+                            className="font-medium hover:text-purple-600 dark:hover:text-purple-400 transition-colors underline"
+                          >
+                            {request.renterName}
+                          </button>
+                        </p>
+                        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} line-clamp-1`}>
+                          {request.renterEmail}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1 text-xs md:text-sm">
+                        <div className="flex items-center space-x-2">
+                          <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Start:</span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{formatDateTime(request.startDate, request.startTime)}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>End:</span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{formatDateTime(request.endDate, request.endTime)}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cost:</span>
+                          <span className="font-black text-base md:text-lg text-purple-500">${formatPrice(request.totalCost)}</span>
+                        </div>
+                      </div>
+
+                      {request.message && (
+                        <div className={`p-2 rounded-lg text-xs ${
+                          theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
+                        }`}>
+                          <p className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Message:</p>
+                          <p className={`mt-1 line-clamp-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                            "{request.message}"
+                          </p>
+                        </div>
+                      )}
+
+                      <div className={`text-xs mt-auto pt-2 border-t ${theme === 'dark' ? 'border-gray-700 text-gray-500' : 'border-gray-200 text-gray-400'}`}>
+                        Requested: {request.requestDate instanceof Date
+                          ? request.requestDate.toLocaleString('en-SG', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true
+                            })
+                          : new Date((request.requestDate as any).toDate()).toLocaleString('en-SG', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true
+                            })}
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex flex-col space-y-2 w-full">
+                      <div className="flex gap-2 pt-2">
                         <button
-                          onClick={() => handleApprovalAction(request.id, 'approve')}
-                          className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApprovalAction(request.id, 'approve');
+                          }}
+                          className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-xs md:text-sm rounded-lg font-medium transition-all"
+                          title="Approve"
                         >
-                          <ThumbsUp className="w-4 h-4" />
-                          <span>Approve</span>
+                          <ThumbsUp className="w-3 h-3" />
+                          <span className="hidden md:inline">Approve</span>
                         </button>
                         <button
-                          onClick={() => handleApprovalAction(request.id, 'decline')}
-                          className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-medium transition-all hover:scale-105 shadow-lg"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApprovalAction(request.id, 'decline');
+                          }}
+                          className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-xs md:text-sm rounded-lg font-medium transition-all"
+                          title="Decline"
                         >
-                          <ThumbsDown className="w-4 h-4" />
-                          <span>Decline</span>
+                          <ThumbsDown className="w-3 h-3" />
+                          <span className="hidden md:inline">Decline</span>
                         </button>
                         <button
-                          onClick={() => handleContactOwner(request)}
-                          className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all hover:scale-105 ${
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContactOwner(request);
+                          }}
+                          className={`flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all ${
                             theme === 'dark'
-                              ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300 border border-gray-600'
-                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                              ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
+                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                           }`}
+                          title="Contact Renter"
                         >
-                          <MessageCircle className="w-4 h-4" />
-                          <span>Contact Renter</span>
+                          <MessageCircle className="w-3 h-3" />
+                          <span className="hidden md:inline">Chat</span>
                         </button>
-                      </div>
-
-                      {/* Request Date */}
-                      <div className="text-center mt-3">
-                        <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                          Requested: {request.requestDate instanceof Date
-                            ? request.requestDate.toLocaleString('en-SG', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: true
-                              })
-                            : new Date((request.requestDate as any).toDate()).toLocaleString('en-SG', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: true
-                              })}
-                        </span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className={`text-center py-16 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                <div className={`w-24 h-24 mx-auto mb-6 rounded-2xl flex items-center justify-center ${
+              <div className={`text-center py-12 md:py-16 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                <div className={`w-16 h-16 md:w-24 md:h-24 mx-auto mb-4 md:mb-6 rounded-2xl flex items-center justify-center ${
                   theme === 'dark' ? 'bg-gray-800/60' : 'bg-gray-100'
                 }`}>
-                  <Inbox className="w-12 h-12 opacity-50" />
+                  <Inbox className="w-8 h-8 md:w-12 md:h-12 opacity-50" />
                 </div>
-                <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
+                <h3 className="text-lg md:text-2xl font-bold mb-2 text-gray-900 dark:text-white">
                   No Incoming Requests
                 </h3>
-                <p className="text-lg mb-6 max-w-md mx-auto">
+                <p className="text-sm md:text-lg mb-6 max-w-md mx-auto">
                   When people request to rent your items, you'll see them here for approval.
                 </p>
               </div>
@@ -1579,7 +1631,7 @@ export default function MyRentalsPage() {
       {/* Cancel Confirmation Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`rounded-2xl p-6 max-w-md w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`rounded-2xl p-3 md:p-4 lg:p-6 max-w-md w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -1623,7 +1675,7 @@ export default function MyRentalsPage() {
       {/* Approval Confirmation Modal */}
       {showApprovalModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`rounded-2xl p-6 max-w-md w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`rounded-2xl p-3 md:p-4 lg:p-6 max-w-md w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center space-x-3 mb-4">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                 approvalAction === 'approve'
@@ -1689,7 +1741,7 @@ export default function MyRentalsPage() {
       {/* Review Modal */}
       {showReviewModal && selectedRentalForReview && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`rounded-2xl p-6 max-w-lg w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`rounded-2xl p-3 md:p-4 lg:p-6 max-w-lg w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Write a Review</h3>
               <button

@@ -135,10 +135,10 @@ export default function HomePage() {
             ? 'bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10'
             : 'bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20'
         } blur-3xl animate-pulse`}></div>
-        <div className={`absolute top-1/4 left-1/4 w-96 h-96 ${
+        <div className={`absolute top-1/4 left-1/4 w-32 h-32 sm:w-56 sm:h-56 md:w-80 md:h-80 lg:w-96 lg:h-96 ${
           theme === 'dark' ? 'bg-blue-500/5' : 'bg-blue-400/10'
         } rounded-sm blur-3xl animate-pulse delay-1000`}></div>
-        <div className={`absolute bottom-1/4 right-1/4 w-96 h-96 ${
+        <div className={`absolute bottom-1/4 right-1/4 w-32 h-32 sm:w-56 sm:h-56 md:w-80 md:h-80 lg:w-96 lg:h-96 ${
           theme === 'dark' ? 'bg-blue-500/5' : 'bg-blue-400/10'
         } rounded-sm blur-3xl animate-pulse delay-2000`}></div>
       </div>
@@ -147,7 +147,7 @@ export default function HomePage() {
       <LiquidGlassNav />
 
       {/* Main Content - Added padding-top to prevent navbar overlap */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Enhanced Carousel Banner */}
         <div className="mb-8 relative overflow-hidden rounded-2xl shadow-2xl">
           <div
@@ -157,7 +157,7 @@ export default function HomePage() {
             {banners.map((banner) => (
               <div
                 key={banner.id}
-                className={`w-full flex-shrink-0 ${typeof banner.image === 'string' && banner.image.startsWith('/') ? 'relative' : `bg-gradient-to-r ${banner.color}`} p-6 sm:p-12 md:p-20 cursor-pointer min-h-[300px] sm:min-h-[400px] md:min-h-[450px]`}
+                className={`w-full flex-shrink-0 ${typeof banner.image === 'string' && banner.image.startsWith('/') ? 'relative' : `bg-gradient-to-r ${banner.color}`} p-3 md:p-4 lg:p-6 sm:p-12 md:p-20 cursor-pointer min-h-[300px] sm:min-h-[400px] md:min-h-[450px]`}
                 onClick={banner.action}
                 style={typeof banner.image === 'string' && banner.image.startsWith('/') ? {
                   backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${banner.image})`,
@@ -229,7 +229,7 @@ export default function HomePage() {
         <div className="mb-16">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 px-2">Popular Categories</h2>
           <div className="relative">
-            <div className="flex overflow-x-auto scrollbar-hide gap-8 pb-6">
+            <div className="flex overflow-x-auto scrollbar-hide gap-4 md:gap-6 lg:gap-8 pb-6">
               {[
                 { name: 'Power Tools', image: hammerImage, count: '120+', category: 'Power Tools' },
                 { name: 'Garden', image: flowerImage, count: '85+', category: 'Garden Tools' },
@@ -716,9 +716,9 @@ export default function HomePage() {
         {/* Quick Tips */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold mb-8 px-2">Quick Tips</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8 mb-16">
             {/* Build Your Reputation */}
-            <div className="flex items-start space-x-8 p-6">
+            <div className="flex items-start space-x-4 md:space-x-6 lg:space-x-8 p-6">
               <div className="flex-shrink-0">
                 <Users className="w-8 h-8 text-purple-600" strokeWidth={2.5} />
               </div>
@@ -743,7 +743,7 @@ export default function HomePage() {
             </div>
 
             {/* Maximize Earnings */}
-            <div className="flex items-start space-x-8 p-6">
+            <div className="flex items-start space-x-4 md:space-x-6 lg:space-x-8 p-6">
               <div className="flex-shrink-0">
                 <TrendingUp className="w-8 h-8 text-purple-600" strokeWidth={2.5} />
               </div>

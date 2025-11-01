@@ -97,7 +97,7 @@ export default function RentalCalendar({ viewMode }: RentalCalendarProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className={`rounded-2xl p-6 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
+      <div className={`rounded-2xl p-3 md:p-4 lg:p-6 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -132,7 +132,7 @@ export default function RentalCalendar({ viewMode }: RentalCalendarProps) {
       </div>
 
       {/* Calendar */}
-      <div className={`rounded-2xl p-6 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm calendar-container`}>
+      <div className={`rounded-2xl p-3 md:p-4 lg:p-6 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm calendar-container`}>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -170,7 +170,7 @@ export default function RentalCalendar({ viewMode }: RentalCalendarProps) {
       {/* Event Details Modal */}
       {showEventModal && selectedEvent && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`rounded-2xl p-6 max-w-2xl w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`rounded-2xl p-3 md:p-4 lg:p-6 max-w-2xl w-full shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold">{selectedEvent.extendedProps.toolName}</h3>
               <button
@@ -277,128 +277,196 @@ export default function RentalCalendar({ viewMode }: RentalCalendarProps) {
       <style>{`
         .calendar-container .fc {
           font-family: inherit;
+          background: transparent;
         }
 
         .calendar-container .fc .fc-toolbar {
           margin-bottom: 1.5rem;
           flex-wrap: wrap;
-          gap: 0.5rem;
+          gap: 0.75rem;
+          padding: 0;
         }
 
         .calendar-container .fc .fc-toolbar-title {
-          font-size: 1.5rem;
-          font-weight: 700;
+          font-size: 1.375rem;
+          font-weight: 600;
+          letter-spacing: -0.5px;
         }
 
         .calendar-container .fc .fc-button {
-          background-color: rgb(147 51 234);
-          border-color: rgb(147 51 234);
+          background-color: transparent;
+          border: 1px solid ${theme === 'dark' ? 'rgba(107, 114, 128, 0.3)' : 'rgba(209, 213, 219, 0.5)'};
           text-transform: capitalize;
           padding: 0.5rem 1rem;
-          border-radius: 0.75rem;
+          border-radius: 0.5rem;
           font-weight: 500;
+          font-size: 0.875rem;
+          color: ${theme === 'dark' ? 'rgb(209, 213, 219)' : 'rgb(55, 65, 81)'};
           transition: all 0.2s;
+          cursor: pointer;
         }
 
         .calendar-container .fc .fc-button:hover {
-          background-color: rgb(126 34 206);
-          border-color: rgb(126 34 206);
+          background-color: ${theme === 'dark' ? 'rgba(107, 114, 128, 0.1)' : 'rgba(243, 244, 246, 1)'};
+          border-color: ${theme === 'dark' ? 'rgba(107, 114, 128, 0.5)' : 'rgba(209, 213, 219, 0.8)'};
         }
 
         .calendar-container .fc .fc-button:focus {
-          box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.3);
+          box-shadow: none;
+          outline: 2px solid rgba(147, 51, 234, 0.5);
+          outline-offset: 2px;
         }
 
         .calendar-container .fc .fc-button-active {
-          background-color: rgb(126 34 206);
-          border-color: rgb(126 34 206);
+          background-color: rgb(147 51 234);
+          border-color: rgb(147 51 234);
+          color: white;
         }
 
         .calendar-container .fc .fc-col-header-cell {
-          background-color: ${theme === 'dark' ? 'rgba(147, 51, 234, 0.2)' : 'rgba(147, 51, 234, 0.1)'};
+          background-color: ${theme === 'dark' ? 'rgba(31, 41, 55, 0.8)' : 'rgba(249, 250, 251, 1)'};
           font-weight: 600;
-          padding: 0.75rem 0.5rem;
-          border: none;
-          color: ${theme === 'dark' ? 'white' : 'inherit'};
+          padding: 1rem 0.5rem;
+          border-bottom: 2px solid rgb(147 51 234);
+          border-top: none;
+          border-left: none;
+          border-right: none;
+          color: ${theme === 'dark' ? 'rgb(209, 213, 219)' : 'rgb(55, 65, 81)'};
+          font-size: 0.875rem;
+          letter-spacing: 0.25px;
         }
 
         .calendar-container .fc .fc-daygrid-day {
           background-color: transparent;
-          transition: background-color 0.2s;
+          border: 1px solid ${theme === 'dark' ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.6)'};
+          transition: background-color 0.15s, border-color 0.15s;
         }
 
         .calendar-container .fc .fc-daygrid-day:hover {
-          background-color: ${theme === 'dark' ? 'rgba(147, 51, 234, 0.1)' : 'rgba(147, 51, 234, 0.05)'};
+          background-color: ${theme === 'dark' ? 'rgba(147, 51, 234, 0.08)' : 'rgba(243, 244, 246, 1)'};
+          border-color: ${theme === 'dark' ? 'rgba(107, 114, 128, 0.4)' : 'rgba(209, 213, 219, 1)'};
         }
 
         .calendar-container .fc .fc-daygrid-day-number {
-          padding: 0.5rem;
+          padding: 0.75rem 0.5rem;
           font-weight: 500;
-          color: ${theme === 'dark' ? 'white' : 'inherit'};
+          font-size: 0.875rem;
+          color: ${theme === 'dark' ? 'rgb(209, 213, 219)' : 'rgb(55, 65, 81)'};
         }
 
         .calendar-container .fc .fc-day-today {
-          background-color: ${theme === 'dark' ? 'rgba(147, 51, 234, 0.15)' : 'rgba(147, 51, 234, 0.1)'} !important;
+          background-color: transparent !important;
         }
 
         .calendar-container .fc .fc-day-today .fc-daygrid-day-number {
           background-color: rgb(147 51 234);
           color: white;
-          border-radius: 50%;
+          border-radius: 0.375rem;
           width: 2rem;
           height: 2rem;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0.25rem;
+          margin: 0;
+          padding: 0;
+          font-weight: 600;
+        }
+
+        .calendar-container .fc-daygrid-day-frame {
+          min-height: 6rem;
+        }
+
+        .calendar-container .fc-daygrid-day-events {
+          margin-top: 0.5rem;
         }
 
         .calendar-container .fc-event {
           border-radius: 0.375rem;
-          padding: 0.125rem 0.25rem;
-          margin-bottom: 0.125rem;
+          padding: 0.25rem 0.375rem;
+          margin-bottom: 0.25rem;
           cursor: pointer;
           border: none;
-          transition: transform 0.2s, box-shadow 0.2s;
+          transition: all 0.2s;
+          font-size: 0.8rem;
+          font-weight: 500;
         }
 
         .calendar-container .fc-event:hover {
-          transform: scale(1.02);
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          opacity: 0.95;
         }
 
         .calendar-container .fc .fc-event-main {
+          padding: 0.25rem 0.375rem;
           color: white;
+        }
+
+        .calendar-container .fc .fc-event-title {
+          font-weight: 500;
+          white-space: normal;
+          word-break: break-word;
         }
 
         .calendar-container .fc td,
         .calendar-container .fc th {
-          border-color: ${theme === 'dark' ? 'rgba(75, 85, 99, 0.5)' : 'rgba(156, 163, 175, 0.2)'};
+          border-color: ${theme === 'dark' ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.6)'};
         }
 
         .calendar-container .fc {
-          color: ${theme === 'dark' ? 'white' : 'inherit'};
+          color: ${theme === 'dark' ? 'rgb(209, 213, 219)' : 'rgb(55, 65, 81)'};
+        }
+
+        .calendar-container .fc .fc-popover {
+          background-color: ${theme === 'dark' ? 'rgb(31, 41, 55)' : 'white'};
+          border: 1px solid ${theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.8)'};
+          border-radius: 0.5rem;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-container .fc .fc-popover-header {
+          background-color: ${theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(249, 250, 251, 1)'};
+          border-bottom: 1px solid ${theme === 'dark' ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.6)'};
+          border-radius: 0.5rem 0.5rem 0 0;
         }
 
         @media (max-width: 768px) {
           .calendar-container .fc .fc-toolbar {
             flex-direction: column;
             align-items: stretch;
+            margin-bottom: 1rem;
           }
 
           .calendar-container .fc .fc-toolbar-chunk {
             display: flex;
             justify-content: center;
-            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0;
           }
 
           .calendar-container .fc .fc-toolbar-title {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
+            margin-bottom: 0.75rem;
           }
 
           .calendar-container .fc .fc-button {
             padding: 0.375rem 0.75rem;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
+          }
+
+          .calendar-container .fc-daygrid-day-frame {
+            min-height: 5rem;
+          }
+
+          .calendar-container .fc .fc-daygrid-day-number {
+            padding: 0.5rem 0.375rem;
+            font-size: 0.75rem;
+          }
+
+          .calendar-container .fc-event {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.25rem;
           }
         }
       `}</style>

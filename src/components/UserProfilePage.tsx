@@ -258,12 +258,12 @@ export default function UserProfilePage() {
           : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
       }`}>
         <LiquidGlassNav />
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
           <div className={`p-8 rounded-2xl ${
             theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
           }`}>
             <div className="animate-pulse">
-              <div className="flex items-center space-x-8 mb-8">
+              <div className="flex items-center space-x-4 md:space-x-6 lg:space-x-8 mb-8">
                 <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-600"></div>
                 <div className="flex-1">
                   <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/3 mb-4"></div>
@@ -287,7 +287,7 @@ export default function UserProfilePage() {
           : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
       }`}>
         <LiquidGlassNav />
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">User Not Found</h1>
             <p className="text-gray-600 dark:text-gray-400 mb-6">The user profile you're looking for doesn't exist.</p>
@@ -311,7 +311,7 @@ export default function UserProfilePage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -329,7 +329,7 @@ export default function UserProfilePage() {
         <div className={`p-8 rounded-2xl mb-8 ${
           theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
         }`}>
-          <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center space-y-3 md:space-y-4 lg:space-y-6 md:space-y-0 md:space-x-8">
             {/* Profile Avatar */}
             <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold shadow-lg">
               {currentUser.name.charAt(0)}

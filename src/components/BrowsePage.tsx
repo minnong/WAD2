@@ -11,7 +11,7 @@ import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
 import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye, Heart } from 'lucide-react';
 
-// Import category images
+
 import hammerImage from '../assets/hammer.png';
 import greyPhoneImage from '../assets/grey phone.png';
 import flowerImage from '../assets/Flower.png';

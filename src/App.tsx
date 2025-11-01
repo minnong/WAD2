@@ -22,6 +22,13 @@ import ProtectedRoute from './components/ProtectedRoute'
 import NotFoundPage from './components/NotFoundPage'
 import ScrollToTop from './components/ScrollToTop'
 import ChatBot from './components/ChatBot'
+import PaymentSuccess from './components/payments/PaymentSuccess'
+import LeaderboardPage from './components/LeaderboardPage'
+// ✅ ADD THESE IMPORTS
+import PrivacyPolicy from './components/PrivacyPolicy'
+import TermsOfService from './components/TermsOfService'
+import CookiePolicy from './components/CookiePolicy'
+
 
 export default function App() {
   return (
@@ -52,6 +59,13 @@ export default function App() {
                 <Route path="/profile/tab/:tab" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/profile/:email" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
+                <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
+
+                {/* ✅ ADD THESE ROUTES */}
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
+                  <Route path="/cookie-policy" element={<CookiePolicy />} />
 
                 {/* 404 catch-all route */}
                 <Route path="*" element={<NotFoundPage />} />

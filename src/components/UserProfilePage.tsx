@@ -259,7 +259,7 @@ export default function UserProfilePage() {
       }`}>
         <LiquidGlassNav />
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
-          <div className={`p-8 rounded-2xl ${
+          <div className={`p-8 rounded-xl ${
             theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
           }`}>
             <div className="animate-pulse">
@@ -326,7 +326,7 @@ export default function UserProfilePage() {
         </button>
 
         {/* Profile Header */}
-        <div className={`p-8 rounded-2xl mb-8 ${
+        <div className={`p-8 rounded-xl mb-8 ${
           theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
         }`}>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-3 md:space-y-4 lg:space-y-6 md:space-y-0 md:space-x-8">
@@ -401,7 +401,7 @@ export default function UserProfilePage() {
         </div>
 
         {/* Tabs */}
-        <div className={`rounded-2xl p-1 mb-8 ${
+        <div className={`rounded-xl p-1 mb-8 ${
           theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
         }`}>
           <div className="grid grid-cols-2 gap-1">
@@ -436,7 +436,7 @@ export default function UserProfilePage() {
 
         {/* Content */}
         {loading ? (
-          <div className={`p-8 rounded-2xl ${
+          <div className={`p-8 rounded-xl ${
             theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
           }`}>
             <div className="animate-pulse space-y-4">
@@ -498,7 +498,7 @@ export default function UserProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className={`p-12 rounded-2xl text-center ${
+              <div className={`p-12 rounded-xl text-center ${
                 theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
               }`}>
                 <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -515,7 +515,7 @@ export default function UserProfilePage() {
               userReviews.map((review) => (
                 <div
                   key={review.id}
-                  className={`p-6 rounded-2xl ${
+                  className={`p-6 rounded-xl ${
                     theme === 'dark'
                       ? 'bg-gray-800/60'
                       : 'bg-white/80 backdrop-blur-sm'
@@ -555,7 +555,7 @@ export default function UserProfilePage() {
                 </div>
               ))
             ) : (
-              <div className={`p-12 rounded-2xl text-center ${
+              <div className={`p-12 rounded-xl text-center ${
                 theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
               }`}>
                 <Star className="w-16 h-16 mx-auto mb-4 opacity-50" />

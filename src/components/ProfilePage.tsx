@@ -174,7 +174,7 @@ export default function ProfilePage() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Profile Header */}
-        <div className={`p-6 rounded-lg shadow-sm mb-8 ${
+        <div className={`p-6 rounded-xl shadow-sm mb-8 ${
           theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
         }`}>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
@@ -338,7 +338,7 @@ export default function ProfilePage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className={`p-6 rounded-lg shadow-sm ${
+            <div key={index} className={`p-6 rounded-xl shadow-sm ${
               theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
             }`}>
               <div className="flex items-center space-x-3">
@@ -380,14 +380,14 @@ export default function ProfilePage() {
         </div>
 
         {/* Tab Content */}
-        <div className={`p-6 rounded-lg shadow-sm ${
+        <div className={`p-6 rounded-xl shadow-sm ${
           theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
         }`}>
           {activeTab === 'overview' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* User Information */}
-                <div className={`p-4 rounded-lg ${
+                <div className={`p-4 rounded-xl ${
                   theme === 'dark' ? 'bg-gray-700/30' : 'bg-gray-50'
                 }`}>
                   <h4 className="font-semibold mb-3">Account Details</h4>
@@ -414,7 +414,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Quick Stats */}
-                <div className={`p-4 rounded-lg ${
+                <div className={`p-4 rounded-xl ${
                   theme === 'dark' ? 'bg-gray-700/30' : 'bg-gray-50'
                 }`}>
                   <h4 className="font-semibold mb-3">Quick Stats</h4>
@@ -442,7 +442,7 @@ export default function ProfilePage() {
               <h3 className="text-base md:text-lg font-semibold">Recent Activity</h3>
               <div className="space-y-4">
                 {userRentals.slice(0, 5).map((rental, index) => (
-                  <div key={index} className={`p-4 rounded-lg border ${
+                  <div key={index} className={`p-4 rounded-xl border ${
                     theme === 'dark' ? 'border-gray-700 bg-gray-700/30' : 'border-gray-200 bg-gray-50'
                   }`}>
                     <div className="flex items-center justify-between">

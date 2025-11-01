@@ -65,7 +65,7 @@ export default function ProfilePage() {
   const userListings = listings.filter(l => l.userId === currentUser?.uid);
   const activeListings = userListings.filter(l => l.isActive !== false);
   const delistedListings = userListings.filter(l => l.isActive === false);
-  const userRentals = currentUser ? getUserRentals(currentUser.email || '') : [];
+  const userRentals = userRentalRequests;
   const completedRentals = userRentals.filter(r => r.status === 'completed');
   const totalEarnings = completedRentals.reduce((sum, r) => sum + r.totalCost, 0);
   const averageRating = userListings.length > 0 ?
@@ -765,7 +765,7 @@ export default function ProfilePage() {
                         <div className={`text-xs px-2 py-0.5 rounded-lg inline-block ${
                           theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {rental.category || 'Tool'}
+                          {'Tool'}
                         </div>
                       </div>
                     </div>
@@ -851,7 +851,7 @@ export default function ProfilePage() {
                         <div className={`text-xs px-2 py-0.5 rounded-lg inline-block ${
                           theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {rental.category || 'Tool'}
+                          {'Tool'}
                         </div>
                       </div>
                     </div>

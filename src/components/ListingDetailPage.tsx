@@ -111,7 +111,7 @@ export default function ListingDetailPage() {
   // Use only real listings from Firebase
   // Handle both string and number IDs
   const tool = listings.find(t =>
-    t.id === id || t.id === parseInt(id || '0') || String(t.id) === id
+    String(t.id) === id || String(t.id) === String(id)
   );
 
   console.log('ListingDetailPage - ID:', id);

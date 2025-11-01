@@ -153,7 +153,7 @@ export default function ListItemPage() {
       setDebugInfo(`✅ Storage connected! Bucket: ${storage.app.options.storageBucket}`);
     } catch (error) {
       console.error('Firebase Storage test failed:', error);
-      setDebugInfo(`❌ Storage test failed: ${error.message}`);
+      setDebugInfo(`❌ Storage test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -503,7 +503,7 @@ export default function ListItemPage() {
           console.log('Images uploaded successfully:', imageUrls);
         } catch (uploadError) {
           console.error('Image upload failed:', uploadError);
-          setUploadError(`Failed to upload images: ${uploadError.message}`);
+          setUploadError(`Failed to upload images: ${uploadError instanceof Error ? uploadError.message : 'Unknown error'}`);
           setIsUploadingImages(false);
           setIsSubmitting(false);
 

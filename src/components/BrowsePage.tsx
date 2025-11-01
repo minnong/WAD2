@@ -91,7 +91,7 @@ export default function BrowsePage() {
   const getCategoryIcon = (tool: any) => {
     // If it has a base64 image, return category emoji instead
     if (tool.image && tool.image.startsWith('data:image/')) {
-      const categoryEmojis = {
+      const categoryEmojis: Record<string, string> = {
         'Power Tools': '🔨',
         'Garden Tools': '🌱',
         'Electronics': '📱',
@@ -112,7 +112,7 @@ export default function BrowsePage() {
         'Gaming': '🎮',
         'Other': '🔧'
       };
-      return categoryEmojis[tool.category] || '🔧';
+      return categoryEmojis[String(tool.category)] || '🔧';
     }
     // Otherwise return the emoji image
     return tool.image;
@@ -870,7 +870,7 @@ export default function BrowsePage() {
   // Global functions for map info windows
   useEffect(() => {
     window.rentTool = (toolId: number) => {
-      const tool = filteredTools.find(t => t.id === toolId);
+      const tool = filteredTools.find(t => String(t.id) === String(toolId));
       if (tool) {
         handleRentClick(tool);
       }

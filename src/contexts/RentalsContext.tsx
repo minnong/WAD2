@@ -9,12 +9,16 @@ import {
   query,
   where,
   orderBy,
+  increment,
+  getDoc,
   serverTimestamp,
   Timestamp
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from './AuthContext';
 import { emailService } from '../services/emailService';
+import { updateGamification } from '../services/gamificationService';
+
 
 interface RentalRequest {
   id: string;
@@ -31,10 +35,24 @@ interface RentalRequest {
   endTime: string;
   message: string;
   totalCost: number;
+  depositAmount?: number;
+  totalWithDeposit?: number;
   status: 'pending' | 'approved' | 'declined' | 'completed' | 'cancelled';
   requestDate: Timestamp | Date;
   location: string;
   hasReview?: boolean;
+  paymentStatus?: 'unpaid' | 'paid';
+  paymentDate?: string;
+  // payment tracking
+  paidAmount?: number;                  // how much Stripe actually took (rental + deposit)
+  stripePaymentIntentId?: string;       // set by webhook later
+  stripeChargeId?: string;              // set by webhook later
+  // deposit lifecycle
+  completionDate?: string;              // ISO when owner marked as completed
+  reportWindowActive?: boolean;         // true for 24h after completion
+  depositRefundDeadline?: string;       // ISO = completionDate + 24h
+  depositForfeited?: boolean;           // owner reported issue → keep deposit
+  depositRefunded?: boolean;            // auto-refunded after 24h no report
 }
 
 
@@ -48,6 +66,7 @@ interface RentalsContextType {
   getUserRentals: () => RentalRequest[];
   checkDateConflict: (toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => boolean;
   getUnavailableDates: (toolId: string) => Array<{ start: string; end: string; status: string }>;
+  markAsPaid: (id: string) => Promise<void>;
 }
 
 const RentalsContext = createContext<RentalsContextType | null>(null);
@@ -79,49 +98,116 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       return;
     }
 
+
     const rentalsCollection = collection(db, 'rentalRequests');
 
     // Get requests made BY the current user (where they are the renter)
+    // Subscribe to rental requests made BY the current user
+
+
+    // 👇 Requests made BY the current user (renter)
     const userRequestsQuery = query(
       rentalsCollection,
-      where('renterEmail', '==', currentUser.email || '')
+      where("renterEmail", "==", currentUser.email || "")
     );
 
-    const unsubscribeUserRequests = onSnapshot(userRequestsQuery, (snapshot) => {
-      const userRequestsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as RentalRequest[];
+    const unsubscribeUserRequests = onSnapshot(
+      userRequestsQuery,
+      async (snapshot) => {
+        const userRequestsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as RentalRequest[];
 
-      setUserRentalRequests(userRequestsData);
-      setLoading(false);
-    }, (error) => {
-      console.error('Error fetching user rental requests:', error);
-      setLoading(false);
-    });
+        setUserRentalRequests(userRequestsData);
 
-    // Get requests received BY the current user (where they are the owner)
+        // 🔄 Auto-refund deposits after 24 hours if not reported
+        const now = new Date();
+        const expiredRentals = userRequestsData.filter(
+          (rental) =>
+            rental.status === "completed" &&
+            rental.reportWindowActive &&
+            rental.depositRefundDeadline &&
+            !rental.depositForfeited &&
+            new Date(rental.depositRefundDeadline) < now
+        );
+
+        for (const rental of expiredRentals) {
+          console.log(`Auto-refunding deposit for rental ${rental.id}`);
+          await updateRentalData(rental.id, {
+            reportWindowActive: false,
+            depositRefunded: true,
+          });
+        }
+
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching user rental requests:", error);
+        setLoading(false);
+      }
+    );
+
+    // 👇 Requests received BY the current user (owner)
     const receivedRequestsQuery = query(
       rentalsCollection,
-      where('ownerEmail', '==', currentUser.email || '')
+      where("ownerEmail", "==", currentUser.email || "")
     );
 
-    const unsubscribeReceivedRequests = onSnapshot(receivedRequestsQuery, (snapshot) => {
-      const receivedRequestsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as RentalRequest[];
+    const unsubscribeReceivedRequests = onSnapshot(
+      receivedRequestsQuery,
+      async (snapshot) => {
+        const receivedRequestsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as RentalRequest[];
 
-      setReceivedRentalRequests(receivedRequestsData);
-    }, (error) => {
-      console.error('Error fetching received rental requests:', error);
-    });
+        setReceivedRentalRequests(receivedRequestsData);
 
+        // 🔄 Auto-refund + gamification for completed rentals (owner-side)
+        const now = new Date();
+        const expiredRentals = receivedRequestsData.filter(
+          (rental) =>
+            rental.status === "completed" &&
+            rental.reportWindowActive &&
+            rental.depositRefundDeadline &&
+            !rental.depositForfeited &&
+            new Date(rental.depositRefundDeadline) < now
+        );
+
+        for (const rental of expiredRentals) {
+          console.log(`Auto-refunding deposit for rental ${rental.id}`);
+          await updateRentalData(rental.id, {
+            reportWindowActive: false,
+            depositRefunded: true,
+          });
+
+          try {
+            await updateGamification(
+              rental.renterEmail,
+              "renter",
+              "rent_success"
+            );
+            console.log(
+              `🎯 Gamification: renter ${rental.renterEmail} +25 pts (no forfeit)`
+            );
+          } catch (err) {
+            console.error("❌ Failed to update renter gamification:", err);
+          }
+        }
+      },
+      (error) => {
+        console.error("Error fetching received rental requests:", error);
+      }
+    );
+
+    // ✅ Cleanup (only one return!)
     return () => {
       unsubscribeUserRequests();
       unsubscribeReceivedRequests();
     };
   }, [currentUser]);
+
 
   const checkDateConflict = useCallback((toolId: string, startDate: string, endDate: string, excludeRequestId?: string) => {
     // Get all approved rentals for this tool
@@ -173,7 +259,16 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
     try {
       const newRequest = {
         ...requestData,
+        depositAmount: requestData.depositAmount ?? Math.round(requestData.totalCost * 0.2 * 100) / 100,
+        totalWithDeposit: requestData.totalWithDeposit ?? Math.round(requestData.totalCost * 1.2 * 100) / 100,
         requestDate: serverTimestamp(),
+        paymentStatus: "unpaid",      // 👈 new field: ensures “Make Payment” shows later
+        paymentDate: null,            // 👈 for tracking
+        // deposit lifecycle defaults
+        reportWindowActive: false,
+        depositForfeited: false,
+        depositRefunded: false,
+        paidAmount: 0,
       };
 
       await addDoc(collection(db, 'rentalRequests'), newRequest);
@@ -215,7 +310,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       // Verify the user has permission to update this rental
       const canUpdate = [...userRentalRequests, ...receivedRentalRequests].some(
         request => request.id === id &&
-        (request.renterEmail === currentUser.email || request.ownerEmail === currentUser.email)
+          (request.renterEmail === currentUser.email || request.ownerEmail === currentUser.email)
       );
 
       if (!canUpdate) {
@@ -239,7 +334,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       // Verify the user has permission to update this rental
       const canUpdate = [...userRentalRequests, ...receivedRentalRequests].some(
         request => request.id === id &&
-        (request.renterEmail === currentUser.email || request.ownerEmail === currentUser.email)
+          (request.renterEmail === currentUser.email || request.ownerEmail === currentUser.email)
       );
 
       if (!canUpdate) {
@@ -253,10 +348,94 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
       throw error;
     }
   };
+  // ✅ Mark rental as paid (used after Stripe success)
+  const markAsPaid = async (id: string) => {
+    if (!currentUser) {
+      throw new Error("User must be authenticated to mark payment");
+    }
+
+    try {
+      const rentalRef = doc(db, "rentalRequests", id);
+
+      await updateDoc(rentalRef, {
+        paymentStatus: "paid",
+        paymentDate: new Date().toISOString(),
+      });
+
+      console.log(`✅ Rental ${id} marked as paid.`);
+    } catch (error) {
+      console.error("Error marking rental as paid:", error);
+      throw error;
+    }
+  };
 
   const getUserRentals = () => {
     // Return the user's rental requests (already filtered by current user)
     return userRentalRequests;
+  };
+
+  /**
+ * 🎯 Centralized gamification updater
+ * Handles points & badges for owners/renters after each action
+ */
+  const updateGamification = async (userEmail: string, role: "owner" | "renter", action: string) => {
+    try {
+      const userRef = doc(db, "users", userEmail);
+      const snap = await getDoc(userRef);
+      const data = snap.data() || {};
+
+      const pointsField = role === "owner" ? "ownerPoints" : "renterPoints";
+      let incrementValue = 0;
+
+      // 🎮 point logic
+      switch (action) {
+        case "rent_success": // renter completes rental
+          incrementValue = 25;
+          data.successfulRentals = (data.successfulRentals || 0) + 1;
+          break;
+        case "leave_review_renter":
+          incrementValue = 5;
+          data.reviewsWritten = (data.reviewsWritten || 0) + 1;
+          break;
+        case "receive_positive_review":
+          incrementValue = 10;
+          break;
+        case "list_item":
+          incrementValue = 10;
+          break;
+        case "approve_rental":
+          incrementValue = 20;
+          break;
+        case "complete_rental":
+          incrementValue = 30;
+          data.successfulRentals = (data.successfulRentals || 0) + 1;
+          break;
+        case "leave_review_owner":
+          incrementValue = 5;
+          break;
+        default:
+          incrementValue = 0;
+      }
+
+      // 🧮 update points
+      await updateDoc(userRef, {
+        [pointsField]: increment(incrementValue),
+        successfulRentals: data.successfulRentals || 0,
+        reviewsWritten: data.reviewsWritten || 0,
+      });
+
+      // 🏅 badge logic
+      const newBadges = new Set(data.badges || []);
+      if ((data.successfulRentals || 0) >= 3) newBadges.add("Reliable Renter");
+      if ((data.reviewsWritten || 0) >= 5) newBadges.add("Engaged Reviewer");
+      if ((data.avgRating || 0) >= 4.5) newBadges.add("Perfect Partner");
+
+      await updateDoc(userRef, { badges: Array.from(newBadges) });
+
+      console.log(`✅ Gamification updated for ${userEmail}: +${incrementValue} pts`);
+    } catch (error) {
+      console.error("❌ Error updating gamification:", error);
+    }
   };
 
   return (
@@ -271,6 +450,7 @@ export function RentalsProvider({ children }: RentalsProviderProps) {
         getUserRentals,
         checkDateConflict,
         getUnavailableDates,
+        markAsPaid,
       }}
     >
       {children}

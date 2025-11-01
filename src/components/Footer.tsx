@@ -1,6 +1,7 @@
 import { useTheme } from '../contexts/ThemeContext';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Github } from 'lucide-react';
 import shareLahLogo from './sharelah.png';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   const { theme } = useTheme();
@@ -119,28 +120,38 @@ export default function Footer() {
           <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             © 2025 ShareLah. All rights reserved.
           </p>
+          {/* ✅ Replaced old buttons with proper router links */}
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <button className={`text-sm transition-colors ${
-              theme === 'dark'
-                ? 'text-gray-400 hover:text-white'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}>
+            <Link
+              to="/privacy-policy"
+              className={`text-sm transition-colors ${
+                theme === 'dark'
+                  ? 'text-gray-400 hover:text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
               Privacy Policy
-            </button>
-            <button className={`text-sm transition-colors ${
-              theme === 'dark'
-                ? 'text-gray-400 hover:text-white'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}>
+            </Link>
+            <Link
+              to="/terms-of-service"
+              className={`text-sm transition-colors ${
+                theme === 'dark'
+                  ? 'text-gray-400 hover:text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
               Terms of Service
-            </button>
-            <button className={`text-sm transition-colors ${
-              theme === 'dark'
-                ? 'text-gray-400 hover:text-white'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}>
+            </Link>
+            <Link
+              to="/cookie-policy"
+              className={`text-sm transition-colors ${
+                theme === 'dark'
+                  ? 'text-gray-400 hover:text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
               Cookie Policy
-            </button>
+            </Link>
           </div>
         </div>
       </div>

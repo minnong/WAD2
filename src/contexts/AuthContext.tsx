@@ -58,6 +58,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
           email,
           photoURL,
           createdAt,
+          ownerPoints: 0,
+          renterPoints: 0,
+          badges: [],
+          successfulRentals: 0,
+          reviewsWritten: 0,
+          avgRating: 0,
           ...additionalData
         });
       } catch (error) {

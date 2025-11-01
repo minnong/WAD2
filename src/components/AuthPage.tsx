@@ -199,7 +199,7 @@ export default function AuthPage() {
           </div>
 
           {/* Auth Form */}
-          <div className="glass-effect rounded-2xl p-8 animate-fadeInUp delay-300">
+          <div className="glass-effect rounded-2xl p-4 md:p-6 lg:p-8 animate-fadeInUp delay-300">
             {/* Tab Switcher */}
             <div className="flex bg-white/10 rounded-2xl p-1 mb-8">
               <button

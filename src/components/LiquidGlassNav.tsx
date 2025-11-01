@@ -51,11 +51,11 @@ const LiquidGlassNav: React.FC = () => {
         ? ''
         : 'bg-transparent'
     }`}>
-      <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="max-w-7xl mx-auto px-3 md:px-6 py-2 md:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center cursor-pointer" onClick={() => handleNavigation(currentUser ? '/home' : '/')}>
-            <img src={shareLahLogo} alt="ShareLah Logo" className="w-20 h-20" />
+            <img src={shareLahLogo} alt="ShareLah Logo" className="w-12 h-12 md:w-20 md:h-20" />
           </div>
 
           {/* Desktop Navigation - only show if user is logged in */}
@@ -271,7 +271,7 @@ const LiquidGlassNav: React.FC = () => {
             {/* Navigation Links */}
             <button
               onClick={() => handleNavigation('/browse')}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -282,7 +282,7 @@ const LiquidGlassNav: React.FC = () => {
             </button>
             <button
               onClick={() => handleNavigation('/list-item')}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -293,7 +293,7 @@ const LiquidGlassNav: React.FC = () => {
             </button>
             <button
               onClick={() => handleNavigation('/my-rentals')}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -304,7 +304,7 @@ const LiquidGlassNav: React.FC = () => {
             </button>
             <button
               onClick={() => handleNavigation('/favorites')}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -315,7 +315,7 @@ const LiquidGlassNav: React.FC = () => {
             </button>
             <button
               onClick={() => handleNavigation('/chat')}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -331,7 +331,7 @@ const LiquidGlassNav: React.FC = () => {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -348,7 +348,7 @@ const LiquidGlassNav: React.FC = () => {
             
             <button
               onClick={() => handleNavigation('/profile')}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -359,7 +359,7 @@ const LiquidGlassNav: React.FC = () => {
             </button>
             <button
               onClick={() => handleNavigation('/settings')}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-white/80 hover:text-white hover:bg-white/10'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-black/10'
@@ -370,7 +370,7 @@ const LiquidGlassNav: React.FC = () => {
             </button>
             <button
               onClick={handleLogout}
-              className={`flex items-center space-x-3 w-full px-6 py-4 transition-colors ${
+              className={`flex items-center space-x-3 w-full px-4 py-3 transition-colors ${
                 theme === 'dark'
                   ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10'
                   : 'text-red-600 hover:text-red-700 hover:bg-red-50'

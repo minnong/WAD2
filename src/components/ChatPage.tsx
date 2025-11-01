@@ -154,7 +154,7 @@ export default function ChatPage() {
           : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900'
       }`}>
         <LiquidGlassNav />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-900 mx-auto"></div>
@@ -179,7 +179,7 @@ export default function ChatPage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         <div className="flex h-[calc(100vh-200px)]">
           {/* Chat List Sidebar - Hidden on mobile when chat is selected */}
           <div className={`${
@@ -211,7 +211,7 @@ export default function ChatPage() {
             {/* Chat List */}
             <div className="overflow-y-auto flex-1">
               {filteredChats.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 text-center">
+                <div className="flex flex-col items-center justify-center p-4 md:p-6 lg:p-8 text-center">
                   <MessageCircle className={`w-16 h-16 mb-4 ${
                     theme === 'dark' ? 'text-gray-700' : 'text-gray-300'
                   }`} />

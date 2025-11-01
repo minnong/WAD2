@@ -173,7 +173,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="glass-effect p-8 rounded-2xl hover:bg-white/15 transition-apple group animate-fadeInUp" style={{animationDelay: `${index * 100}ms`}}>
+              <div key={index} className="glass-effect p-4 md:p-6 lg:p-8 rounded-2xl hover:bg-white/15 transition-apple group animate-fadeInUp" style={{animationDelay: `${index * 100}ms`}}>
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-300 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <feature.icon className="h-6 w-6 text-white" />
                 </div>
@@ -241,7 +241,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="glass-effect p-8 rounded-2xl animate-fadeInUp delay-300">
+            <div className="glass-effect p-4 md:p-6 lg:p-8 rounded-2xl animate-fadeInUp delay-300">
               <div className="flex items-center space-x-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-300 rounded-full flex items-center justify-center">
                   <Users className="h-6 w-6 text-white" />
@@ -292,7 +292,7 @@ export default function LandingPage() {
             ].map((tech, index) => {
               const IconComponent = tech.icon;
               return (
-                <div key={index} className="glass-effect p-6 rounded-xl hover:bg-white/15 transition-apple animate-fadeInUp" style={{animationDelay: `${index * 100}ms`}}>
+                <div key={index} className="glass-effect p-3 md:p-4 lg:p-6 rounded-xl hover:bg-white/15 transition-apple animate-fadeInUp" style={{animationDelay: `${index * 100}ms`}}>
                   <div className="flex flex-col items-center">
                     <IconComponent className="h-12 w-12 mb-3" style={{ color: tech.color }} />
                     <div className="text-white font-sf-pro-text font-medium">{tech.name}</div>

@@ -117,10 +117,10 @@ const ChatBot: React.FC = () => {
             }}
           >
             <div>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>
+              <h3 className="text-base md:text-lg font-bold m-0">
                 Bob - Customer Support
               </h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '12px', opacity: 0.9 }}>
+              <p className="text-xs md:text-sm m-1 opacity-90">
                 Always here to help
               </p>
             </div>

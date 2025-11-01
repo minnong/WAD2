@@ -1,6 +1,6 @@
-// Gmail API configuration
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-console.log('Email service using backend URL:', BACKEND_URL);
+// Email API endpoint - uses relative path for Vercel compatibility
+const EMAIL_ENDPOINT = '/api/send-email';
+console.log('Email service using endpoint:', EMAIL_ENDPOINT);
 
 interface RentalRequestEmailData {
   ownerName: string;
@@ -21,7 +21,7 @@ export const emailService = {
   sendRentalRequestToOwner: async (data: RentalRequestEmailData) => {
     try {
       console.log('Sending email to owner:', data.ownerEmail);
-      const response = await fetch(`${BACKEND_URL}/api/send-email`, {
+      const response = await fetch(EMAIL_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export const emailService = {
   sendRentalRequestConfirmationToRenter: async (data: RentalRequestEmailData) => {
     try {
       console.log('Sending confirmation email to renter:', data.renterEmail);
-      const response = await fetch(`${BACKEND_URL}/api/send-email`, {
+      const response = await fetch(EMAIL_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export const emailService = {
    */
   sendRentalAcceptedEmail: async (data: RentalRequestEmailData) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/send-email`, {
+      const response = await fetch(EMAIL_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ export const emailService = {
    */
   sendRentalDeclinedEmail: async (data: Omit<RentalRequestEmailData, 'totalCost'>) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/send-email`, {
+      const response = await fetch(EMAIL_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

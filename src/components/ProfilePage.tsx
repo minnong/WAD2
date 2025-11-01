@@ -65,7 +65,7 @@ export default function ProfilePage() {
   const userListings = listings.filter(l => l.userId === currentUser?.uid);
   const activeListings = userListings.filter(l => l.isActive !== false);
   const delistedListings = userListings.filter(l => l.isActive === false);
-  const userRentals = currentUser ? getUserRentals(currentUser.email || '') : [];
+  const userRentals = userRentalRequests;
   const completedRentals = userRentals.filter(r => r.status === 'completed');
   const totalEarnings = completedRentals.reduce((sum, r) => sum + r.totalCost, 0);
   const averageRating = userListings.length > 0 ?
@@ -172,7 +172,7 @@ export default function ProfilePage() {
     }`}>
       <LiquidGlassNav />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
         {/* Profile Header */}
         <div className={`p-6 rounded-lg shadow-sm mb-8 ${
           theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
@@ -765,7 +765,7 @@ export default function ProfilePage() {
                         <div className={`text-xs px-2 py-0.5 rounded-lg inline-block ${
                           theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {rental.category || 'Tool'}
+                          {'Tool'}
                         </div>
                       </div>
                     </div>
@@ -851,7 +851,7 @@ export default function ProfilePage() {
                         <div className={`text-xs px-2 py-0.5 rounded-lg inline-block ${
                           theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {rental.category || 'Tool'}
+                          {'Tool'}
                         </div>
                       </div>
                     </div>

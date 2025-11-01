@@ -1,9 +1,9 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { favoritesService, listingsService, type FirebaseFavorite, type FirebaseListing } from '../services/firebase';
 
 interface FavoriteWithListing extends FirebaseFavorite {
-  listing?: FirebaseListing;
+  listing: FirebaseListing;
 }
 
 interface FavoritesContextType {
@@ -72,7 +72,7 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
       );
 
       // Filter out favorites with missing listings
-      const validFavorites = favoritesWithListings.filter(fav => fav.listing !== null);
+      const validFavorites = favoritesWithListings.filter(fav => fav.listing !== null) as FavoriteWithListing[];
       setFavorites(validFavorites);
     } catch (error) {
       console.error('Error loading favorites:', error);

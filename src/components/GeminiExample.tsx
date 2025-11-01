@@ -28,8 +28,8 @@ const GeminiExample: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h2>Gemini API Example</h2>
+    <div className="px-4 py-5 md:px-8 md:py-8 max-w-2xl mx-auto">
+      <h2 className="text-xl md:text-2xl font-bold">Gemini API Example</h2>
 
       <textarea
         value={prompt}

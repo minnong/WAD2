@@ -243,7 +243,7 @@ export default function ProfilePage() {
             {/* Edit Button */}
             <button
               onClick={() => setEditMode(!editMode)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
                 editMode
                   ? 'bg-green-500 hover:bg-green-600 text-white'
                   : theme === 'dark'
@@ -342,7 +342,7 @@ export default function ProfilePage() {
               theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
             }`}>
               <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-lg ${
+                <div className={`p-3 rounded-xl ${
                   theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'
                 }`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -365,7 +365,7 @@ export default function ProfilePage() {
               <button
                 key={tabItem.id}
                 onClick={() => navigate(tabItem.id === 'overview' ? '/profile' : `/profile/tab/${tabItem.id}`)}
-                className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                className={`px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                   activeTab === tabItem.id
                     ? 'bg-purple-900 text-white shadow-lg'
                     : theme === 'dark'

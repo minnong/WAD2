@@ -9,10 +9,10 @@ import { loadGoogleMapsScript } from '../utils/googleMaps';
 import { emailService } from '../services/emailService';
 import LiquidGlassNav from './LiquidGlassNav';
 import Footer from './Footer';
-import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye, Heart } from 'lucide-react';
+import { Search, Filter, Star, List, Map as MapIcon, X, TrendingUp, Award, ChevronRight, ChevronDown, CheckCircle2, Calendar, Clock, DollarSign, Eye, Heart, XCircle } from 'lucide-react';
 
 // Import category images
-import hammerImage from '../assets/hammer.png';
+import hammerImage from '../assets/Hammer.png';
 import greyPhoneImage from '../assets/grey phone.png';
 import flowerImage from '../assets/Flower.png';
 import chefHatImage from '../assets/Chef Hat.png';

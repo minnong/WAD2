@@ -328,7 +328,7 @@ export default function UserSettingsPage() {
 
         {/* Message Display */}
         {message && (
-          <div className={`mb-6 p-4 rounded-lg flex items-center space-x-3 ${
+          <div className={`mb-6 p-4 rounded-xl flex items-center space-x-3 ${
             message.type === 'success' 
               ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200'
               : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200'
@@ -351,7 +351,7 @@ export default function UserSettingsPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
           <div className="lg:w-1/4">
-            <div className={`p-6 rounded-lg shadow-sm ${
+            <div className={`p-6 rounded-xl shadow-sm ${
               theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
             }`}>
               <nav className="space-y-2">
@@ -359,7 +359,7 @@ export default function UserSettingsPage() {
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-colors ${
                       activeSection === section.id
                         ? 'bg-purple-900 text-white'
                         : theme === 'dark'
@@ -377,7 +377,7 @@ export default function UserSettingsPage() {
 
           {/* Main Content */}
           <div className="lg:w-3/4">
-            <div className={`p-6 rounded-lg shadow-sm ${
+            <div className={`p-6 rounded-xl shadow-sm ${
               theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'
             }`}>
               {/* Profile Settings */}
@@ -427,7 +427,7 @@ export default function UserSettingsPage() {
                         type="text"
                         value={settings.displayName}
                         onChange={(e) => setSettings(prev => ({ ...prev, displayName: e.target.value }))}
-                        className={`w-full px-4 py-3 rounded-lg border ${
+                        className={`w-full px-4 py-3 rounded-xl border ${
                           theme === 'dark'
                             ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
                             : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
@@ -442,7 +442,7 @@ export default function UserSettingsPage() {
                           type="email"
                           value={settings.email}
                           readOnly
-                          className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
+                          className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
                             theme === 'dark'
                               ? 'bg-gray-700/50 border-gray-600 text-gray-400'
                               : 'bg-gray-100 border-gray-300 text-gray-600'
@@ -461,7 +461,7 @@ export default function UserSettingsPage() {
                           type="tel"
                           value={settings.phone}
                           onChange={(e) => setSettings(prev => ({ ...prev, phone: e.target.value }))}
-                          className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
+                          className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
                             theme === 'dark'
                               ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
                               : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
@@ -478,7 +478,7 @@ export default function UserSettingsPage() {
                           type="text"
                           value={settings.location}
                           onChange={(e) => setSettings(prev => ({ ...prev, location: e.target.value }))}
-                          className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
+                          className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
                             theme === 'dark'
                               ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
                               : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
@@ -496,7 +496,7 @@ export default function UserSettingsPage() {
                       value={settings.bio}
                       onChange={(e) => setSettings(prev => ({ ...prev, bio: e.target.value }))}
                       rows={4}
-                      className={`w-full px-4 py-3 rounded-lg border resize-none ${
+                      className={`w-full px-4 py-3 rounded-xl border resize-none ${
                         theme === 'dark'
                           ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
                           : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
@@ -608,7 +608,7 @@ export default function UserSettingsPage() {
                             type={showPasswords.current ? 'text' : 'password'}
                             value={passwordData.currentPassword}
                             onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                            className={`w-full px-4 py-3 pr-12 rounded-lg border ${
+                            className={`w-full px-4 py-3 pr-12 rounded-xl border ${
                               theme === 'dark'
                                 ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
                                 : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
@@ -630,7 +630,7 @@ export default function UserSettingsPage() {
                             type={showPasswords.new ? 'text' : 'password'}
                             value={passwordData.newPassword}
                             onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                            className={`w-full px-4 py-3 pr-12 rounded-lg border ${
+                            className={`w-full px-4 py-3 pr-12 rounded-xl border ${
                               theme === 'dark'
                                 ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
                                 : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
@@ -652,7 +652,7 @@ export default function UserSettingsPage() {
                             type={showPasswords.confirm ? 'text' : 'password'}
                             value={passwordData.confirmPassword}
                             onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                            className={`w-full px-4 py-3 pr-12 rounded-lg border ${
+                            className={`w-full px-4 py-3 pr-12 rounded-xl border ${
                               theme === 'dark'
                                 ? 'bg-gray-700 border-gray-600 text-white focus:border-purple-900'
                                 : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-purple-900'
@@ -827,7 +827,7 @@ export default function UserSettingsPage() {
                     <button
                       onClick={handleProfileUpdate}
                       disabled={loading}
-                      className="flex items-center space-x-2 px-6 py-3 bg-purple-900 hover:bg-purple-950 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                      className="flex items-center space-x-2 px-6 py-3 bg-purple-900 hover:bg-purple-950 disabled:opacity-50 text-white rounded-xl font-medium transition-colors"
                     >
                       <Save className="w-4 h-4" />
                       <span>{loading ? 'Saving...' : 'Save Changes'}</span>
@@ -843,7 +843,7 @@ export default function UserSettingsPage() {
                   
                   <div className="space-y-6">
                     {/* Account Info */}
-                    <div className={`p-4 rounded-lg ${
+                    <div className={`p-4 rounded-xl ${
                       theme === 'dark' ? 'bg-gray-700/30' : 'bg-gray-50'
                     }`}>
                       <h3 className="font-medium mb-3">Account Information</h3>
@@ -871,7 +871,7 @@ export default function UserSettingsPage() {
 
                     {/* Actions */}
                     <div className="space-y-4">
-                      <div className={`p-4 rounded-lg border ${
+                      <div className={`p-4 rounded-xl border ${
                         theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
                       }`}>
                         <div className="flex items-center justify-between">
@@ -893,7 +893,7 @@ export default function UserSettingsPage() {
                         </div>
                       </div>
 
-                      <div className={`p-4 rounded-lg border border-red-200 ${
+                      <div className={`p-4 rounded-xl border border-red-200 ${
                         theme === 'dark' ? 'bg-red-900/10' : 'bg-red-50'
                       }`}>
                         <div className="flex items-center justify-between">
@@ -925,7 +925,7 @@ export default function UserSettingsPage() {
         {/* Delete Account Modal */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className={`max-w-md w-full p-3 md:p-4 lg:p-6 rounded-lg ${
+            <div className={`max-w-md w-full p-3 md:p-4 lg:p-6 rounded-xl ${
               theme === 'dark' ? 'bg-gray-800' : 'bg-white'
             }`}>
               <div className="text-center mb-6">
@@ -946,7 +946,7 @@ export default function UserSettingsPage() {
                   type="text"
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-lg border ${
+                  className={`w-full px-3 py-2 rounded-xl border ${
                     theme === 'dark'
                       ? 'bg-gray-700 border-gray-600 text-white'
                       : 'bg-gray-50 border-gray-300 text-gray-900'
@@ -961,7 +961,7 @@ export default function UserSettingsPage() {
                     setShowDeleteConfirm(false);
                     setDeleteConfirmText('');
                   }}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`flex-1 px-4 py-2 rounded-xl font-medium transition-colors ${
                     theme === 'dark'
                       ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                       : 'bg-gray-200 hover:bg-gray-300 text-gray-700'

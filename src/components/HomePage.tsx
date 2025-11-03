@@ -12,6 +12,7 @@ import { Search, Plus, Heart, ShoppingBag, Star, TrendingUp, Users, Award, Chevr
 import toolLibrary from '../assets/tool_library.jpg';
 import rentImage from '../assets/rent.jpg';
 import toolsImage from '../assets/tools.jpg';
+import shareImage from '../assets/lego-stock-news.jpeg';
 import communityImage from '../assets/community.jpeg';
 import quickTipsImage from '../assets/quicktips.png';
 import browseImage from '../assets/Browse.png';
@@ -89,7 +90,7 @@ export default function HomePage() {
       id: 2,
       title: "Share Your Tools",
       subtitle: "Earn money from unused tools",
-      image: toolsImage,
+      image: shareImage,
       color: "from-blue-500 to-purple-600",
       action: () => navigate('/list-item')
     },

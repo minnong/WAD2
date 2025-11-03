@@ -11,7 +11,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import LiquidGlassNav from './LiquidGlassNav';
 import RentalCalendar from './RentalCalendar';
-import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin, Award, DollarSign } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, MessageCircle, Calendar, AlertTriangle, Edit, Star, TrendingUp, Search, Plus, Inbox, ThumbsUp, ThumbsDown, X, Trash2, Edit3, MapPin } from 'lucide-react';
 
 export default function MyRentalsPage() {
   const navigate = useNavigate();
@@ -83,14 +83,6 @@ export default function MyRentalsPage() {
   const delistedListings = userListings.filter(l => l.isActive === false);
   const incomingRequests = receivedRentalRequests.filter(request => request.status === 'pending');
 
-  // Customer stats
-  const completedRentals = userRentalRequests.filter(r => r.status === 'completed');
-  const totalSpent = completedRentals.reduce((sum, r) => sum + r.totalCost, 0);
-
-  // Owner stats
-  const approvedBookings = receivedRentalRequests.filter(r => r.status === 'approved');
-  const completedBookings = receivedRentalRequests.filter(r => r.status === 'completed');
-  const totalEarnings = completedBookings.reduce((sum, r) => sum + r.totalCost, 0);
 
   // Helper function to format datetime
   const formatDateTime = (date: string, time: string) => {
@@ -114,7 +106,7 @@ export default function MyRentalsPage() {
     const sizeClasses = size === 'large'
       ? "w-48 h-48 md:w-56 md:h-56"
       : size === 'medium'
-      ? "w-full aspect-square"
+      ? "w-full h-full"
       : "w-16 h-16";
 
     // Check if image is a base64 data URL
@@ -528,7 +520,7 @@ export default function MyRentalsPage() {
       <LiquidGlassNav />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-4 md:pb-8">
-        {/* Enhanced Header with Stats */}
+        {/* Header with Toggle */}
         <div className="mb-8">
           <div className="flex flex-col gap-4 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -543,7 +535,9 @@ export default function MyRentalsPage() {
 
               {/* Apple-style Toggle */}
               <div className="flex items-center space-x-2 sm:space-x-3 justify-center sm:justify-end">
-                <span className={`text-sm font-medium ${viewMode === 'customer' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
+                <span className={`transition-all duration-300 ${viewMode === 'customer' ? 'text-lg md:text-2xl font-black text-purple-500 dark:text-purple-300 drop-shadow-lg' : 'text-sm font-medium text-gray-400'}`} style={viewMode === 'customer' ? {
+                  textShadow: '0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3)'
+                } : {}}>
                   Customer
                 </span>
                 <button
@@ -560,115 +554,14 @@ export default function MyRentalsPage() {
                     }`}
                   />
                 </button>
-                <span className={`text-sm font-medium ${viewMode === 'owner' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
+                <span className={`transition-all duration-300 ${viewMode === 'owner' ? 'text-lg md:text-2xl font-black text-purple-500 dark:text-purple-300 drop-shadow-lg' : 'text-sm font-medium text-gray-400'}`} style={viewMode === 'owner' ? {
+                  textShadow: '0 0 20px rgba(168, 85, 247, 0.6), 0 0 40px rgba(168, 85, 247, 0.3)'
+                } : {}}>
                   Owner
                 </span>
               </div>
             </div>
           </div>
-
-          {/* Quick Stats */}
-          {viewMode === 'customer' ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg md:text-2xl font-bold">{activeRentals.length}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Active Rentals</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg md:text-2xl font-bold">{completedRentals.length}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Completed</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg md:text-2xl font-bold">{pendingRequests.length}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Pending</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
-                    <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg md:text-2xl font-bold">${totalSpent.toFixed(2)}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Spent</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg md:text-2xl font-bold">{userOwnListings.length}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>My Listings</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-                    <Inbox className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg md:text-2xl font-bold">{incomingRequests.length}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Incoming Requests</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <Award className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg md:text-2xl font-bold">${totalEarnings.toFixed(2)}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total Earnings</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`rounded-2xl p-2 md:p-4 ${theme === 'dark' ? 'bg-gray-800/60' : 'bg-white/80 backdrop-blur-sm'} border-0 shadow-sm`}>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg md:text-2xl font-bold">{completedBookings.length}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Completed Bookings</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Tabs based on view mode */}
@@ -807,7 +700,7 @@ export default function MyRentalsPage() {
                       </div>
 
                       {/* Image */}
-                      <div className="relative">
+                      <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                         {renderToolImage(item.toolImage, "medium")}
                       </div>
 
@@ -851,7 +744,7 @@ export default function MyRentalsPage() {
                                   e.stopPropagation();
                                   handleMarkAsCompleted(item.id);
                                 }}
-                                className="transition-all hover:scale-110"
+                                className="p-1.5 transition-all hover:scale-110 rounded-xl"
                                 title="Mark as Completed"
                               >
                                 <CheckCircle className="w-5 h-5 text-green-500" />
@@ -861,7 +754,7 @@ export default function MyRentalsPage() {
                                   e.stopPropagation();
                                   handleLeaveReview(item);
                                 }}
-                                className="transition-all hover:scale-110"
+                                className="p-1.5 transition-all hover:scale-110 rounded-xl"
                                 title="Leave Review"
                               >
                                 <Star className="w-5 h-5 text-yellow-500" />
@@ -874,10 +767,10 @@ export default function MyRentalsPage() {
                               e.stopPropagation();
                               handleContactOwner(item);
                             }}
-                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                               theme === 'dark'
                                 ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                             }`}
                           >
                             <MessageCircle className="w-3 h-3" />
@@ -916,7 +809,7 @@ export default function MyRentalsPage() {
                       </div>
 
                       {/* Image */}
-                      <div className="relative">
+                      <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                         {renderToolImage(item.toolImage, "medium")}
                       </div>
 
@@ -960,7 +853,7 @@ export default function MyRentalsPage() {
                                   e.stopPropagation();
                                   handleLeaveReview(item);
                                 }}
-                                className="transition-all hover:scale-110"
+                                className="p-1.5 transition-all hover:scale-110 rounded-xl"
                                 title="Leave Review"
                               >
                                 <Star className="w-5 h-5 text-yellow-500" />
@@ -978,10 +871,10 @@ export default function MyRentalsPage() {
                               e.stopPropagation();
                               handleContactOwner(item);
                             }}
-                            className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                               theme === 'dark'
                                 ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
-                                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                             }`}
                           >
                             <MessageCircle className="w-3 h-3" />
@@ -993,7 +886,7 @@ export default function MyRentalsPage() {
                               e.stopPropagation();
                               navigate(`/listing/${item.toolId}`);
                             }}
-                            className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors bg-purple-600 hover:bg-purple-700 text-white"
+                            className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl text-xs font-medium transition-colors bg-purple-600 hover:bg-purple-700 text-white"
                           >
                             <Package className="w-3 h-3" />
                             Rent Again
@@ -1054,20 +947,21 @@ export default function MyRentalsPage() {
                               e.stopPropagation();
                               handleContactOwner(item);
                             }}
-                            className={`flex-1 py-1 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
+                            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                               theme === 'dark'
                                 ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
                                 : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                             }`}
                           >
-                            Contact
+                            <MessageCircle className="w-3 h-3" />
+                            Chat
                           </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCancelRequest(item.id);
                             }}
-                            className="flex-1 py-1 md:py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs md:text-sm font-medium transition-all"
+                            className="flex-1 py-1 md:py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-xs md:text-sm font-medium transition-all"
                           >
                             Cancel
                           </button>
@@ -1094,7 +988,7 @@ export default function MyRentalsPage() {
               <h2 className={`text-2xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                 Active Listings
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                 {activeListings.map((item) => (
                   <div
                     key={item.id}
@@ -1106,7 +1000,7 @@ export default function MyRentalsPage() {
                     }`}>
 
                   {/* Image */}
-                  <div className="relative">
+                  <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                     {renderToolImage(item.image, "medium")}
                   </div>
 
@@ -1128,7 +1022,7 @@ export default function MyRentalsPage() {
                       <span className="truncate">{item.location}</span>
                     </div>
 
-                    <div className={`text-xs px-2 py-0.5 rounded-lg inline-block mb-2 ${
+                    <div className={`text-xs px-2 py-0.5 rounded-xl inline-block mb-2 ${
                       theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
                     }`}>
                       {item.category}
@@ -1143,7 +1037,7 @@ export default function MyRentalsPage() {
                             e.stopPropagation();
                             handleEditListing(item.id);
                           }}
-                          className="p-1 transition-transform hover:scale-110"
+                          className="p-1 transition-transform hover:scale-110 rounded-xl"
                           title="Edit"
                         >
                           <Edit3 className="w-5 h-5 text-blue-500" />
@@ -1154,7 +1048,7 @@ export default function MyRentalsPage() {
                             e.stopPropagation();
                             handleDelistListing(item.id, item.name);
                           }}
-                          className="p-1 transition-transform hover:scale-110"
+                          className="p-1 transition-transform hover:scale-110 rounded-xl"
                           title="Delist"
                         >
                           <XCircle className="w-5 h-5 text-orange-500" />
@@ -1165,7 +1059,7 @@ export default function MyRentalsPage() {
                             e.stopPropagation();
                             handleDeleteListing(item.id, item.name);
                           }}
-                          className="p-1 transition-transform hover:scale-110"
+                          className="p-1 transition-transform hover:scale-110 rounded-xl"
                           title="Delete"
                         >
                           <Trash2 className="w-5 h-5 text-red-500" />
@@ -1179,7 +1073,7 @@ export default function MyRentalsPage() {
                           // TODO: Navigate to analytics page
                           console.log('Analytics for listing:', item.id);
                         }}
-                        className={`w-full py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
+                        className={`w-full py-2 px-3 rounded-xl text-xs font-medium transition-colors ${
                           theme === 'dark'
                             ? 'bg-purple-900/50 hover:bg-purple-900/70 text-purple-300'
                             : 'bg-purple-100 hover:bg-purple-200 text-purple-700'
@@ -1237,7 +1131,7 @@ export default function MyRentalsPage() {
                       </div>
 
                       {/* Image */}
-                      <div className="relative">
+                      <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                         {renderToolImage(item.image, "medium")}
                       </div>
 
@@ -1259,7 +1153,7 @@ export default function MyRentalsPage() {
                           <span className="truncate">{item.location}</span>
                         </div>
 
-                        <div className={`text-xs px-2 py-0.5 rounded-lg inline-block mb-2 ${
+                        <div className={`text-xs px-2 py-0.5 rounded-xl inline-block mb-2 ${
                           theme === 'dark' ? 'bg-gray-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
                         }`}>
                           {item.category}
@@ -1274,7 +1168,7 @@ export default function MyRentalsPage() {
                                 e.stopPropagation();
                                 handleEditListing(item.id);
                               }}
-                              className="p-1 transition-transform hover:scale-110"
+                              className="p-1 transition-transform hover:scale-110 rounded-xl"
                               title="Edit"
                             >
                               <Edit3 className="w-5 h-5 text-blue-500" />
@@ -1285,7 +1179,7 @@ export default function MyRentalsPage() {
                                 e.stopPropagation();
                                 handleRelistListing(item.id);
                               }}
-                              className="p-1 transition-transform hover:scale-110"
+                              className="p-1 transition-transform hover:scale-110 rounded-xl"
                               title="Relist"
                             >
                               <CheckCircle className="w-5 h-5 text-green-500" />
@@ -1296,7 +1190,7 @@ export default function MyRentalsPage() {
                                 e.stopPropagation();
                                 handleDeleteListing(item.id, item.name);
                               }}
-                              className="p-1 transition-transform hover:scale-110"
+                              className="p-1 transition-transform hover:scale-110 rounded-xl"
                               title="Delete"
                             >
                               <Trash2 className="w-5 h-5 text-red-500" />
@@ -1310,7 +1204,7 @@ export default function MyRentalsPage() {
                               // TODO: Navigate to analytics page
                               console.log('Analytics for listing:', item.id);
                             }}
-                            className={`w-full py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
+                            className={`w-full py-2 px-3 rounded-xl text-xs font-medium transition-colors ${
                               theme === 'dark'
                                 ? 'bg-purple-900/50 hover:bg-purple-900/70 text-purple-300'
                                 : 'bg-purple-100 hover:bg-purple-200 text-purple-700'
@@ -1334,7 +1228,7 @@ export default function MyRentalsPage() {
                 Active Rentals
               </h2>
               {receivedRentalRequests.filter(r => isRentalActive(r)).length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                   {receivedRentalRequests
                     .filter(r => isRentalActive(r))
                     .map((request) => (
@@ -1350,7 +1244,7 @@ export default function MyRentalsPage() {
                         {/* Image */}
                         <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                           {renderToolImage(request.toolImage, "medium")}
-                          <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-green-600 text-white px-2 py-1 rounded-lg text-xs md:text-sm font-bold flex items-center space-x-1">
+                          <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-green-600 text-white px-2 py-1 rounded-xl text-xs md:text-sm font-bold flex items-center space-x-1">
                             {getStatusIcon(request.status)}
                             <span>Active</span>
                           </div>
@@ -1408,7 +1302,7 @@ export default function MyRentalsPage() {
                 <h2 className={`text-lg md:text-2xl font-bold mb-3 md:mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   Past Rentals
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                   {receivedRentalRequests
                     .filter(r => isRentalPast(r))
                     .map((request) => (
@@ -1424,7 +1318,7 @@ export default function MyRentalsPage() {
                         {/* Image */}
                         <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                           {renderToolImage(request.toolImage, "medium")}
-                          <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-gray-500 text-white px-2 py-1 rounded-lg text-xs md:text-sm font-bold flex items-center space-x-1">
+                          <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-gray-500 text-white px-2 py-1 rounded-xl text-xs md:text-sm font-bold flex items-center space-x-1">
                             ✓ Completed
                           </div>
                         </div>
@@ -1475,7 +1369,7 @@ export default function MyRentalsPage() {
               Pending Requests
             </h2>
             {incomingRequests.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
                 {incomingRequests.map((request) => (
                   <div
                     key={request.id}
@@ -1489,7 +1383,7 @@ export default function MyRentalsPage() {
                     {/* Image */}
                     <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                       {renderToolImage(request.toolImage, "medium")}
-                      <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-yellow-500 text-white px-2 py-1 rounded-lg text-xs md:text-sm font-bold flex items-center space-x-1">
+                      <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-yellow-500 text-white px-2 py-1 rounded-xl text-xs md:text-sm font-bold flex items-center space-x-1">
                         Pending
                       </div>
                     </div>
@@ -1532,7 +1426,7 @@ export default function MyRentalsPage() {
                       </div>
 
                       {request.message && (
-                        <div className={`p-2 rounded-lg text-xs ${
+                        <div className={`p-2 rounded-xl text-xs ${
                           theme === 'dark' ? 'bg-gray-800/40' : 'bg-gray-50'
                         }`}>
                           <p className={`font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Message:</p>
@@ -1569,7 +1463,7 @@ export default function MyRentalsPage() {
                             e.stopPropagation();
                             handleApprovalAction(request.id, 'approve');
                           }}
-                          className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-xs md:text-sm rounded-lg font-medium transition-all"
+                          className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-xs md:text-sm rounded-xl font-medium transition-all"
                           title="Approve"
                         >
                           <ThumbsUp className="w-3 h-3" />
@@ -1580,7 +1474,7 @@ export default function MyRentalsPage() {
                             e.stopPropagation();
                             handleApprovalAction(request.id, 'decline');
                           }}
-                          className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-xs md:text-sm rounded-lg font-medium transition-all"
+                          className="flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-xs md:text-sm rounded-xl font-medium transition-all"
                           title="Decline"
                         >
                           <ThumbsDown className="w-3 h-3" />
@@ -1591,15 +1485,14 @@ export default function MyRentalsPage() {
                             e.stopPropagation();
                             handleContactOwner(request);
                           }}
-                          className={`flex-1 flex items-center justify-center space-x-1 px-2 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all ${
+                          className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                             theme === 'dark'
                               ? 'bg-gray-700/50 hover:bg-gray-700/70 text-gray-300'
                               : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                           }`}
-                          title="Contact Renter"
                         >
                           <MessageCircle className="w-3 h-3" />
-                          <span className="hidden md:inline">Chat</span>
+                          Chat
                         </button>
                       </div>
                     </div>
@@ -1746,7 +1639,7 @@ export default function MyRentalsPage() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Write a Review</h3>
               <button
                 onClick={closeReviewModal}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`p-2 rounded-xl transition-colors ${
                   theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                 }`}
               >
@@ -1813,7 +1706,7 @@ export default function MyRentalsPage() {
                 onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
                 placeholder="Share your experience with this tool... (optional)"
                 rows={4}
-                className={`w-full px-3 py-2 rounded-lg border resize-none ${
+                className={`w-full px-3 py-2 rounded-xl border resize-none ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                     : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'

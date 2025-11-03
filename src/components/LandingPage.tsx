@@ -171,7 +171,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="glass-effect p-4 md:p-6 lg:p-8 rounded-2xl hover:bg-white/15 transition-apple group animate-fadeInUp" style={{animationDelay: `${index * 100}ms`}}>
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-300 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -197,7 +197,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
               <div key={index} className="text-center animate-fadeInUp" style={{animationDelay: `${index * 200}ms`}}>
                 <div className="mb-6">
@@ -216,7 +216,7 @@ export default function LandingPage() {
       {/* Community Trust Section */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fadeInUp">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-large font-sf-pro-display text-white mb-6">
                 Built on Community Trust
@@ -336,7 +336,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="glass-effect border-t border-white/10 mt-20">
         <div className="max-w-6xl mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="animate-fadeInUp">
               <div className="flex items-center space-x-3 mb-4">
                 <img src={shareLahLogo} alt="ShareLah Logo" className="w-8 h-8" />

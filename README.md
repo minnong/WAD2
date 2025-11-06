@@ -253,9 +253,12 @@ WAD2/
 - `/profile` - User profile
 - `/profile/:email` - View other profiles
 
+## 🤖 AI Declaration
+
+This project utilized AI for the following purposes:
+- Code Refactoring & Cleanup
+- README creation & updates
 
 ## 📝 License
 
 This project is part of a Web Application Development course (WAD2) assignment at Singapore Management University.
-
-

@@ -1,5 +1,7 @@
 # ShareLah - Tool Rental Marketplace
 
+Website Link - https://share-lah.vercel.app
+
 ShareLah is a peer-to-peer tool rental marketplace that allows users to rent out their unused tools and rent tools from others in their community. Built with modern web technologies for a seamless sharing economy experience.
 
 ## 🌟 Features
@@ -253,9 +255,13 @@ WAD2/
 - `/profile` - User profile
 - `/profile/:email` - View other profiles
 
+## 🤖 AI Declaration
+
+This project utilized AI for the following purposes:
+- Code Refactoring & Cleanup
+- README creation & updates
+- Generate commit messages
 
 ## 📝 License
 
 This project is part of a Web Application Development course (WAD2) assignment at Singapore Management University.
-
-

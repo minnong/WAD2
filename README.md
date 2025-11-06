@@ -258,6 +258,7 @@ WAD2/
 This project utilized AI for the following purposes:
 - Code Refactoring & Cleanup
 - README creation & updates
+- Generate commit messages
 
 ## 📝 License
 
